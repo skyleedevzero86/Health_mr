@@ -1,29 +1,38 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.0.1"
-    id("io.spring.dependency-management") version "1.1.7"
+    id("org.springframework.boot") version "4.0.1" apply false
+    id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
-group = "com.sleekydz86"
-version = "0.0.1-SNAPSHOT"
-description = "backend"
+allprojects {
+    group = "com"
+    version = "0.0.1-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
     }
 }
 
-repositories {
-    mavenCentral()
-}
+subprojects {
+    apply(plugin = "java")
+    apply(plugin = "org.springframework.boot")
+    apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "java-test-fixtures")
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(21))
+        }
+    }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+    dependencies {
+        // 공통 테스트 의존성만 유지
+        add("testImplementation", "org.springframework.boot:spring-boot-starter-test")
+        add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher")
+        add("testImplementation", "io.rest-assured:rest-assured:5.5.0")
+    }
 }

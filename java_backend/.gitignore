@@ -1,4 +1,18 @@
 HELP.md
+application.properties
+application-dev.properties
+application-prod.properties
+application-test.properties
+application-local.properties
+application-dev.properties
+application-prod.properties
+application-test.properties
+application-local.properties
+application.yml
+application-dev.yml
+application-prod.yml
+application-test.yml
+application-local.yml
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -35,3 +49,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Markdown Files ###
+# 모든 .md 파일 무시 (README.md 제외)
+*.md
+!README.md
+!readme.md
