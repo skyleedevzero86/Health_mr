@@ -117,7 +117,7 @@ public class UserService implements BaseService<UserEntity, Long> {
         );
 
         if (request.getEmail() != null) {
-            Email newEmail = request.getEmailValueObject();
+            com.sleekydz86.domain.common.valueobject.Email newEmail = request.getEmailValueObject();
             validateNotDuplicate(
                     userRepository.existsByEmail(newEmail.getValue()) &&
                             (user.getEmail() == null || !user.getEmail().equals(newEmail)),

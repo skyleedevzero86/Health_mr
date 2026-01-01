@@ -19,10 +19,10 @@ public record WaitUserResponse(
     public static WaitUserResponse from(UserEntity entity) {
         return WaitUserResponse.builder()
                 .id(entity.getId())
-                .loginId(entity.getLoginId())
+                .loginId(entity.getLoginIdValue())
                 .name(entity.getName())
-                .email(entity.getEmail())
-                .telNum(entity.getTelNum())
+                .email(entity.getEmailValue())
+                .telNum(entity.getTelNumValue())
                 .registerDate(entity.getCreatedDate())
                 .departmentId(entity.getDepartment() != null ? entity.getDepartment().getId() : null)
                 .departmentName(entity.getDepartment() != null ? entity.getDepartment().getName() : null)

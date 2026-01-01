@@ -1,8 +1,8 @@
 package com.sleekydz86.domain.user.dto;
 
+import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.user.type.Gender;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;

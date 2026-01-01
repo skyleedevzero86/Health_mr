@@ -19,9 +19,11 @@ public class SequenceBasedGenerator implements PatientNumberGenerator {
     public Long generate() {
 
         Long maxNumber = patientRepository.findTopByOrderByPatientNoDesc()
-                .map(PatientEntity::getPatientNo)
+                .map(PatientEntity::getPatientNoValue)
                 .map(no -> {
-
+                    if (no == null) {
+                        return 0L;
+                    }
                     String noStr = String.valueOf(no);
                     if (noStr.startsWith(PREFIX)) {
                         return Long.parseLong(noStr.substring(1));

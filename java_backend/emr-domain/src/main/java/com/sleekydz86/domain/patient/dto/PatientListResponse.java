@@ -18,10 +18,10 @@ public record PatientListResponse(
 ) {
     public static PatientListResponse from(PatientEntity entity) {
         return PatientListResponse.builder()
-                .patientNo(entity.getPatientNo())
+                .patientNo(entity.getPatientNoValue())
                 .patientName(entity.getPatientName())
-                .patientTel(entity.getPatientTel())
-                .patientEmail(entity.getPatientEmail())
+                .patientTel(entity.getPatientTelValue())
+                .patientEmail(entity.getPatientEmailValue())
                 .patientLastVisit(entity.getPatientLastVisit())
                 .build();
     }

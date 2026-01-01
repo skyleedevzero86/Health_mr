@@ -85,8 +85,7 @@ public class AuthService {
         eventPublisher.publish(new com.sleekydz86.core.event.domain.UserRegisteredEvent(
                 savedUser.getId(),
                 savedUser.getLoginIdValue(),
-                savedUser.getRole().name()
-        ));
+                savedUser.getRole().name()));
     }
 
     @Transactional
@@ -122,15 +121,13 @@ public class AuthService {
         TokenPair tokenPair = jwtUtil.generateTokens(user, primaryInstitutionCode);
         TokenResponse tokenResponse = TokenResponse.of(
                 tokenPair.getAccessToken().getValue(),
-                tokenPair.getRefreshToken().getValue()
-        );
+                tokenPair.getRefreshToken().getValue());
 
         refreshTokenService.saveRefreshToken(user.getId(), tokenResponse.refreshToken());
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.UserLoggedInEvent(
                 user.getId(),
-                user.getLoginIdValue()
-        ));
+                user.getLoginIdValue()));
 
         return tokenResponse;
     }
@@ -161,8 +158,7 @@ public class AuthService {
         TokenPair tokenPair = jwtUtil.generateTokens(user);
         TokenResponse tokenResponse = TokenResponse.of(
                 tokenPair.getAccessToken().getValue(),
-                tokenPair.getRefreshToken().getValue()
-        );
+                tokenPair.getRefreshToken().getValue());
 
         refreshTokenService.rotateRefreshToken(userId, refreshToken, tokenResponse.refreshToken());
 
@@ -178,8 +174,7 @@ public class AuthService {
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.PasswordResetRequestedEvent(
                 user.getId(),
-                user.getEmail()
-        ));
+                user.getEmailValue()));
     }
 
     @Transactional
@@ -197,8 +192,6 @@ public class AuthService {
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.PasswordResetCompletedEvent(
                 user.getId(),
-                user.getEmailValue()
-        ));
+                user.getEmailValue()));
     }
 }
-

@@ -17,10 +17,10 @@ public record PatientSearchResponse(
 ) {
     public static PatientSearchResponse from(PatientEntity entity) {
         return PatientSearchResponse.builder()
-                .patientNo(entity.getPatientNo())
+                .patientNo(entity.getPatientNoValue())
                 .patientName(entity.getPatientName())
-                .patientTel(entity.getPatientTel())
-                .patientEmail(entity.getPatientEmail())
+                .patientTel(entity.getPatientTelValue())
+                .patientEmail(entity.getPatientEmailValue())
                 .patientLastVisit(entity.getPatientLastVisit())
                 .build();
     }

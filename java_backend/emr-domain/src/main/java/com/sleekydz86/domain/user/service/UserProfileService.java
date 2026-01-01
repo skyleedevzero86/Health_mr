@@ -33,14 +33,14 @@ public class UserProfileService {
                 .orElseThrow(() -> new com.sleekydz86.core.common.exception.custom.NotFoundException(
                         "사용자를 찾을 수 없습니다. ID: " + userId));
 
-        if (name != null) {
-            user.setName(name);
+        if (name != null && !name.isBlank()) {
+            user.updateProfile(name, user.getGender(), user.getAddress());
         }
-        if (email != null) {
-            user.setEmail(email);
+        if (email != null && !email.isBlank()) {
+            user.changeEmail(com.sleekydz86.domain.common.valueobject.Email.of(email));
         }
-        if (telNum != null) {
-            user.setTelNum(telNum);
+        if (telNum != null && !telNum.isBlank()) {
+            user.changePhoneNumber(com.sleekydz86.domain.common.valueobject.PhoneNumber.of(telNum));
         }
 
         userRepository.save(user);
