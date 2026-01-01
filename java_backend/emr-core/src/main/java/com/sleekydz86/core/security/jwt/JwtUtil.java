@@ -89,14 +89,14 @@ public class JwtUtil {
         return generateTokenPair(userId, role, null);
     }
 
-    public com.sleekydz86.emr.domain.auth.dto.TokenResponse generateTokens(Object userEntity, String primaryInstitutionCode) {
+    public com.sleekydz86.domain.auth.dto.TokenResponse generateTokens(Object userEntity, String primaryInstitutionCode) {
         try {
             // 리플렉션을 사용하여 userId, role 추출
             Long userId = extractUserId(userEntity);
             String role = extractRole(userEntity);
 
             TokenPair tokenPair = generateTokenPair(userId, role, primaryInstitutionCode);
-            return com.sleekydz86.emr.domain.auth.dto.TokenResponse.of(
+            return com.sleekydz86.domain.auth.dto.TokenResponse.of(
                     tokenPair.getAccessToken().getValue(),
                     tokenPair.getRefreshToken().getValue()
             );
@@ -106,7 +106,7 @@ public class JwtUtil {
         }
     }
 
-    public com.sleekydz86.emr.domain.auth.dto.TokenResponse generateTokens(Object userEntity) {
+    public com.sleekydz86.domain.auth.dto.TokenResponse generateTokens(Object userEntity) {
         return generateTokens(userEntity, null);
     }
 

@@ -2,6 +2,7 @@ package com.sleekydz86.core.audit.aspect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleekydz86.core.audit.annotation.AuditLog;
+import com.sleekydz86.core.audit.service.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

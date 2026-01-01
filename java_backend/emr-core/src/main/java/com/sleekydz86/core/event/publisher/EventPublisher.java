@@ -1,5 +1,6 @@
 package com.sleekydz86.core.event.publisher;
 
+import com.sleekydz86.core.event.domain.DomainEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;

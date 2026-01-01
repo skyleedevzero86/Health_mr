@@ -11,10 +11,6 @@ allprojects {
     repositories {
         mavenCentral()
     }
-
-    tasks.withType<Test> {
-        useJUnitPlatform()
-    }
 }
 
 subprojects {
@@ -29,10 +25,27 @@ subprojects {
         }
     }
 
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
     dependencies {
-        // 공통 테스트 의존성만 유지
-        add("testImplementation", "org.springframework.boot:spring-boot-starter-test")
-        add("testRuntimeOnly", "org.junit.platform:junit-platform-launcher")
-        add("testImplementation", "io.rest-assured:rest-assured:5.5.0")
+        // Spring 기본
+        implementation("org.springframework.boot:spring-boot-starter-web")
+
+        // Lombok
+        compileOnly("org.projectlombok:lombok")
+        annotationProcessor("org.projectlombok:lombok")
+
+        // 테스트
+        testImplementation("org.springframework.boot:spring-boot-starter-test")
+        testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+        // Mockito
+        testImplementation("org.mockito:mockito-core:5.11.0")
+        testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
+
+        // RestAssured
+        testImplementation("io.rest-assured:rest-assured:5.5.0")
     }
 }
