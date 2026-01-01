@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +18,7 @@ public class UserProfileService {
     private final FileUploadService fileUploadService;
 
     @Transactional
-    public String uploadProfileImage(Long userId, MultipartFile file) {
+    public String uploadProfileImage(Long userId, MultipartFile file) throws IOException {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new com.sleekydz86.core.common.exception.custom.NotFoundException(
                         "사용자를 찾을 수 없습니다. ID: " + userId));
