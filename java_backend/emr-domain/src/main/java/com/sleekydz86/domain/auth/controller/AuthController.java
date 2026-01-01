@@ -59,7 +59,7 @@ public class AuthController {
     @PostMapping("/password/reset")
     public ResponseEntity<Map<String, String>> resetPassword(
             @Valid @RequestBody PasswordResetConfirmRequest request) {
-        authService.resetPassword(request.getToken(), request.getNewPassword());
+        authService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "비밀번호가 재설정되었습니다."));
     }
 }

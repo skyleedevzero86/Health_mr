@@ -6,7 +6,7 @@ import java.util.UUID;
 public record TreatmentCompletedEvent(
         Long treatmentId,
         Long patientNo,
-        TreatmentType treatmentType
+        String treatmentType
 ) implements DomainEvent {
     @Override
     public UUID getEventId() {

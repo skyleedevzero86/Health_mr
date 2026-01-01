@@ -1,10 +1,10 @@
-package com.sleekydz86.core.config;
+package com.sleekydz86.domain.patient.config;
 
+import com.sleekydz86.domain.patient.service.generators.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import com.sleekydz86.domain.patient.service.generators.*;
 
 @Configuration
 public class PatientNumberGeneratorConfig {
@@ -24,3 +24,4 @@ public class PatientNumberGeneratorConfig {
         };
     }
 }
+

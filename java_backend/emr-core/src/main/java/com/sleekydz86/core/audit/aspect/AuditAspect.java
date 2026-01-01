@@ -5,8 +5,9 @@ import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.audit.service.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,9 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Aspect
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class AuditAspect {
 
+    private static final Logger log = LoggerFactory.getLogger(AuditAspect.class);
     private final AuditService auditService;
     private final ObjectMapper objectMapper;
 

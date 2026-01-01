@@ -1,6 +1,5 @@
 package com.sleekydz86.domain.common.entity;
 
-import com.sleekydz86.core.tenant.TenantEntityListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
@@ -13,7 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
 @MappedSuperclass
-@EntityListeners({AuditingEntityListener.class, TenantEntityListener.class})
+@EntityListeners({ AuditingEntityListener.class, com.sleekydz86.domain.common.listener.TenantEntityListener.class })
 @Getter
 @Setter
 public abstract class BaseEntity {
@@ -25,6 +24,5 @@ public abstract class BaseEntity {
     private LocalDateTime lastModifiedDate;
 
     @Column(name = "intt_cd", length = 10)
-    private String inttCd;
+    protected String inttCd;
 }
-

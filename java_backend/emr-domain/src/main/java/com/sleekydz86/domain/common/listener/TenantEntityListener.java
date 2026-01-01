@@ -1,5 +1,7 @@
-package com.sleekydz86.core.tenant;
+package com.sleekydz86.domain.common.listener;
 
+import com.sleekydz86.core.tenant.TenantContext;
+import com.sleekydz86.domain.common.entity.BaseEntity;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.extern.slf4j.Slf4j;
@@ -38,4 +40,3 @@ public class TenantEntityListener {
         }
     }
 }
-

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +18,7 @@ public class UserProfileService {
     private final FileUploadService fileUploadService;
 
     @Transactional
-    public String uploadProfileImage(Long userId, MultipartFile file) {
+    public String uploadProfileImage(Long userId, MultipartFile file) throws IOException {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new com.sleekydz86.core.common.exception.custom.NotFoundException(
                         "사용자를 찾을 수 없습니다. ID: " + userId));
@@ -33,14 +34,14 @@ public class UserProfileService {
                 .orElseThrow(() -> new com.sleekydz86.core.common.exception.custom.NotFoundException(
                         "사용자를 찾을 수 없습니다. ID: " + userId));
 
-        if (name != null) {
-            user.setName(name);
+        if (name != null && !name.isBlank()) {
+            user.updateProfile(name, user.getGender(), user.getAddress());
         }
-        if (email != null) {
-            user.setEmail(email);
+        if (email != null && !email.isBlank()) {
+            user.changeEmail(com.sleekydz86.domain.common.valueobject.Email.of(email));
         }
-        if (telNum != null) {
-            user.setTelNum(telNum);
+        if (telNum != null && !telNum.isBlank()) {
+            user.changePhoneNumber(com.sleekydz86.domain.common.valueobject.PhoneNumber.of(telNum));
         }
 
         userRepository.save(user);

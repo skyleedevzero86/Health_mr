@@ -7,7 +7,7 @@ public record TreatmentCreatedEvent(
         Long treatmentId,
         Long patientNo,
         String patientName,
-        TreatmentType treatmentType,
+        String treatmentType,
         LocalDateTime treatmentDate
 ) implements DomainEvent {
     @Override

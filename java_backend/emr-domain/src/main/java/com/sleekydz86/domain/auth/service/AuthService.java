@@ -5,7 +5,11 @@ import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.common.exception.custom.UnauthorizedException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.core.security.jwt.JwtUtil;
+import com.sleekydz86.core.security.jwt.JwtUtil.TokenPair;
 import com.sleekydz86.core.security.jwt.TokenBlacklistService;
+import com.sleekydz86.domain.auth.dto.LoginRequest;
+import com.sleekydz86.domain.auth.dto.RegisterRequest;
+import com.sleekydz86.domain.auth.dto.TokenResponse;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.LoginId;
 import com.sleekydz86.domain.common.valueobject.Password;
@@ -62,7 +66,7 @@ public class AuthService {
         PhoneNumber telNum = request.getTelNum() != null ? PhoneNumber.of(request.getTelNum()) : null;
 
         UserEntity user = UserEntity.builder()
-                .role(request.getRole())
+                .role(com.sleekydz86.domain.user.type.RoleType.WAIT)
                 .loginId(loginId)
                 .password(password)
                 .department(department)
@@ -81,8 +85,7 @@ public class AuthService {
         eventPublisher.publish(new com.sleekydz86.core.event.domain.UserRegisteredEvent(
                 savedUser.getId(),
                 savedUser.getLoginIdValue(),
-                savedUser.getRole().name()
-        ));
+                savedUser.getRole().name()));
     }
 
     @Transactional
@@ -115,14 +118,16 @@ public class AuthService {
             }
         }
 
-        TokenResponse tokenResponse = jwtUtil.generateTokens(user, primaryInstitutionCode);
+        TokenPair tokenPair = jwtUtil.generateTokens(user, primaryInstitutionCode);
+        TokenResponse tokenResponse = TokenResponse.of(
+                tokenPair.getAccessToken().getValue(),
+                tokenPair.getRefreshToken().getValue());
 
-        refreshTokenService.saveRefreshToken(user.getId(), tokenResponse.getRefreshToken());
+        refreshTokenService.saveRefreshToken(user.getId(), tokenResponse.refreshToken());
 
-        eventPublisher.publish(new com.cloud.emr.core.event.domain.UserLoggedInEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserLoggedInEvent(
                 user.getId(),
-                user.getLoginIdValue()
-        ));
+                user.getLoginIdValue()));
 
         return tokenResponse;
     }
@@ -150,9 +155,12 @@ public class AuthService {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
 
-        TokenResponse tokenResponse = jwtUtil.generateTokens(user);
+        TokenPair tokenPair = jwtUtil.generateTokens(user);
+        TokenResponse tokenResponse = TokenResponse.of(
+                tokenPair.getAccessToken().getValue(),
+                tokenPair.getRefreshToken().getValue());
 
-        refreshTokenService.rotateRefreshToken(userId, refreshToken, tokenResponse.getRefreshToken());
+        refreshTokenService.rotateRefreshToken(userId, refreshToken, tokenResponse.refreshToken());
 
         return tokenResponse;
     }
@@ -166,8 +174,7 @@ public class AuthService {
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.PasswordResetRequestedEvent(
                 user.getId(),
-                user.getEmail()
-        ));
+                user.getEmailValue()));
     }
 
     @Transactional
@@ -185,8 +192,6 @@ public class AuthService {
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.PasswordResetCompletedEvent(
                 user.getId(),
-                user.getEmailValue()
-        ));
+                user.getEmailValue()));
     }
 }
-

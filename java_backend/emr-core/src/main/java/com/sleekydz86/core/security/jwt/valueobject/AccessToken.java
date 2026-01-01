@@ -48,7 +48,7 @@ public class AccessToken {
     }
 
     public static AccessToken of(String tokenValue, Long userId, String role) {
-        return of(tokenValue, userId, role, null);
+        return of(tokenValue, userId, role, (String) null);
     }
 
     private void validate(String value, Long userId, String role, String inttCd, Instant issuedAt, Instant expiresAt) {

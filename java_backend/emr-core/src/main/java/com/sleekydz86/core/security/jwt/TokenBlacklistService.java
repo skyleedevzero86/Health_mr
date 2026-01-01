@@ -55,7 +55,7 @@ public class TokenBlacklistService {
                 cleanToken = token;
             }
 
-            io.jsonwebtoken.Claims claims = io.jsonwebtoken.Jwts.parserBuilder()
+            io.jsonwebtoken.Claims claims = io.jsonwebtoken.Jwts.parser()
                     .setSigningKey(jwtUtil.getSigningKey())
                     .build()
                     .parseClaimsJws(cleanToken)

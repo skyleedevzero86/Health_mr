@@ -15,6 +15,7 @@ public class PatientRegisteredEvent implements DomainEvent {
         this.occurredAt = LocalDateTime.now();
         this.patientNo = patientNo;
         this.patientName = patientName;
+        this.patientRrn = patientRrn;
     }
 
     @Override

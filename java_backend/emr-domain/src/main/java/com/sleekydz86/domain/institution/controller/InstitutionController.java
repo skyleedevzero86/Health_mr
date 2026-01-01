@@ -18,7 +18,7 @@ public class InstitutionController {
     private final InstitutionService institutionService;
 
     @PostMapping
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<InstitutionResponse> create(@RequestBody InstitutionCreateRequest request) {
         InstitutionResponse response = institutionService.create(request);
         return ResponseEntity.ok(response);
@@ -46,14 +46,14 @@ public class InstitutionController {
     }
 
     @GetMapping("/all")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<List<InstitutionResponse>> findAllForAdmin() {
         List<InstitutionResponse> responses = institutionService.findAll();
         return ResponseEntity.ok(responses);
     }
 
     @PutMapping("/{institutionId}")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<InstitutionResponse> update(
             @PathVariable Long institutionId,
             @RequestBody InstitutionUpdateRequest request
@@ -64,21 +64,21 @@ public class InstitutionController {
 
 
     @PostMapping("/{institutionId}/activate")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<InstitutionResponse> activate(@PathVariable Long institutionId) {
         InstitutionResponse response = institutionService.activate(institutionId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{institutionId}/deactivate")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<InstitutionResponse> deactivate(@PathVariable Long institutionId) {
         InstitutionResponse response = institutionService.deactivate(institutionId);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{institutionId}")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> delete(@PathVariable Long institutionId) {
         institutionService.delete(institutionId);
         return ResponseEntity.noContent().build();
