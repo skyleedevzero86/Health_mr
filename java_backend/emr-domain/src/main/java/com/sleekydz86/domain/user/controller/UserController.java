@@ -1,6 +1,7 @@
 package com.sleekydz86.domain.user.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
+import com.sleekydz86.domain.user.dto.*;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
 import com.sleekydz86.domain.user.type.RoleType;
@@ -23,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @PageableDefault(size = 20, sort = "createdDate") Pageable pageable) {
         Page<UserEntity> users = userService.getAllUsers(pageable);
@@ -38,7 +39,7 @@ public class UserController {
     }
 
     @PostMapping
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
         UserEntity user = userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(user));
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
@@ -68,7 +69,7 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/reset-password")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> resetPassword(
             @PathVariable Long userId,
             @Valid @RequestBody PasswordResetRequest request) {
@@ -77,14 +78,14 @@ public class UserController {
     }
 
     @PostMapping("/{userId}/activate")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> activateUser(@PathVariable Long userId) {
         userService.activateUser(userId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{userId}/deactivate")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> deactivateUser(@PathVariable Long userId) {
         userService.deactivateUser(userId);
         return ResponseEntity.ok().build();
@@ -109,7 +110,7 @@ public class UserController {
     }
 
     @GetMapping("/approved/waitlist")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<List<WaitUserResponse>> getUsersToBeApproved() {
         List<UserEntity> users = userService.getUsersToBeApproved();
         List<WaitUserResponse> response = users.stream()
@@ -119,7 +120,7 @@ public class UserController {
     }
 
     @PostMapping("/approved/role")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> approvedRole(@Valid @RequestBody WaitApprovedRequest request) {
         userService.approveUserWithInstitutions(request);
         return ResponseEntity.ok().build();

@@ -5,6 +5,8 @@ import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.Password;
+import com.sleekydz86.domain.department.entity.DepartmentEntity;
+import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.institution.entity.InstitutionEntity;
 import com.sleekydz86.domain.institution.repository.InstitutionRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
@@ -29,6 +31,7 @@ public class UserService implements BaseService<UserEntity, Long> {
 
     private final UserRepository userRepository;
     private final UserInstitutionRepository userInstitutionRepository;
+    private final DepartmentRepository departmentRepository;
     private final InstitutionRepository institutionRepository;
     private final InstitutionService institutionService;
     private final PasswordEncoder passwordEncoder;
@@ -79,7 +82,10 @@ public class UserService implements BaseService<UserEntity, Long> {
             }
         }
 
-        UserEntity.UserEntityBuilder builder = request.toEntityBuilder();
+        DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new NotFoundException("부서가 존재하지 않습니다."));
+
+        UserEntity.UserEntityBuilder builder = request.toEntityBuilder(department);
         UserEntity user = builder
                 .password(Password.fromPlainText(request.getPassword(), passwordEncoder))
                 .build();

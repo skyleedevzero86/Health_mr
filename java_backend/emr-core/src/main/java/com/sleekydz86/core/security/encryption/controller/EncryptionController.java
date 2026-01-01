@@ -31,7 +31,7 @@ public class EncryptionController {
     }
 
     @PostMapping("/encrypt")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<DecryptResponse> encrypt(@Valid @RequestBody DecryptRequest request) {
         try {
             String encryptedText = encryptionService.encrypt(request.getEncryptedText());

@@ -1,8 +1,7 @@
-package com.sleekydz86.domain.auth.dto;
+package com.sleekydz86.domain.user.dto;
 
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.LoginId;
-import com.sleekydz86.domain.common.valueobject.Password;
 import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.user.entity.UserEntity;
@@ -10,12 +9,10 @@ import com.sleekydz86.domain.user.type.Gender;
 import com.sleekydz86.domain.user.type.RoleType;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.time.LocalDate;
 
 @Getter
-public class RegisterRequest {
+public class UserCreateRequest {
 
     @NotNull(message = "부서는 필수항목입니다.")
     private Long departmentId;
@@ -24,7 +21,6 @@ public class RegisterRequest {
     @Size(max = 50)
     private String name;
 
-    @NotNull(message = "성별은 필수항목입니다.")
     private Gender gender;
 
     @Size(max = 50, min = 3)
@@ -40,35 +36,32 @@ public class RegisterRequest {
     @Size(max = 200)
     private String address;
 
-    @NotBlank(message = "이메일은 필수항목입니다.")
     @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "유효한 이메일을 입력해주세요.")
     @Size(max = 100)
     private String email;
 
-    @NotBlank(message = "휴대폰 번호는 필수항목입니다.")
     @Pattern(regexp = "^01[0-9]-[0-9]{4}-[0-9]{4}$", message = "핸드폰 번호의 양식을 확인해주세요. 예: 010-1234-5678")
     @Size(max = 20)
     private String telNum;
 
-    @NotNull(message = "생년월일은 필수항목입니다.")
     private LocalDate birth;
 
-    @NotNull(message = "입사일은 필수항목입니다.")
     private LocalDate hireDate;
 
     @Size(max = 10)
     private String inttCd;
 
-    public UserEntity toEntity(DepartmentEntity department, PasswordEncoder passwordEncoder) {
+    @NotNull(message = "역할은 필수항목입니다.")
+    private RoleType role;
+
+    public UserEntity.UserEntityBuilder toEntityBuilder(DepartmentEntity department) {
         LoginId loginIdObj = LoginId.of(this.loginId);
-        Password passwordObj = Password.fromPlainText(this.password, passwordEncoder);
         Email emailObj = this.email != null ? Email.of(this.email) : null;
         PhoneNumber telNumObj = this.telNum != null ? PhoneNumber.of(this.telNum) : null;
 
         return UserEntity.builder()
-                .role(RoleType.WAIT)
+                .role(this.role != null ? this.role : RoleType.WAIT)
                 .loginId(loginIdObj)
-                .password(passwordObj)
                 .department(department)
                 .name(this.name)
                 .gender(this.gender)
@@ -77,8 +70,7 @@ public class RegisterRequest {
                 .telNum(telNumObj)
                 .birth(this.birth != null ? this.birth.atStartOfDay() : null)
                 .hireDate(this.hireDate != null ? this.hireDate.atStartOfDay() : null)
-                .inttCd(this.inttCd)
-                .build();
+                .inttCd(this.inttCd);
     }
 }
 

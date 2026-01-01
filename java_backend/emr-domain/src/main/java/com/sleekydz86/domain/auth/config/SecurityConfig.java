@@ -1,7 +1,7 @@
-package com.sleekydz86.core.config;
+package com.sleekydz86.domain.auth.config;
 
 import com.sleekydz86.core.security.jwt.JwtAccessDeniedHandler;
-import com.sleekydz86.core.security.jwt.JwtAuthenticationFilter;
+import com.sleekydz86.domain.auth.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,12 +57,12 @@ public class SecurityConfig {
                         .frameOptions(frame -> frame.deny())
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .maxAgeInSeconds(31536000)
-                                .includeSubdomains(true)
                         )
-                        .xssProtection(xss -> xss.enable())
-                        .contentTypeOptions(contentType -> contentType.enable())
+                        .xssProtection(xss -> {})
+                        .contentTypeOptions(contentType -> {})
                 );
 
         return http.build();
     }
 }
+

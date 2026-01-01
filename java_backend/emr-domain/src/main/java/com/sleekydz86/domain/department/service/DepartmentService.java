@@ -3,6 +3,8 @@ package com.sleekydz86.domain.department.service;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
+import com.sleekydz86.domain.department.dto.DepartmentCreateRequest;
+import com.sleekydz86.domain.department.dto.DepartmentUpdateRequest;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.department.type.DepartmentType;

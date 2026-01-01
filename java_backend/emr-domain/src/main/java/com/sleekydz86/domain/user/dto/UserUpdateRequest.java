@@ -19,7 +19,7 @@ public class UserUpdateRequest {
     @Size(max = 200)
     private String address;
 
-    @Email(message = "유효한 이메일을 입력해주세요.")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$", message = "유효한 이메일을 입력해주세요.")
     @Size(max = 100)
     private String email;
 

@@ -5,16 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleekydz86.core.audit.entity.AuditEntity;
 import com.sleekydz86.core.audit.repository.AuditRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AuditService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuditService.class);
     private final AuditRepository auditRepository;
     private final ObjectMapper objectMapper;
 

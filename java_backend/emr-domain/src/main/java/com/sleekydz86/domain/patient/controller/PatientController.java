@@ -1,6 +1,7 @@
 package com.sleekydz86.domain.patient.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
+import com.sleekydz86.domain.patient.dto.*;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.type.RoleType;
@@ -23,7 +24,7 @@ public class PatientController {
     private final PatientService patientService;
 
     @PostMapping("/register")
-    @AuthRole(roles = {RoleType.DOCTOR, RoleType.NURSE, RoleType.ADMIN})
+    @AuthRole(roles = {"DOCTOR", "NURSE", "ADMIN"})
     public ResponseEntity<PatientDetailResponse> registerPatient(
             @Valid @RequestBody PatientRegisterRequest request) {
         PatientEntity patient = patientService.registerPatient(request);
@@ -72,7 +73,7 @@ public class PatientController {
     }
 
     @PutMapping("/{patientNo}")
-    @AuthRole(roles = {RoleType.DOCTOR, RoleType.NURSE, RoleType.ADMIN})
+    @AuthRole(roles = {"DOCTOR", "NURSE", "ADMIN"})
     public ResponseEntity<PatientDetailResponse> updatePatient(
             @PathVariable Long patientNo,
             @Valid @RequestBody PatientUpdateRequest request) {
@@ -81,7 +82,7 @@ public class PatientController {
     }
 
     @DeleteMapping("/{patientNo}")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Void> deletePatient(@PathVariable Long patientNo) {
         patientService.deletePatient(patientNo);
         return ResponseEntity.noContent().build();

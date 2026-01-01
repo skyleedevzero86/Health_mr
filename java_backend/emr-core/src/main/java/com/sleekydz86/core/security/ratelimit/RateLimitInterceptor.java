@@ -18,7 +18,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     private final JwtSendErrorService jwtSendErrorService;
     private final Map<String, RateLimitInfo> requestCounts = new ConcurrentHashMap<>();
     private static final int MAX_REQUESTS = 100; // 최대 요청 수
-    private static final long TIME_WINDOW = 60000; // 1분 (밀리초)
+    private static final long TIME_WINDOW = 60000; // 1분
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -34,7 +34,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         int currentCount = rateLimitInfo.incrementAndGet();
 
         if (currentCount > MAX_REQUESTS) {
-            jwtSendErrorService.sendErrorResponseProcess(response, ErrorCode.RATE_LIMIT_EXCEEDED, HttpServletResponse.SC_TOO_MANY_REQUESTS);
+            jwtSendErrorService.sendErrorResponseProcess(response, ErrorCode.RATE_LIMIT_EXCEEDED, 429); // HTTP 429 Too Many Requests
             return false;
         }
 

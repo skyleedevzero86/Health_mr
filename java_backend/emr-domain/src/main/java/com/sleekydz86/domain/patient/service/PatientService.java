@@ -6,6 +6,9 @@ import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.PatientNumber;
 import com.sleekydz86.domain.common.valueobject.PhoneNumber;
+import com.sleekydz86.domain.patient.dto.PatientRegisterRequest;
+import com.sleekydz86.domain.patient.dto.PatientSearchRequest;
+import com.sleekydz86.domain.patient.dto.PatientUpdateRequest;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.repository.PatientRepository;
 import com.sleekydz86.domain.patient.service.generators.PatientNumberGenerator;
@@ -57,7 +60,7 @@ public class PatientService implements BaseService<PatientEntity, Long> {
 
     public String findPatientRrnByPatientNo(Long patientNo) {
         return patientRepository.findByPatientNo(patientNo)
-                .map(PatientEntity::getPatientRrn)
+                .map(PatientEntity::getPatientRrnValue)
                 .orElseThrow(() -> new NotFoundException("해당 환자의 주민번호를 찾을 수 없습니다. patientNo: " + patientNo));
     }
 
@@ -74,8 +77,7 @@ public class PatientService implements BaseService<PatientEntity, Long> {
         Long patientNoValue = patientNumberGenerator.generate();
         PatientNumber patientNo = PatientNumber.of(patientNoValue);
 
-        PatientEntity patient = request.toEntityBuilder(patientNo)
-                .build();
+        PatientEntity patient = request.toEntity(patientNo);
         patient.updateLastVisit();
 
         PatientEntity savedPatient = patientRepository.save(patient);

@@ -5,6 +5,7 @@ import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.tenant.TenantContext;
 import com.sleekydz86.domain.institution.dto.InstitutionCreateRequest;
 import com.sleekydz86.domain.institution.dto.InstitutionResponse;
+import com.sleekydz86.domain.institution.dto.InstitutionUpdateRequest;
 import com.sleekydz86.domain.institution.entity.InstitutionEntity;
 import com.sleekydz86.domain.institution.repository.InstitutionRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +76,7 @@ public class InstitutionService {
             List<String> tenantIds = TenantContext.getTenantIds();
             if (tenantIds == null || tenantIds.isEmpty()) {
                 return List.of();
+            }
             institutions = institutionRepository.findAll().stream()
                     .filter(institution -> tenantIds.contains(institution.getInstitutionCode()))
                     .toList();
