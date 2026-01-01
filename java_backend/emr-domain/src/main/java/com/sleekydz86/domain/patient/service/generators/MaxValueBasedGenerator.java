@@ -1,5 +1,7 @@
 package com.sleekydz86.domain.patient.service.generators;
 
+import com.sleekydz86.domain.patient.entity.PatientEntity;
+import com.sleekydz86.domain.patient.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
