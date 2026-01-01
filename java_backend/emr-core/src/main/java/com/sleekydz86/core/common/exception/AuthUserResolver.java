@@ -1,6 +1,7 @@
 package com.sleekydz86.core.common.exception;
 
 import com.sleekydz86.core.common.annotation.AuthUser;
+import com.sleekydz86.core.security.jwt.JwtUtil;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;

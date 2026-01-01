@@ -18,7 +18,7 @@ public class AccessToken {
     private String value;
     private Long userId;
     private String role;
-    private String inttCd; // 기관 코드 (멀티테넌트)
+    private String inttCd; // 기관 코드
     private Instant issuedAt;
     private Instant expiresAt;
 

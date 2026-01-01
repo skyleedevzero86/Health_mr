@@ -1,5 +1,6 @@
 package com.sleekydz86.core.security.masking.interceptor;
 
+import com.sleekydz86.core.security.masking.service.DataMaskingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;

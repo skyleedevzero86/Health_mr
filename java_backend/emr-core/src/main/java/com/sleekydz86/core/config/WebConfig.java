@@ -3,6 +3,8 @@ package com.sleekydz86.core.config;
 import com.sleekydz86.core.common.exception.AuthUserResolver;
 import com.sleekydz86.core.common.interceptor.AuthInterceptor;
 import com.sleekydz86.core.common.interceptor.LoggingInterceptor;
+import com.sleekydz86.core.security.masking.interceptor.SensitiveDataInterceptor;
+import com.sleekydz86.core.security.ratelimit.RateLimitInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

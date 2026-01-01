@@ -2,13 +2,21 @@ package com.sleekydz86.core.common.exception.handler;
 
 import com.sleekydz86.core.common.exception.ErrorCode;
 import com.sleekydz86.core.common.exception.custom.BaseException;
+import com.sleekydz86.core.security.jwt.CustomAuthenticationException;
+import com.sleekydz86.core.security.jwt.CustomErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
