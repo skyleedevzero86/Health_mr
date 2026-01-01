@@ -5,11 +5,15 @@ import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.Password;
+import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.institution.entity.InstitutionEntity;
 import com.sleekydz86.domain.institution.repository.InstitutionRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
+import com.sleekydz86.domain.user.dto.UserCreateRequest;
+import com.sleekydz86.domain.user.dto.UserUpdateRequest;
+import com.sleekydz86.domain.user.dto.WaitApprovedRequest;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.entity.UserInstitution;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
@@ -92,7 +96,7 @@ public class UserService implements BaseService<UserEntity, Long> {
 
         UserEntity savedUser = userRepository.save(user);
 
-        eventPublisher.publish(new com.cloud.emr.core.event.domain.UserCreatedEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserCreatedEvent(
                 savedUser.getId(),
                 savedUser.getLoginIdValue(),
                 savedUser.getRole().name()
@@ -105,7 +109,7 @@ public class UserService implements BaseService<UserEntity, Long> {
     public UserEntity updateUser(Long userId, UserUpdateRequest request) {
         UserEntity user = getUserById(userId);
 
-        // 프로필 정보 업데이트
+
         user.updateProfile(
                 request.getName(),
                 request.getGender(),
