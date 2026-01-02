@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -240,16 +241,18 @@ public class TreatmentController {
         }
 
         List<String> headers = List.of("진료 ID", "환자 번호", "환자 이름", "진료 의사", "진료 일시", "진료 상태", "진료 유형", "진료과");
-        List<Map<String, Object>> data = treatments.stream().map(t -> Map.of(
-                        "진료 ID", t.getTreatmentId(),
-                        "환자 번호", t.getCheckInEntity() != null ? t.getCheckInEntity().getPatientEntity().getPatientNoValue() : "",
-                        "환자 이름", t.getCheckInEntity() != null ? t.getCheckInEntity().getPatientEntity().getPatientName() : "",
-                        "진료 의사", t.getTreatmentDoc().getName(),
-                        "진료 일시", t.getTreatmentDate(),
-                        "진료 상태", t.getTreatmentStatus().name(),
-                        "진료 유형", t.getTreatmentType().name(),
-                        "진료과", t.getDepartmentEntity() != null ? t.getDepartmentEntity().getName() : ""))
-                .collect(Collectors.toList());
+        List<Map<String, Object>> data = treatments.stream().map(t -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("진료 ID", t.getTreatmentId());
+            map.put("환자 번호", t.getCheckInEntity() != null ? t.getCheckInEntity().getPatientEntity().getPatientNoValue() : "");
+            map.put("환자 이름", t.getCheckInEntity() != null ? t.getCheckInEntity().getPatientEntity().getPatientName() : "");
+            map.put("진료 의사", t.getTreatmentDoc().getName());
+            map.put("진료 일시", t.getTreatmentDate());
+            map.put("진료 상태", t.getTreatmentStatus().name());
+            map.put("진료 유형", t.getTreatmentType().name());
+            map.put("진료과", t.getDepartmentEntity() != null ? t.getDepartmentEntity().getName() : "");
+            return map;
+        }).collect(Collectors.toList());
 
         excelExportService.exportToExcel(headers, data, "treatments.xlsx", response);
     }

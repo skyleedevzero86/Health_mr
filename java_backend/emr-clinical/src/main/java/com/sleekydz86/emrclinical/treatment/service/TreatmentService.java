@@ -2,6 +2,9 @@ package com.sleekydz86.emrclinical.treatment.service;
 
 import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
+import com.sleekydz86.core.event.domain.TreatmentCancelledEvent;
+import com.sleekydz86.core.event.domain.TreatmentCompletedEvent;
+import com.sleekydz86.core.event.domain.TreatmentCreatedEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.entity.BaseEntity;
 import com.sleekydz86.domain.common.service.BaseService;
@@ -102,11 +105,11 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
 
         createTreatmentTypeEntity(saved, request.getTreatmentType(), checkIn);
 
-        eventPublisher.publish(TreatmentCreatedEvent(
+        eventPublisher.publish(new TreatmentCreatedEvent(
                 saved.getTreatmentId(),
-                patient.getPatientNo(),
+                patient.getPatientNoValue(),
                 patient.getPatientName(),
-                saved.getTreatmentType(),
+                saved.getTreatmentType().name(),
                 saved.getTreatmentDate()
         ));
 
@@ -253,11 +256,11 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
             reservationService.completeReservationByCheckInId(treatment.getCheckInEntity().getCheckInId());
         }
 
-        eventPublisher.publish(TreatmentCompletedEvent(
+        eventPublisher.publish(new TreatmentCompletedEvent(
                 treatment.getTreatmentId(),
                 treatment.getCheckInEntity() != null ?
-                        treatment.getCheckInEntity().getPatientEntity().getPatientNo() : null,
-                treatment.getTreatmentType()
+                        treatment.getCheckInEntity().getPatientEntity().getPatientNoValue() : null,
+                treatment.getTreatmentType().name()
         ));
 
         treatmentNotificationService.sendTreatmentCompletedNotification(treatment);
@@ -276,10 +279,10 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         treatment.cancel(cancelReason != null ? cancelReason : "진료 취소");
         treatmentRepository.save(treatment);
 
-        eventPublisher.publish(TreatmentCancelledEvent(
+        eventPublisher.publish(new TreatmentCancelledEvent(
                 treatment.getTreatmentId(),
                 treatment.getCheckInEntity() != null ?
-                        treatment.getCheckInEntity().getPatientEntity().getPatientNo() : null,
+                        treatment.getCheckInEntity().getPatientEntity().getPatientNoValue() : null,
                 cancelReason
         ));
     }
@@ -328,11 +331,11 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
 
         createTreatmentTypeEntity(saved, TreatmentType.OUTPATIENT, checkIn);
 
-        eventPublisher.publish(TreatmentCreatedEvent(
+        eventPublisher.publish(new TreatmentCreatedEvent(
                 saved.getTreatmentId(),
-                checkIn.getPatientEntity().getPatientNo(),
+                checkIn.getPatientEntity().getPatientNoValue(),
                 checkIn.getPatientEntity().getPatientName(),
-                saved.getTreatmentType(),
+                saved.getTreatmentType().name(),
                 saved.getTreatmentDate()
         ));
 

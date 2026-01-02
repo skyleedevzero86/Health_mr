@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -226,16 +227,18 @@ public class PrescriptionController {
         }
 
         List<String> headers = List.of("처방 ID", "환자 번호", "환자 이름", "처방 의사", "처방 일시", "처방 상태", "처방 유형", "메모");
-        List<Map<String, Object>> data = prescriptions.stream().map(p -> Map.of(
-                "처방 ID", p.getPrescriptionId(),
-                "환자 번호", p.getPatientEntity().getPatientNoValue(),
-                "환자 이름", p.getPatientEntity().getPatientName(),
-                "처방 의사", p.getPrescriptionDoc().getName(),
-                "처방 일시", p.getPrescriptionDate(),
-                "처방 상태", p.getPrescriptionStatus().name(),
-                "처방 유형", p.getPrescriptionType().name(),
-                "메모", p.getPrescriptionMemo() != null ? p.getPrescriptionMemo() : ""
-        )).collect(Collectors.toList());
+        List<Map<String, Object>> data = prescriptions.stream().map(p -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("처방 ID", p.getPrescriptionId());
+            map.put("환자 번호", p.getPatientEntity().getPatientNoValue());
+            map.put("환자 이름", p.getPatientEntity().getPatientName());
+            map.put("처방 의사", p.getPrescriptionDoc().getName());
+            map.put("처방 일시", p.getPrescriptionDate());
+            map.put("처방 상태", p.getPrescriptionStatus().name());
+            map.put("처방 유형", p.getPrescriptionType().name());
+            map.put("메모", p.getPrescriptionMemo() != null ? p.getPrescriptionMemo() : "");
+            return map;
+        }).collect(Collectors.toList());
 
         excelExportService.exportToExcel(headers, data, "prescriptions.xlsx", response);
     }
