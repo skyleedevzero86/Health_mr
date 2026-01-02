@@ -125,7 +125,7 @@ public class GlobalExceptionHandler {
     private boolean isDevelopment() {
         String[] activeProfiles = environment.getActiveProfiles();
         if (activeProfiles.length == 0) {
-            return true; // 기본값은 개발 환경
+            return true;
         }
         for (String profile : activeProfiles) {
             if (profile.equals("dev") || profile.equals("local")) {

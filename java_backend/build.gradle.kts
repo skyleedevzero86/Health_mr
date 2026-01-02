@@ -5,7 +5,7 @@ plugins {
 }
 
 allprojects {
-    group = "com"
+    group = "com.sleekydz86"
     version = "0.0.1-SNAPSHOT"
 
     repositories {
