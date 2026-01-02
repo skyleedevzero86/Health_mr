@@ -34,7 +34,7 @@ public class PrescriptionResponse {
         return PrescriptionResponse.builder()
                 .prescriptionId(entity.getPrescriptionId())
                 .treatmentId(entity.getTreatmentEntity().getTreatmentId())
-                .patientNo(entity.getPatientEntity().getPatientNo())
+                .patientNo(entity.getPatientEntity().getPatientNoValue())
                 .patientName(entity.getPatientEntity().getPatientName())
                 .prescriptionDocId(entity.getPrescriptionDoc().getId())
                 .prescriptionDocName(entity.getPrescriptionDoc().getName())

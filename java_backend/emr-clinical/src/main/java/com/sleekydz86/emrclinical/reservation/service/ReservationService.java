@@ -3,15 +3,20 @@ package com.sleekydz86.emrclinical.reservation.service;
 import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.event.domain.ReservationCreatedEvent;
+import com.sleekydz86.core.event.domain.ReservationUpdatedEvent;
+import com.sleekydz86.core.event.domain.ReservationCancelledEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
+import com.sleekydz86.emrclinical.checkin.entity.CheckInEntity;
+import com.sleekydz86.emrclinical.checkin.service.CheckInService;
 import com.sleekydz86.emrclinical.reservation.dto.ReservationCreateRequest;
 import com.sleekydz86.emrclinical.reservation.dto.ReservationUpdateRequest;
 import com.sleekydz86.emrclinical.reservation.entity.ReservationEntity;
+import com.sleekydz86.emrclinical.reservation.notification.ReservationNotificationService;
 import com.sleekydz86.emrclinical.reservation.repository.ReservationRepository;
 import com.sleekydz86.emrclinical.types.ReservationStatus;
 import lombok.RequiredArgsConstructor;
@@ -71,7 +76,7 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
 
         eventPublisher.publish(new ReservationCreatedEvent(
                 saved.getReservationId(),
-                saved.getPatientEntity().getPatientNo(),
+                saved.getPatientEntity().getPatientNoValue(),
                 saved.getPatientEntity().getPatientName(),
                 saved.getReservationDate()));
 
@@ -145,7 +150,7 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
             }
 
             if (reservationRepository.existsByPatientEntity_PatientNoAndReservationDate(
-                    reservation.getPatientEntity().getPatientNo(), request.getNewReservationDate())) {
+                    reservation.getPatientEntity().getPatientNoValue(), request.getNewReservationDate())) {
                 throw new DuplicateException("이미 예약된 시간입니다.");
             }
         }
@@ -161,9 +166,9 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
         ReservationEntity saved = reservationRepository.save(reservation);
 
         if (request.getNewReservationDate() != null) {
-            eventPublisher.publish(ReservationUpdatedEvent(
+            eventPublisher.publish(new ReservationUpdatedEvent(
                     saved.getReservationId(),
-                    saved.getPatientEntity().getPatientNo(),
+                    saved.getPatientEntity().getPatientNoValue(),
                     saved.getReservationDate()));
 
             reservationNotificationService.sendReservationUpdatedNotification(saved);
@@ -187,9 +192,9 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
         reservation.cancel(cancelReason != null ? cancelReason : "예약 취소");
         reservationRepository.save(reservation);
 
-        eventPublisher.publish(ReservationCancelledEvent(
+        eventPublisher.publish(new ReservationCancelledEvent(
                 reservation.getReservationId(),
-                reservation.getPatientEntity().getPatientNo(),
+                reservation.getPatientEntity().getPatientNoValue(),
                 cancelReason));
 
         reservationNotificationService.sendReservationCancelledNotification(reservation, cancelReason);
@@ -234,7 +239,7 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
         // 환자 번호와 예약 날짜를 기준으로 예약 찾기
         // 예약 날짜가 접수 날짜와 같은 예약을 찾아야함.. 추후 확인
         List<ReservationEntity> reservations = reservationRepository.findByPatientEntity_PatientNo(
-                checkIn.getPatientEntity().getPatientNo());
+                checkIn.getPatientEntity().getPatientNoValue());
 
         return reservations.stream()
                 .filter(r -> r.getReservationDate().toLocalDate().equals(checkIn.getCheckInDate().toLocalDate()))

@@ -35,7 +35,7 @@ public class ReservationController {
     private final ExcelExportService excelExportService;
 
     @PostMapping("/register")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     @AuditLog(action = AuditLog.ActionType.CREATE)
     public ResponseEntity<ReservationResponse> registerReservation(
             @Valid @RequestBody ReservationCreateRequest request,
@@ -46,7 +46,7 @@ public class ReservationController {
     }
 
     @GetMapping
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<Page<ReservationResponse>> getAllReservations(
             @PageableDefault(size = 20, sort = "reservationDate", direction = Sort.Direction.ASC) Pageable pageable,
             @RequestParam(required = false) Long patientNo,
@@ -70,14 +70,14 @@ public class ReservationController {
     }
 
     @GetMapping("/{reservationId}")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<ReservationDetailResponse> getReservationDetail(@PathVariable Long reservationId) {
         ReservationEntity reservation = reservationService.getReservationById(reservationId);
         return ResponseEntity.ok(ReservationDetailResponse.from(reservation));
     }
 
     @GetMapping("/patient/{patientNo}")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<Page<ReservationResponse>> getReservationsByPatient(
             @PathVariable Long patientNo,
             @PageableDefault(size = 20, sort = "reservationDate", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -87,7 +87,7 @@ public class ReservationController {
     }
 
     @GetMapping("/date/{date}")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<List<ReservationResponse>> getReservationsByDate(@PathVariable LocalDate date) {
         List<ReservationEntity> reservations = reservationService.getReservationsByDate(date);
         List<ReservationResponse> response = reservations.stream()
@@ -97,7 +97,7 @@ public class ReservationController {
     }
 
     @GetMapping("/date-range")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<List<ReservationResponse>> getReservationsByDateRange(
             @RequestParam LocalDate start,
             @RequestParam LocalDate end) {
@@ -109,7 +109,7 @@ public class ReservationController {
     }
 
     @GetMapping("/today")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<List<ReservationResponse>> getTodayReservations() {
         List<ReservationEntity> reservations = reservationService.getTodayReservations();
         List<ReservationResponse> response = reservations.stream()
@@ -119,7 +119,7 @@ public class ReservationController {
     }
 
     @GetMapping("/status/{status}")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<Page<ReservationResponse>> getReservationsByStatus(
             @PathVariable ReservationStatus status,
             @PageableDefault(size = 20, sort = "reservationDate", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -129,7 +129,7 @@ public class ReservationController {
     }
 
     @GetMapping("/doctor/{doctorId}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<List<ReservationResponse>> getReservationsByDoctor(
             @PathVariable Long doctorId,
             @RequestParam(required = false) LocalDate date) {
@@ -141,7 +141,7 @@ public class ReservationController {
     }
 
     @PutMapping("/{reservationId}")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     @AuditLog(action = AuditLog.ActionType.UPDATE)
     public ResponseEntity<ReservationResponse> updateReservation(
             @PathVariable Long reservationId,
@@ -151,7 +151,7 @@ public class ReservationController {
     }
 
     @PostMapping("/{reservationId}/cancel")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     @AuditLog(action = AuditLog.ActionType.UPDATE)
     public ResponseEntity<Void> cancelReservation(
             @PathVariable Long reservationId,
@@ -161,21 +161,21 @@ public class ReservationController {
     }
 
     @PostMapping("/{reservationId}/confirm")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<Void> confirmReservation(@PathVariable Long reservationId) {
         reservationService.confirmReservation(reservationId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{reservationId}/complete")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<Void> completeReservation(@PathVariable Long reservationId) {
         reservationService.completeReservation(reservationId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/export")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public void exportReservationsToExcel(
             @RequestParam(required = false) Long patientNo,
             @RequestParam(required = false) LocalDate startDate,

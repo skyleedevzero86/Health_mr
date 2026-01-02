@@ -32,7 +32,7 @@ public class ReservationNotificationService {
         }
 
         try {
-            String patientEmail = reservation.getPatientEntity().getPatientEmail();
+            String patientEmail = reservation.getPatientEntity().getPatientEmailValue();
             if (patientEmail == null || patientEmail.isBlank()) {
                 log.warn("환자 이메일이 없어 알림을 발송할 수 없습니다. ReservationId: {}", reservation.getReservationId());
                 return;
@@ -64,7 +64,7 @@ public class ReservationNotificationService {
         }
 
         try {
-            String patientEmail = reservation.getPatientEntity().getPatientEmail();
+            String patientEmail = reservation.getPatientEntity().getPatientEmailValue();
             if (patientEmail == null || patientEmail.isBlank()) {
                 log.warn("환자 이메일이 없어 알림을 발송할 수 없습니다. ReservationId: {}", reservation.getReservationId());
                 return;
@@ -99,7 +99,7 @@ public class ReservationNotificationService {
         }
 
         try {
-            String patientEmail = reservation.getPatientEntity().getPatientEmail();
+            String patientEmail = reservation.getPatientEntity().getPatientEmailValue();
             if (patientEmail == null || patientEmail.isBlank()) {
                 log.warn("환자 이메일이 없어 알림을 발송할 수 없습니다. ReservationId: {}", reservation.getReservationId());
                 return;

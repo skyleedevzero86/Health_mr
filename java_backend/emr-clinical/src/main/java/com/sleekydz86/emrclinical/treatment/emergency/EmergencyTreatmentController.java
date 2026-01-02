@@ -15,7 +15,7 @@ public class EmergencyTreatmentController {
     private final EmergencyTreatmentRepository emergencyTreatmentRepository;
 
     @GetMapping("/treatment/{treatmentId}")
-    @AuthRole({ RoleType.DOCTOR, RoleType.ADMIN, RoleType.STAFF })
+    @AuthRole({ "DOCTOR", "ADMIN", "STAFF" })
     public ResponseEntity<EmergencyTreatmentEntity> getEmergencyTreatmentByTreatmentId(
             @PathVariable Long treatmentId) {
         EmergencyTreatmentEntity emergencyTreatment = emergencyTreatmentRepository.findByTreatmentId_TreatmentId(treatmentId);
@@ -26,7 +26,7 @@ public class EmergencyTreatmentController {
     }
 
     @GetMapping("/checkin/{checkInId}")
-    @AuthRole({ RoleType.DOCTOR, RoleType.ADMIN, RoleType.STAFF })
+    @AuthRole({ "DOCTOR", "ADMIN", "STAFF" })
     public ResponseEntity<List<EmergencyTreatmentEntity>> getEmergencyTreatmentsByCheckInId(
             @PathVariable Long checkInId) {
         List<EmergencyTreatmentEntity> emergencyTreatments = emergencyTreatmentRepository.findByCheckInEntity_CheckInId(checkInId);

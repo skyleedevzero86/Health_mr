@@ -37,7 +37,7 @@ public class PrescriptionController {
     private final ExcelExportService excelExportService;
 
     @PostMapping("/register")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     @AuditLog(action = AuditLog.ActionType.CREATE)
     public ResponseEntity<PrescriptionResponse> registerPrescription(
             @Valid @RequestBody PrescriptionCreateRequest request) {
@@ -47,14 +47,14 @@ public class PrescriptionController {
     }
 
     @GetMapping("/{prescriptionId}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<PrescriptionDetailResponse> getPrescriptionDetail(@PathVariable Long prescriptionId) {
         PrescriptionEntity prescription = prescriptionService.getPrescriptionById(prescriptionId);
         return ResponseEntity.ok(PrescriptionDetailResponse.from(prescription));
     }
 
     @GetMapping
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Page<PrescriptionResponse>> getAllPrescriptions(
             @PageableDefault(size = 20, sort = "prescriptionDate", direction = Sort.Direction.DESC) Pageable pageable,
             @RequestParam(required = false) Long patientNo,
@@ -84,14 +84,14 @@ public class PrescriptionController {
 
 
     @GetMapping("/treatment/{treatmentId}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<PrescriptionResponse> getPrescriptionByTreatment(@PathVariable Long treatmentId) {
         PrescriptionEntity prescription = prescriptionService.getPrescriptionByTreatmentId(treatmentId);
         return ResponseEntity.ok(PrescriptionResponse.from(prescription));
     }
 
     @GetMapping("/patient/{patientNo}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Page<PrescriptionResponse>> getPrescriptionsByPatient(
             @PathVariable Long patientNo,
             @PageableDefault(size = 20, sort = "prescriptionDate", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -101,7 +101,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/doctor/{doctorId}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Page<PrescriptionResponse>> getPrescriptionsByDoctor(
             @PathVariable Long doctorId,
             @PageableDefault(size = 20, sort = "prescriptionDate", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -111,7 +111,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/status/{status}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Page<PrescriptionResponse>> getPrescriptionsByStatus(
             @PathVariable PrescriptionStatus status,
             @PageableDefault(size = 20, sort = "prescriptionDate", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -121,7 +121,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/type/{type}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Page<PrescriptionResponse>> getPrescriptionsByType(
             @PathVariable PrescriptionType type,
             @PageableDefault(size = 20, sort = "prescriptionDate", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -131,7 +131,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/date-range")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<List<PrescriptionResponse>> getPrescriptionsByDateRange(
             @RequestParam LocalDate start,
             @RequestParam LocalDate end) {
@@ -143,7 +143,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/today")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<List<PrescriptionResponse>> getTodayPrescriptions() {
         List<PrescriptionEntity> prescriptions = prescriptionService.getTodayPrescriptions();
         List<PrescriptionResponse> response = prescriptions.stream()
@@ -153,7 +153,7 @@ public class PrescriptionController {
     }
 
     @PutMapping("/{prescriptionId}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     @AuditLog(action = AuditLog.ActionType.UPDATE)
     public ResponseEntity<PrescriptionResponse> updatePrescription(
             @PathVariable Long prescriptionId,
@@ -163,14 +163,14 @@ public class PrescriptionController {
     }
 
     @PostMapping("/{prescriptionId}/dispense")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Void> dispensePrescription(@PathVariable Long prescriptionId) {
         prescriptionService.dispensePrescription(prescriptionId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{prescriptionId}/cancel")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<Void> cancelPrescription(
             @PathVariable Long prescriptionId,
             @Valid @RequestBody PrescriptionCancelRequest request) {
@@ -179,7 +179,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/statistics/daily")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<PrescriptionStatisticsResponse> getDailyStatistics(
             @RequestParam LocalDate date) {
         PrescriptionStatisticsResponse statistics = prescriptionStatisticsService.getDailyStatistics(date);
@@ -187,7 +187,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/statistics/period")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public ResponseEntity<PrescriptionStatisticsResponse> getPeriodStatistics(
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
@@ -196,7 +196,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/statistics/doctor/{doctorId}")
-    @AuthRole({RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"DOCTOR", "ADMIN"})
     public ResponseEntity<PrescriptionStatisticsResponse> getDoctorStatistics(
             @PathVariable Long doctorId,
             @RequestParam LocalDate startDate,
@@ -206,7 +206,7 @@ public class PrescriptionController {
     }
 
     @GetMapping("/export")
-    @AuthRole({RoleType.STAFF, RoleType.DOCTOR, RoleType.ADMIN})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     public void exportPrescriptionsToExcel(
             @RequestParam(required = false) Long patientNo,
             @RequestParam(required = false) Long doctorId,
@@ -228,7 +228,7 @@ public class PrescriptionController {
         List<String> headers = List.of("처방 ID", "환자 번호", "환자 이름", "처방 의사", "처방 일시", "처방 상태", "처방 유형", "메모");
         List<Map<String, Object>> data = prescriptions.stream().map(p -> Map.of(
                 "처방 ID", p.getPrescriptionId(),
-                "환자 번호", p.getPatientEntity().getPatientNo(),
+                "환자 번호", p.getPatientEntity().getPatientNoValue(),
                 "환자 이름", p.getPatientEntity().getPatientName(),
                 "처방 의사", p.getPrescriptionDoc().getName(),
                 "처방 일시", p.getPrescriptionDate(),

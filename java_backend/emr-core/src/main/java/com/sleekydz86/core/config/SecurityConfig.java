@@ -1,7 +1,7 @@
 package com.sleekydz86.core.config;
 
 import com.sleekydz86.core.security.jwt.JwtAccessDeniedHandler;
-import com.sleekydz86.domain.auth.filter.JwtAuthenticationFilter;
+import com.sleekydz86.core.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,13 +1,7 @@
-package com.sleekydz86.domain.auth.filter;
+package com.sleekydz86.core.security.jwt;
 
-import com.sleekydz86.core.security.jwt.CustomAuthenticationException;
-import com.sleekydz86.core.security.jwt.JwtAuthenticationEntryPoint;
-import com.sleekydz86.core.security.jwt.JwtUtil;
-import com.sleekydz86.core.security.jwt.TokenBlacklistService;
 import com.sleekydz86.core.security.jwt.valueobject.AccessToken;
 import com.sleekydz86.core.tenant.TenantContext;
-import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
-import com.sleekydz86.domain.user.type.RoleType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -32,9 +27,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final TokenBlacklistService tokenBlacklistService;
-    private final UserInstitutionRepository userInstitutionRepository;
+    private final TenantResolver tenantResolver;
 
     private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String ROLE_PREFIX = "ROLE_";
+    private static final String ADMIN_ROLE = "ADMIN";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -61,23 +58,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                     boolean isAdmin = authentication.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)
-                            .anyMatch(auth -> auth.equals("ROLE_" + RoleType.ADMIN.name()));
+                            .anyMatch(auth -> auth.equals(ROLE_PREFIX + ADMIN_ROLE));
 
                     TenantContext.setAdmin(isAdmin);
 
                     if (!isAdmin && userId != null) {
-                        var institutionCodes = userInstitutionRepository.findInstitutionCodesByUserId(userId);
+                        List<String> institutionCodes = tenantResolver.findInstitutionCodesByUserId(userId);
                         if (!institutionCodes.isEmpty()) {
                             TenantContext.setTenantIds(institutionCodes);
 
                             if (primaryInttCd != null && institutionCodes.contains(primaryInttCd)) {
                                 TenantContext.setTenantId(primaryInttCd);
                             } else if (!institutionCodes.isEmpty()) {
-
                                 TenantContext.setTenantId(institutionCodes.get(0));
                             }
                         } else if (primaryInttCd != null) {
-
                             TenantContext.setTenantId(primaryInttCd);
                         }
                     }
@@ -96,7 +91,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("JWT 인증 실패: {}", e.getMessage());
             jwtAuthenticationEntryPoint.commence(request, response, e);
         } finally {
-
             TenantContext.clear();
         }
     }

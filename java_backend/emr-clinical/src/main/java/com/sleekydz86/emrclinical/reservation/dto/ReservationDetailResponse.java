@@ -29,7 +29,7 @@ public class ReservationDetailResponse {
     public static ReservationDetailResponse from(ReservationEntity entity) {
         return ReservationDetailResponse.builder()
                 .reservationId(entity.getReservationId())
-                .patientNo(entity.getPatientEntity().getPatientNo())
+                .patientNo(entity.getPatientEntity().getPatientNoValue())
                 .patientName(entity.getPatientEntity().getPatientName())
                 .userId(entity.getUserEntity() != null ? entity.getUserEntity().getId() : null)
                 .userName(entity.getUserEntity() != null ? entity.getUserEntity().getName() : null)
@@ -45,4 +45,3 @@ public class ReservationDetailResponse {
                 .build();
     }
 }
-

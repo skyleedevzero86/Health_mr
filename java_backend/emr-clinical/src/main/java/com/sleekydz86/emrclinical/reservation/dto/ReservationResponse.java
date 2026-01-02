@@ -26,7 +26,7 @@ public class ReservationResponse {
     public static ReservationResponse from(ReservationEntity entity) {
         return ReservationResponse.builder()
                 .reservationId(entity.getReservationId())
-                .patientNo(entity.getPatientEntity().getPatientNo())
+                .patientNo(entity.getPatientEntity().getPatientNoValue())
                 .patientName(entity.getPatientEntity().getPatientName())
                 .userId(entity.getUserEntity() != null ? entity.getUserEntity().getId() : null)
                 .userName(entity.getUserEntity() != null ? entity.getUserEntity().getName() : null)

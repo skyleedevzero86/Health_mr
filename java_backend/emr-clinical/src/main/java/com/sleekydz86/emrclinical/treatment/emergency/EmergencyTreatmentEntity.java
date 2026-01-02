@@ -1,6 +1,7 @@
 package com.sleekydz86.emrclinical.treatment.emergency;
 
 import com.sleekydz86.domain.common.entity.BaseEntity;
+import com.sleekydz86.emrclinical.checkin.entity.CheckInEntity;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
 import jakarta.persistence.*;

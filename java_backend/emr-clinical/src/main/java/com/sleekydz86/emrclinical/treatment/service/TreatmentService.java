@@ -12,9 +12,20 @@ import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
 import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.emrclinical.checkin.entity.CheckInEntity;
+import com.sleekydz86.emrclinical.checkin.service.CheckInService;
 import com.sleekydz86.emrclinical.reservation.service.ReservationService;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentCompleteRequest;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentCreateRequest;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentUpdateRequest;
+import com.sleekydz86.emrclinical.treatment.emergency.EmergencyTreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.emergency.EmergencyTreatmentRepository;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.inpatient.InTreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.inpatient.InTreatmentRepository;
 import com.sleekydz86.emrclinical.treatment.notification.TreatmentNotificationService;
+import com.sleekydz86.emrclinical.treatment.outpatient.OutTreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.outpatient.OutTreatmentRepository;
 import com.sleekydz86.emrclinical.treatment.repository.TreatmentRepository;
 import com.sleekydz86.emrclinical.types.CheckInStatus;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
@@ -277,7 +288,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
     @Transactional
     public TreatmentEntity createTreatmentFromCheckIn(CheckInEntity checkIn) {
 
-        if (checkIn.getCheckInStatus() != com.cloud.emr.clinical.type.CheckInStatus.COMPLETED) {
+        if (checkIn.getCheckInStatus() != CheckInStatus.COMPLETED) {
             throw new BusinessException("완료된 접수만 진료를 생성할 수 있습니다.");
         }
 

@@ -26,7 +26,7 @@ public class PrescriptionNotificationService {
         }
 
         try {
-            String patientEmail = prescription.getPatientEntity().getPatientEmail();
+            String patientEmail = prescription.getPatientEntity().getPatientEmailValue();
             if (patientEmail == null || patientEmail.isBlank()) {
                 log.warn("환자 이메일이 없어 알림을 발송할 수 없습니다. PrescriptionId: {}", prescription.getPrescriptionId());
                 return;
@@ -46,8 +46,7 @@ public class PrescriptionNotificationService {
                     prescription.getPrescriptionDate(),
                     prescription.getPrescriptionDoc().getName(),
                     prescription.getPrescriptionType(),
-                    prescription.getPrescriptionStatus()
-            ));
+                    prescription.getPrescriptionStatus()));
 
             if (prescription.getPrescriptionItems() != null && !prescription.getPrescriptionItems().isEmpty()) {
                 messageBuilder.append("처방 약물:\n");
@@ -58,8 +57,7 @@ public class PrescriptionNotificationService {
                             item.getDrugCode(),
                             item.getDosage(),
                             item.getDose(),
-                            item.getDays()
-                    ));
+                            item.getDays()));
                 });
                 messageBuilder.append("\n");
             }
@@ -68,10 +66,10 @@ public class PrescriptionNotificationService {
             messageBuilder.append("감사합니다.");
 
             notificationService.send(patientEmail, subject, messageBuilder.toString());
-            log.info("처방 생성 알림 발송 완료: PrescriptionId={}, PatientEmail={}", prescription.getPrescriptionId(), patientEmail);
+            log.info("처방 생성 알림 발송 완료: PrescriptionId={}, PatientEmail={}", prescription.getPrescriptionId(),
+                    patientEmail);
         } catch (Exception e) {
             log.error("처방 생성 알림 발송 실패: PrescriptionId={}", prescription.getPrescriptionId(), e);
         }
     }
 }
-

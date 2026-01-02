@@ -5,7 +5,7 @@ import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.common.exception.custom.UnauthorizedException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.core.security.jwt.JwtUtil;
-import com.sleekydz86.core.security.jwt.JwtUtil.TokenPair;
+import com.sleekydz86.core.security.jwt.TokenPair;
 import com.sleekydz86.core.security.jwt.TokenBlacklistService;
 import com.sleekydz86.domain.auth.dto.LoginRequest;
 import com.sleekydz86.domain.auth.dto.RegisterRequest;
