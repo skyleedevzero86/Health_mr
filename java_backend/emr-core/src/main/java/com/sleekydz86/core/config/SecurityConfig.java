@@ -1,4 +1,4 @@
-package com.sleekydz86.domain.auth.config;
+package com.sleekydz86.core.config;
 
 import com.sleekydz86.core.security.jwt.JwtAccessDeniedHandler;
 import com.sleekydz86.domain.auth.filter.JwtAuthenticationFilter;

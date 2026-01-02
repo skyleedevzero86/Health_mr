@@ -2,14 +2,19 @@ plugins {
     `java-library`
     id("org.springframework.boot")
     id("io.spring.dependency-management")
+    application
+}
+
+application {
+    mainClass.set("com.sleekydz86.emrclinical.EmrClinicalApplication")
 }
 
 tasks.named("bootJar") {
-    enabled = false
+    enabled = true
 }
 
 tasks.named("jar") {
-    enabled = true
+    enabled = false
 }
 
 dependencies {
