@@ -6,5 +6,3 @@ include(
     "emr-clinical",
     "emr-finance"
 )
-
-project(":emr-finance").projectDir = file("emr-finance")

@@ -32,6 +32,8 @@ subprojects {
     dependencies {
         // Spring 기본
         implementation("org.springframework.boot:spring-boot-starter-web")
+        
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
         // Lombok
         compileOnly("org.projectlombok:lombok")

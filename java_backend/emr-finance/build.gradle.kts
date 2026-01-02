@@ -23,10 +23,4 @@ dependencies {
     implementation(project(":emr-clinical"))
     implementation("org.modelmapper:modelmapper:3.1.1")
 
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-
-    testImplementation("org.springframework.security:spring-security-test")
 }
