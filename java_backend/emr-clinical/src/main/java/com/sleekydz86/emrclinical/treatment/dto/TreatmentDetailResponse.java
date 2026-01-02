@@ -35,13 +35,13 @@ public class TreatmentDetailResponse {
         return TreatmentDetailResponse.builder()
                 .treatmentId(entity.getTreatmentId())
                 .patientNo(entity.getCheckInEntity() != null ?
-                        entity.getCheckInEntity().getPatientEntity().getPatientNo() : null)
+                        entity.getCheckInEntity().getPatientEntity().getPatientNoValue() : null)
                 .patientName(entity.getCheckInEntity() != null ?
                         entity.getCheckInEntity().getPatientEntity().getPatientName() : null)
                 .doctorId(entity.getTreatmentDoc().getId())
                 .doctorName(entity.getTreatmentDoc().getName())
-                .doctorEmail(entity.getTreatmentDoc().getEmail())
-                .doctorTel(entity.getTreatmentDoc().getTelNum())
+                .doctorEmail(entity.getTreatmentDoc().getEmailValue())
+                .doctorTel(entity.getTreatmentDoc().getTelNumValue())
                 .departmentId(entity.getDepartmentEntity() != null ? entity.getDepartmentEntity().getId() : null)
                 .departmentName(entity.getDepartmentEntity() != null ? entity.getDepartmentEntity().getName() : null)
                 .departmentCode(entity.getDepartmentEntity() != null ? entity.getDepartmentEntity().getCode() : null)

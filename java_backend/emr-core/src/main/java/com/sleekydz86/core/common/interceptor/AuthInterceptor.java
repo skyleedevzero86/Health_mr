@@ -16,7 +16,8 @@ import java.util.Arrays;
 public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+            throws Exception {
         if (!(handler instanceof HandlerMethod method)) {
             return true;
         }
@@ -33,9 +34,9 @@ public class AuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        String[] allowedRoles = authCheck.roles();
+        String[] allowedRoles = authCheck.value().length > 0 ? authCheck.value() : authCheck.roles();
         if (allowedRoles.length == 0) {
-            // 비어있으면 WAIT 제외 모든 역할 허용
+
             return true;
         }
 
@@ -52,4 +53,3 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 }
-

@@ -32,7 +32,7 @@ public class TreatmentResponse {
         return TreatmentResponse.builder()
                 .treatmentId(entity.getTreatmentId())
                 .patientNo(entity.getCheckInEntity() != null ?
-                        entity.getCheckInEntity().getPatientEntity().getPatientNo() : null)
+                        entity.getCheckInEntity().getPatientEntity().getPatientNoValue() : null)
                 .patientName(entity.getCheckInEntity() != null ?
                         entity.getCheckInEntity().getPatientEntity().getPatientName() : null)
                 .doctorId(entity.getTreatmentDoc().getId())

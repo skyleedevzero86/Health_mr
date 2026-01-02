@@ -2,6 +2,9 @@ package com.sleekydz86.emrclinical.treatment.service;
 
 import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
+import com.sleekydz86.core.event.domain.TreatmentCancelledEvent;
+import com.sleekydz86.core.event.domain.TreatmentCompletedEvent;
+import com.sleekydz86.core.event.domain.TreatmentCreatedEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.entity.BaseEntity;
 import com.sleekydz86.domain.common.service.BaseService;
@@ -12,9 +15,20 @@ import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
 import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.emrclinical.checkin.entity.CheckInEntity;
+import com.sleekydz86.emrclinical.checkin.service.CheckInService;
 import com.sleekydz86.emrclinical.reservation.service.ReservationService;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentCompleteRequest;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentCreateRequest;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentUpdateRequest;
+import com.sleekydz86.emrclinical.treatment.emergency.EmergencyTreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.emergency.EmergencyTreatmentRepository;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.inpatient.InTreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.inpatient.InTreatmentRepository;
 import com.sleekydz86.emrclinical.treatment.notification.TreatmentNotificationService;
+import com.sleekydz86.emrclinical.treatment.outpatient.OutTreatmentEntity;
+import com.sleekydz86.emrclinical.treatment.outpatient.OutTreatmentRepository;
 import com.sleekydz86.emrclinical.treatment.repository.TreatmentRepository;
 import com.sleekydz86.emrclinical.types.CheckInStatus;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
@@ -91,11 +105,11 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
 
         createTreatmentTypeEntity(saved, request.getTreatmentType(), checkIn);
 
-        eventPublisher.publish(TreatmentCreatedEvent(
+        eventPublisher.publish(new TreatmentCreatedEvent(
                 saved.getTreatmentId(),
-                patient.getPatientNo(),
+                patient.getPatientNoValue(),
                 patient.getPatientName(),
-                saved.getTreatmentType(),
+                saved.getTreatmentType().name(),
                 saved.getTreatmentDate()
         ));
 
@@ -242,11 +256,11 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
             reservationService.completeReservationByCheckInId(treatment.getCheckInEntity().getCheckInId());
         }
 
-        eventPublisher.publish(TreatmentCompletedEvent(
+        eventPublisher.publish(new TreatmentCompletedEvent(
                 treatment.getTreatmentId(),
                 treatment.getCheckInEntity() != null ?
-                        treatment.getCheckInEntity().getPatientEntity().getPatientNo() : null,
-                treatment.getTreatmentType()
+                        treatment.getCheckInEntity().getPatientEntity().getPatientNoValue() : null,
+                treatment.getTreatmentType().name()
         ));
 
         treatmentNotificationService.sendTreatmentCompletedNotification(treatment);
@@ -265,10 +279,10 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         treatment.cancel(cancelReason != null ? cancelReason : "진료 취소");
         treatmentRepository.save(treatment);
 
-        eventPublisher.publish(TreatmentCancelledEvent(
+        eventPublisher.publish(new TreatmentCancelledEvent(
                 treatment.getTreatmentId(),
                 treatment.getCheckInEntity() != null ?
-                        treatment.getCheckInEntity().getPatientEntity().getPatientNo() : null,
+                        treatment.getCheckInEntity().getPatientEntity().getPatientNoValue() : null,
                 cancelReason
         ));
     }
@@ -277,7 +291,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
     @Transactional
     public TreatmentEntity createTreatmentFromCheckIn(CheckInEntity checkIn) {
 
-        if (checkIn.getCheckInStatus() != com.cloud.emr.clinical.type.CheckInStatus.COMPLETED) {
+        if (checkIn.getCheckInStatus() != CheckInStatus.COMPLETED) {
             throw new BusinessException("완료된 접수만 진료를 생성할 수 있습니다.");
         }
 
@@ -317,11 +331,11 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
 
         createTreatmentTypeEntity(saved, TreatmentType.OUTPATIENT, checkIn);
 
-        eventPublisher.publish(TreatmentCreatedEvent(
+        eventPublisher.publish(new TreatmentCreatedEvent(
                 saved.getTreatmentId(),
-                checkIn.getPatientEntity().getPatientNo(),
+                checkIn.getPatientEntity().getPatientNoValue(),
                 checkIn.getPatientEntity().getPatientName(),
-                saved.getTreatmentType(),
+                saved.getTreatmentType().name(),
                 saved.getTreatmentDate()
         ));
 

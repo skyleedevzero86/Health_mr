@@ -30,7 +30,7 @@ public class TreatmentNotificationService {
 
             String patientEmail = null;
             if (treatment.getCheckInEntity() != null && treatment.getCheckInEntity().getPatientEntity() != null) {
-                patientEmail = treatment.getCheckInEntity().getPatientEntity().getPatientEmail();
+                patientEmail = treatment.getCheckInEntity().getPatientEntity().getPatientEmailValue();
             }
 
             if (patientEmail == null || patientEmail.isBlank()) {

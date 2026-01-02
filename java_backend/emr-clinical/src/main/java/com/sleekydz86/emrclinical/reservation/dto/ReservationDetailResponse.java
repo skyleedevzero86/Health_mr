@@ -29,12 +29,12 @@ public class ReservationDetailResponse {
     public static ReservationDetailResponse from(ReservationEntity entity) {
         return ReservationDetailResponse.builder()
                 .reservationId(entity.getReservationId())
-                .patientNo(entity.getPatientEntity().getPatientNo())
+                .patientNo(entity.getPatientEntity().getPatientNoValue())
                 .patientName(entity.getPatientEntity().getPatientName())
                 .userId(entity.getUserEntity() != null ? entity.getUserEntity().getId() : null)
                 .userName(entity.getUserEntity() != null ? entity.getUserEntity().getName() : null)
-                .userEmail(entity.getUserEntity() != null ? entity.getUserEntity().getEmail() : null)
-                .userTel(entity.getUserEntity() != null ? entity.getUserEntity().getTelNum() : null)
+                .userEmail(entity.getUserEntity() != null ? entity.getUserEntity().getEmailValue() : null)
+                .userTel(entity.getUserEntity() != null ? entity.getUserEntity().getTelNumValue() : null)
                 .reservationDate(entity.getReservationDate())
                 .reservationStatus(entity.getReservationStatus())
                 .reservationYn(entity.getReservationYn())
@@ -45,4 +45,3 @@ public class ReservationDetailResponse {
                 .build();
     }
 }
-
