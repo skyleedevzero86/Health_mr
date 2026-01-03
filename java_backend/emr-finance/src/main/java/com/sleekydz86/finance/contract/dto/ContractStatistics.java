@@ -4,7 +4,7 @@ import java.util.Map;
 
 @lombok.Builder
 @lombok.Getter
-public static class ContractStatistics {
+public class ContractStatistics {
     private Map<Long, Long> patientCountByContract;
     private Map<Long, Long> discountAmountByContract;
     private Map<Long, Long> usageFrequencyByContract;

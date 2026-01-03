@@ -1,7 +1,6 @@
 package com.sleekydz86.finance.medicalfee.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
-import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.finance.medicalfee.dto.MedicalTypeDetailResponse;
 import com.sleekydz86.finance.medicalfee.dto.MedicalTypeRequest;
 import com.sleekydz86.finance.medicalfee.dto.MedicalTypeResponse;
@@ -25,7 +24,7 @@ public class MedicalTypeController {
     private final MedicalTypeService medicalTypeService;
 
     @PostMapping
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> createMedicalType(@Valid @RequestBody MedicalTypeRequest request) {
         MedicalTypeResponse response = medicalTypeService.createMedicalType(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
@@ -35,7 +34,7 @@ public class MedicalTypeController {
     }
 
     @GetMapping("/{medicalTypeId}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> getMedicalType(@PathVariable Long medicalTypeId) {
         MedicalTypeDetailResponse response = medicalTypeService.getMedicalTypeDetailById(medicalTypeId);
         return ResponseEntity.ok(Map.of(
@@ -45,14 +44,14 @@ public class MedicalTypeController {
     }
 
     @GetMapping
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Page<MedicalTypeResponse>> getAllMedicalTypes(Pageable pageable) {
         Page<MedicalTypeResponse> medicalTypes = medicalTypeService.getAllMedicalTypes(pageable);
         return ResponseEntity.ok(medicalTypes);
     }
 
     @GetMapping("/code/{code}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> getMedicalTypeByCode(@PathVariable String code) {
         MedicalTypeResponse response = medicalTypeService.getMedicalTypeByCode(code);
         return ResponseEntity.ok(Map.of(
@@ -62,7 +61,7 @@ public class MedicalTypeController {
     }
 
     @GetMapping("/active")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> getActiveMedicalTypes() {
         List<MedicalTypeResponse> medicalTypes = medicalTypeService.getActiveMedicalTypes();
         return ResponseEntity.ok(Map.of(
@@ -72,7 +71,7 @@ public class MedicalTypeController {
     }
 
     @GetMapping("/search")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> searchMedicalTypes(@RequestParam String keyword) {
         List<MedicalTypeResponse> medicalTypes = medicalTypeService.searchMedicalTypes(keyword);
         return ResponseEntity.ok(Map.of(
@@ -82,7 +81,7 @@ public class MedicalTypeController {
     }
 
     @PutMapping("/{medicalTypeId}")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> updateMedicalType(
             @PathVariable Long medicalTypeId,
             @Valid @RequestBody MedicalTypeUpdateRequest request) {
@@ -94,7 +93,7 @@ public class MedicalTypeController {
     }
 
     @DeleteMapping("/{medicalTypeId}")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> deleteMedicalType(@PathVariable Long medicalTypeId) {
         medicalTypeService.deleteMedicalType(medicalTypeId);
         return ResponseEntity.ok(Map.of(
@@ -103,7 +102,7 @@ public class MedicalTypeController {
     }
 
     @PostMapping("/{medicalTypeId}/activate")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> activateMedicalType(@PathVariable Long medicalTypeId) {
         medicalTypeService.activateMedicalType(medicalTypeId);
         return ResponseEntity.ok(Map.of(
@@ -112,7 +111,7 @@ public class MedicalTypeController {
     }
 
     @PostMapping("/{medicalTypeId}/deactivate")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> deactivateMedicalType(@PathVariable Long medicalTypeId) {
         medicalTypeService.deactivateMedicalType(medicalTypeId);
         return ResponseEntity.ok(Map.of(

@@ -2,11 +2,12 @@ package com.sleekydz86.finance.medicalfee.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
-import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.finance.medicalfee.dto.DailyMedicalFeeStatistics;
 import com.sleekydz86.finance.medicalfee.dto.MedicalFeeDetailResponse;
 import com.sleekydz86.finance.medicalfee.dto.MedicalFeeRequest;
 import com.sleekydz86.finance.medicalfee.dto.MedicalFeeResponse;
 import com.sleekydz86.finance.medicalfee.dto.MedicalFeeUpdateRequest;
+import com.sleekydz86.finance.medicalfee.dto.PeriodMedicalFeeStatistics;
 import com.sleekydz86.finance.medicalfee.entity.MedicalFeeEntity;
 import com.sleekydz86.finance.medicalfee.repository.MedicalFeeRepository;
 import com.sleekydz86.finance.medicalfee.service.MedicalFeeService;
@@ -40,7 +41,7 @@ public class MedicalFeeController {
     private final MedicalFeeRepository medicalFeeRepository;
 
     @PostMapping("/register")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> registerMedicalFee(
             @Valid @RequestBody MedicalFeeRequest request,
             @RequestParam Long treatmentId) {
@@ -51,7 +52,7 @@ public class MedicalFeeController {
     }
 
     @GetMapping("/{medicalFeeId}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> getMedicalFee(@PathVariable Long medicalFeeId) {
         MedicalFeeDetailResponse response = medicalFeeService.getMedicalFeeDetailById(medicalFeeId);
         return ResponseEntity.ok(Map.of(
@@ -60,14 +61,14 @@ public class MedicalFeeController {
     }
 
     @GetMapping
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Page<MedicalFeeResponse>> getAllMedicalFees(Pageable pageable) {
         Page<MedicalFeeResponse> medicalFees = medicalFeeService.getAllMedicalFees(pageable);
         return ResponseEntity.ok(medicalFees);
     }
 
     @GetMapping("/treatment/{treatmentId}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> getMedicalFeesByTreatmentId(@PathVariable Long treatmentId) {
         List<MedicalFeeResponse> medicalFees = medicalFeeService.getMedicalFeesByTreatmentId(treatmentId);
         return ResponseEntity.ok(Map.of(
@@ -76,7 +77,7 @@ public class MedicalFeeController {
     }
 
     @GetMapping("/treatment/{treatmentId}/total")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> getTotalMedicalFeeByTreatmentId(@PathVariable Long treatmentId) {
         Long totalFee = medicalFeeService.getTotalMedicalFeeByTreatmentId(treatmentId);
         return ResponseEntity.ok(Map.of(
@@ -85,7 +86,7 @@ public class MedicalFeeController {
     }
 
     @PutMapping("/{medicalFeeId}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> updateMedicalFee(
             @PathVariable Long medicalFeeId,
             @Valid @RequestBody MedicalFeeUpdateRequest request) {
@@ -96,7 +97,7 @@ public class MedicalFeeController {
     }
 
     @DeleteMapping("/{medicalFeeId}")
-    @AuthRole({ RoleType.ADMIN })
+    @AuthRole({ "ADMIN" })
     public ResponseEntity<Map<String, Object>> deleteMedicalFee(@PathVariable Long medicalFeeId) {
         medicalFeeService.deleteMedicalFee(medicalFeeId);
         return ResponseEntity.ok(Map.of(
@@ -104,7 +105,7 @@ public class MedicalFeeController {
     }
 
     @GetMapping("/statistics/daily")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getDailyStatistics(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         if (date == null) {
@@ -118,7 +119,7 @@ public class MedicalFeeController {
     }
 
     @GetMapping("/statistics/period")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getPeriodStatistics(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -130,7 +131,7 @@ public class MedicalFeeController {
     }
 
     @GetMapping("/export")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public void exportMedicalFees(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,

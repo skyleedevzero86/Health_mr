@@ -1,7 +1,8 @@
 package com.sleekydz86.finance.contract.repository;
 
 import com.sleekydz86.domain.common.repository.BaseRepository;
-import com.sleekydz86.finance.contract.entity.ContractRelayEntity;
+import com.sleekydz86.finance.contract.entity.ContractEntity;
+import com.sleekydz86.finance.type.ContractStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -11,25 +12,27 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ContractRelayRepository extends BaseRepository<ContractRelayEntity, Long> {
+public interface ContractRepository extends BaseRepository<ContractEntity, Long> {
 
-    List<ContractRelayEntity> findByPatientEntity_PatientNo(Long patientNo);
+    Optional<ContractEntity> findByContractCode(Long contractCode);
 
-    List<ContractRelayEntity> findByContractEntity_ContractCode(Long contractCode);
+    boolean existsByContractCode(Long contractCode);
 
-    Optional<ContractRelayEntity> findByPatientEntity_PatientNoAndContractEntity_ContractCode(
-            Long patientNo, Long contractCode);
+    List<ContractEntity> findByContractNameContaining(String name);
 
-    List<ContractRelayEntity> findByIsActive(Boolean isActive);
+    List<ContractEntity> findByContractRelationship(String relationship);
 
-    Page<ContractRelayEntity> findAll(Pageable pageable);
+    List<ContractEntity> findByContractStatus(ContractStatus status);
 
-    Page<ContractRelayEntity> findByPatientEntity_PatientNo(Long patientNo, Pageable pageable);
+    Page<ContractEntity> findAll(Pageable pageable);
 
-    List<ContractRelayEntity> findAllByOrderByCreatedDateDesc();
+    Page<ContractEntity> findByContractStatus(ContractStatus status, Pageable pageable);
 
-    @Query("SELECT cr FROM ContractRelayEntity cr " +
-            "WHERE cr.patientEntity.patientNo = :patientNo AND cr.isActive = true")
-    List<ContractRelayEntity> findActiveContractRelaysByPatientNo(@Param("patientNo") Long patientNo);
+    List<ContractEntity> findAllByOrderByContractNameAsc();
+
+    @Query("SELECT c FROM ContractEntity c " +
+            "WHERE c.contractStatus = :status AND " +
+            "(c.contractName LIKE %:keyword% OR c.contractRelationship LIKE %:keyword%)")
+    List<ContractEntity> searchContracts(@Param("keyword") String keyword,
+                                         @Param("status") ContractStatus status);
 }
-

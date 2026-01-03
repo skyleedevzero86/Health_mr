@@ -3,7 +3,6 @@ package com.sleekydz86.finance.payment.controller;
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.common.annotation.AuthUser;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
-import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.finance.payment.dto.*;
 import com.sleekydz86.finance.payment.entity.PaymentEntity;
 import com.sleekydz86.finance.payment.repository.PaymentRepository;
@@ -41,7 +40,7 @@ public class PaymentController {
     private final PaymentRepository paymentRepository;
 
     @PostMapping("/register")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> registerPayment(
             @Valid @RequestBody PaymentRegisterRequest request,
             @AuthUser Long userId) {
@@ -52,7 +51,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> getPayment(@PathVariable Long paymentId) {
         PaymentDetailResponse response = paymentService.getPaymentDetailById(paymentId);
         return ResponseEntity.ok(Map.of(
@@ -61,7 +60,7 @@ public class PaymentController {
     }
 
     @GetMapping
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Page<PaymentResponse>> getAllPayments(
             @RequestParam(required = false) Long patientNo,
             @RequestParam(required = false) PaymentStatus status,
@@ -82,7 +81,7 @@ public class PaymentController {
     }
 
     @GetMapping("/treatment/{treatmentId}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> getPaymentByTreatmentId(@PathVariable Long treatmentId) {
         PaymentResponse response = paymentService.getPaymentByTreatmentId(treatmentId);
         return ResponseEntity.ok(Map.of(
@@ -91,7 +90,7 @@ public class PaymentController {
     }
 
     @GetMapping("/patient/{patientNo}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Page<PaymentResponse>> getPaymentsByPatientNo(
             @PathVariable Long patientNo,
             Pageable pageable) {
@@ -100,7 +99,7 @@ public class PaymentController {
     }
 
     @GetMapping("/status/{status}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Page<PaymentResponse>> getPaymentsByStatus(
             @PathVariable PaymentStatus status,
             Pageable pageable) {
@@ -109,7 +108,7 @@ public class PaymentController {
     }
 
     @GetMapping("/date-range")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getPaymentsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
@@ -120,7 +119,7 @@ public class PaymentController {
     }
 
     @GetMapping("/today")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getTodayPayments() {
         List<PaymentResponse> payments = paymentService.getTodayPayments();
         return ResponseEntity.ok(Map.of(
@@ -129,7 +128,7 @@ public class PaymentController {
     }
 
     @GetMapping("/patient/{patientNo}/unpaid")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> getUnpaidPaymentsByPatientNo(@PathVariable Long patientNo) {
         List<PaymentResponse> payments = paymentService.getUnpaidPaymentsByPatientNo(patientNo);
         return ResponseEntity.ok(Map.of(
@@ -138,7 +137,7 @@ public class PaymentController {
     }
 
     @PutMapping("/{paymentId}")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> updatePayment(
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentUpdateRequest request) {
@@ -149,7 +148,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/complete")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> completePayment(
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentCompleteRequest request) {
@@ -160,7 +159,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/cancel")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> cancelPayment(
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentCancelRequest request) {
@@ -171,7 +170,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/refund")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> refundPayment(
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentRefundRequest request) {
@@ -182,7 +181,7 @@ public class PaymentController {
     }
 
     @GetMapping("/calculate")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> calculatePaymentAmount(
             @RequestParam Long treatmentId,
             @RequestParam Long patientNo) {
@@ -195,7 +194,7 @@ public class PaymentController {
 
 
     @GetMapping("/statistics/daily")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getDailyStatistics(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         if (date == null) {
@@ -208,7 +207,7 @@ public class PaymentController {
     }
 
     @GetMapping("/statistics/period")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getPeriodStatistics(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -220,7 +219,7 @@ public class PaymentController {
     }
 
     @GetMapping("/statistics/unpaid")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> getUnpaidStatistics() {
         UnpaidPaymentStatistics statistics =
                 paymentStatisticsService.getUnpaidStatistics();
@@ -231,7 +230,7 @@ public class PaymentController {
 
 
     @GetMapping("/export")
-    @AuthRole({ RoleType.STAFF, RoleType.ADMIN })
+    @AuthRole({ "STAFF", "ADMIN" })
     public void exportPayments(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
