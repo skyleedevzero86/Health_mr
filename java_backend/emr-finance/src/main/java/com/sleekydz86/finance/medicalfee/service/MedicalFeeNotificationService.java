@@ -24,13 +24,14 @@ public class MedicalFeeNotificationService {
                 return;
             }
 
-            if (patient.getPatientEmail() != null && !patient.getPatientEmail().isEmpty()) {
+            String patientEmail = patient.getPatientEmailValue();
+            if (patientEmail != null && !patientEmail.isEmpty()) {
                 String subject = messageBuilder.buildSubject();
                 String message = messageBuilder.buildMessage(patient, medicalFee);
 
-                notificationService.send(patient.getPatientEmail(), subject, message);
+                notificationService.send(patientEmail, subject, message);
                 log.info("진료비 등록 알림 발송 성공: MedicalFeeId={}, PatientEmail={}",
-                        medicalFee.getMedicalFeeId(), patient.getPatientEmail());
+                        medicalFee.getMedicalFeeId(), patientEmail);
             } else {
                 log.debug("환자 이메일이 없어 알림을 발송하지 않습니다. MedicalFeeId={}", medicalFee.getMedicalFeeId());
             }

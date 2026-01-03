@@ -2,8 +2,10 @@ package com.sleekydz86.finance.medicalfee.service;
 
 import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
+import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
+import com.sleekydz86.finance.common.valueobject.Money;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.treatment.service.TreatmentService;
 import com.sleekydz86.finance.medicalfee.dto.MedicalFeeDetailResponse;
@@ -51,8 +53,8 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
 
         TreatmentEntity treatment = treatmentService.getTreatmentById(treatmentId);
 
-        MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, request.getMedicalTypeId(),
-                "진료 유형을 찾을 수 없습니다. ID: " + request.getMedicalTypeId());
+        MedicalTypeEntity medicalType = medicalTypeRepository.findById(request.getMedicalTypeId())
+                .orElseThrow(() -> new NotFoundException("진료 유형을 찾을 수 없습니다. ID: " + request.getMedicalTypeId()));
 
         if (medicalFeeRepository.findByTreatmentEntity_TreatmentIdAndMedicalTypeEntity_MedicalTypeId(
                 treatmentId, request.getMedicalTypeId()).isPresent()) {
@@ -113,11 +115,12 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
     }
 
     public Page<MedicalFeeResponse> getMedicalFeesByMedicalTypeId(Long medicalTypeId, Pageable pageable) {
-        validateExists(medicalTypeRepository, medicalTypeId, "진료 유형을 찾을 수 없습니다. ID: " + medicalTypeId);
+        medicalTypeRepository.findById(medicalTypeId)
+                .orElseThrow(() -> new NotFoundException("진료 유형을 찾을 수 없습니다. ID: " + medicalTypeId));
         Page<MedicalFeeEntity> medicalFees = medicalFeeRepository.findByMedicalTypeEntity_MedicalTypeId(medicalTypeId)
                 .stream()
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        list -> org.springframework.data.domain.PageImpl.of(list, pageable, list.size())));
+                        list -> new org.springframework.data.domain.PageImpl<>(list, pageable, list.size())));
         return medicalFees.map(MedicalFeeResponse::from);
     }
 
@@ -134,30 +137,30 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
                 "진료비를 찾을 수 없습니다. ID: " + medicalFeeId);
 
         if (request.getMedicalTypeId() != null) {
-            MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, request.getMedicalTypeId(),
-                    "진료 유형을 찾을 수 없습니다. ID: " + request.getMedicalTypeId());
+            MedicalTypeEntity medicalType = medicalTypeRepository.findById(request.getMedicalTypeId())
+                    .orElseThrow(() -> new NotFoundException("진료 유형을 찾을 수 없습니다. ID: " + request.getMedicalTypeId()));
 
             Long treatmentId = medicalFee.getTreatmentEntity().getTreatmentId();
             if (medicalFeeRepository.findByTreatmentEntity_TreatmentIdAndMedicalTypeEntity_MedicalTypeId(
-                            treatmentId, request.getMedicalTypeId())
+                    treatmentId, request.getMedicalTypeId())
                     .filter(existing -> !existing.getMedicalFeeId().equals(medicalFeeId))
                     .isPresent()) {
                 throw new DuplicateException("이미 등록된 진료 유형입니다.");
             }
 
-            medicalFee.setMedicalTypeEntity(medicalType);
+            medicalFee.updateMedicalTypeEntity(medicalType);
 
             if (request.getMedicalFeeAmount() == null) {
-                medicalFee.setMedicalFeeAmount(medicalType.getMedicalTypeFee());
+                medicalFee.updateAmount(medicalType.getMedicalTypeFee());
             }
         }
 
         if (request.getMedicalFeeAmount() != null) {
-            medicalFee.setMedicalFeeAmount(request.getMedicalFeeAmount());
+            medicalFee.updateAmount(Money.of(request.getMedicalFeeAmount()));
         }
 
         if (request.getQuantity() != null) {
-            medicalFee.setQuantity(request.getQuantity());
+            medicalFee.updateQuantity(request.getQuantity());
         }
 
         MedicalFeeEntity saved = medicalFeeRepository.save(medicalFee);
@@ -197,7 +200,7 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
 
     private void invalidateMedicalFeeCache(MedicalFeeEntity medicalFee) {
         try {
-          
+
             if (medicalFee.getTreatmentEntity() != null) {
                 redisTemplate
                         .delete(CACHE_PREFIX_MEDICAL_FEE_TREATMENT + medicalFee.getTreatmentEntity().getTreatmentId());

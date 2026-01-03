@@ -32,14 +32,14 @@ public class ContractDetailResponse {
         response.setContractCode(entity.getContractCode());
         response.setContractName(entity.getContractName());
         response.setContractRelationship(entity.getContractRelationship());
-        response.setContractTelephone(entity.getContractTelephone());
+        response.setContractTelephone(entity.getContractTelephoneValue());
         response.setContractDiscount(entity.getContractDiscount());
         response.setContractStatus(entity.getContractStatus());
         response.setContractStartDate(entity.getContractStartDate());
         response.setContractEndDate(entity.getContractEndDate());
         response.setContractManager(entity.getContractManager());
-        response.setContractManagerTel(entity.getContractManagerTel());
-        response.setContractManagerEmail(entity.getContractManagerEmail());
+        response.setContractManagerTel(entity.getContractManagerTelValue());
+        response.setContractManagerEmail(entity.getContractManagerEmailValue());
         return response;
     }
 }

@@ -1,7 +1,6 @@
 package com.sleekydz86.finance.contract.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
-import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.finance.contract.dto.ContractRelayDetailResponse;
 import com.sleekydz86.finance.contract.dto.ContractRelayRequest;
 import com.sleekydz86.finance.contract.dto.ContractRelayResponse;
@@ -25,7 +24,7 @@ public class ContractRelayController {
     private final ContractRelayService contractRelayService;
 
     @PostMapping
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> createContractRelay(
             @Valid @RequestBody ContractRelayRequest request) {
         ContractRelayResponse response = contractRelayService.createContractRelay(request);
@@ -36,7 +35,7 @@ public class ContractRelayController {
     }
 
     @GetMapping("/{contractRelayId}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> getContractRelay(@PathVariable Long contractRelayId) {
         ContractRelayDetailResponse response = contractRelayService.getContractRelayDetailById(contractRelayId);
         return ResponseEntity.ok(Map.of(
@@ -46,14 +45,14 @@ public class ContractRelayController {
     }
 
     @GetMapping
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Page<ContractRelayResponse>> getAllContractRelays(Pageable pageable) {
         Page<ContractRelayResponse> relays = contractRelayService.getAllContractRelays(pageable);
         return ResponseEntity.ok(relays);
     }
 
     @GetMapping("/patient/{patientNo}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> getContractRelaysByPatientNo(@PathVariable Long patientNo) {
         List<ContractRelayResponse> relays = contractRelayService.getContractRelaysByPatientNo(patientNo);
         return ResponseEntity.ok(Map.of(
@@ -63,7 +62,7 @@ public class ContractRelayController {
     }
 
     @GetMapping("/patient/{patientNo}/active")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> getActiveContractRelaysByPatientNo(@PathVariable Long patientNo) {
         List<ContractRelayResponse> relays = contractRelayService.getActiveContractRelaysByPatientNo(patientNo);
         return ResponseEntity.ok(Map.of(
@@ -73,7 +72,7 @@ public class ContractRelayController {
     }
 
     @GetMapping("/contract/{contractCode}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Page<ContractRelayResponse>> getContractRelaysByContractCode(
             @PathVariable Long contractCode,
             Pageable pageable) {
@@ -82,7 +81,7 @@ public class ContractRelayController {
     }
 
     @PutMapping("/{contractRelayId}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> updateContractRelay(
             @PathVariable Long contractRelayId,
             @Valid @RequestBody ContractRelayUpdateRequest request) {
@@ -94,7 +93,7 @@ public class ContractRelayController {
     }
 
     @DeleteMapping("/{contractRelayId}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> deleteContractRelay(@PathVariable Long contractRelayId) {
         contractRelayService.deleteContractRelay(contractRelayId);
         return ResponseEntity.ok(Map.of(
@@ -103,7 +102,7 @@ public class ContractRelayController {
     }
 
     @PostMapping("/{contractRelayId}/activate")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> activateContractRelay(@PathVariable Long contractRelayId) {
         contractRelayService.activateContractRelay(contractRelayId);
         return ResponseEntity.ok(Map.of(
@@ -112,7 +111,7 @@ public class ContractRelayController {
     }
 
     @PostMapping("/{contractRelayId}/deactivate")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> deactivateContractRelay(@PathVariable Long contractRelayId) {
         contractRelayService.deactivateContractRelay(contractRelayId);
         return ResponseEntity.ok(Map.of(

@@ -1,0 +1,15 @@
+package com.sleekydz86.finance.medicalfee.dto;
+
+import lombok.Builder;
+import lombok.Getter;
+import java.time.LocalDate;
+import java.util.Map;
+
+@Builder
+@Getter
+public class DailyMedicalFeeStatistics {
+    private LocalDate date;
+    private Long count;
+    private Long totalAmount;
+    private Map<String, Long> typeStatistics;
+}

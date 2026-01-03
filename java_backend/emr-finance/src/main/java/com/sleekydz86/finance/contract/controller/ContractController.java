@@ -2,7 +2,6 @@ package com.sleekydz86.finance.contract.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
-import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.finance.contract.dto.*;
 import com.sleekydz86.finance.contract.entity.ContractEntity;
 import com.sleekydz86.finance.contract.repository.ContractRepository;
@@ -34,14 +33,14 @@ public class ContractController {
     private final ContractRepository contractRepository;
 
     @GetMapping("/list")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Page<ContractResponse>> getAllContracts(Pageable pageable) {
         Page<ContractResponse> contracts = contractService.getAllContracts(pageable);
         return ResponseEntity.ok(contracts);
     }
 
     @GetMapping("/{contractCode}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> getContract(@PathVariable Long contractCode) {
         ContractDetailResponse response = contractService.getContractDetailByCode(contractCode);
         return ResponseEntity.ok(Map.of(
@@ -51,7 +50,7 @@ public class ContractController {
     }
 
     @GetMapping("/status/{status}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Page<ContractResponse>> getContractsByStatus(
             @PathVariable ContractStatus status,
             Pageable pageable) {
@@ -60,7 +59,7 @@ public class ContractController {
     }
 
     @GetMapping("/search")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> searchContracts(@RequestParam String keyword) {
         List<ContractResponse> contracts = contractService.searchContracts(keyword);
         return ResponseEntity.ok(Map.of(
@@ -70,7 +69,7 @@ public class ContractController {
     }
 
     @PostMapping("/create")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> createContract(@Valid @RequestBody ContractRequest request) {
         ContractResponse response = contractService.createContract(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
@@ -80,7 +79,7 @@ public class ContractController {
     }
 
     @PutMapping("/{contractCode}")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> updateContract(
             @PathVariable Long contractCode,
             @Valid @RequestBody ContractUpdateRequest request) {
@@ -92,7 +91,7 @@ public class ContractController {
     }
 
     @PostMapping("/delete")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> deleteContract(@RequestParam Long contractCode) {
         contractService.deleteContract(contractCode);
         return ResponseEntity.ok(Map.of(
@@ -101,7 +100,7 @@ public class ContractController {
     }
 
     @PostMapping("/{contractCode}/activate")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> activateContract(@PathVariable Long contractCode) {
         contractService.activateContract(contractCode);
         return ResponseEntity.ok(Map.of(
@@ -110,7 +109,7 @@ public class ContractController {
     }
 
     @PostMapping("/{contractCode}/deactivate")
-    @AuthRole({RoleType.ADMIN})
+    @AuthRole({"ADMIN"})
     public ResponseEntity<Map<String, Object>> deactivateContract(@PathVariable Long contractCode) {
         contractService.deactivateContract(contractCode);
         return ResponseEntity.ok(Map.of(
@@ -119,7 +118,7 @@ public class ContractController {
     }
 
     @GetMapping("/statistics")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public ResponseEntity<Map<String, Object>> getContractStatistics() {
         ContractStatistics statistics =
                 contractStatisticsService.getContractStatistics();
@@ -129,7 +128,7 @@ public class ContractController {
     }
 
     @GetMapping("/export")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN})
+    @AuthRole({"STAFF", "ADMIN"})
     public void exportContracts(HttpServletResponse response) throws IOException {
 
         List<ContractEntity> contracts = contractRepository.findAll();
@@ -145,13 +144,13 @@ public class ContractController {
             row.put("계약처코드", contract.getContractCode());
             row.put("계약처명", contract.getContractName());
             row.put("계약관계", contract.getContractRelationship());
-            row.put("전화번호", contract.getContractTelephone());
+            row.put("전화번호", contract.getContractTelephoneValue());
             row.put("할인율", contract.getContractDiscount() != null ? contract.getContractDiscount() : 0);
             row.put("계약상태", contract.getContractStatus() != null ? contract.getContractStatus().name() : "");
             row.put("담당자", contract.getContractManager());
-            row.put("담당자전화", contract.getContractManagerTel());
-            row.put("담당자이메일", contract.getContractManagerEmail());
-            row.put("생성일시", contract.getCreatedAt() != null ? contract.getCreatedAt().toString() : "");
+            row.put("담당자전화", contract.getContractManagerTelValue());
+            row.put("담당자이메일", contract.getContractManagerEmailValue());
+            row.put("생성일시", contract.getCreatedDate() != null ? contract.getCreatedDate().toString() : "");
             data.add(row);
         }
 

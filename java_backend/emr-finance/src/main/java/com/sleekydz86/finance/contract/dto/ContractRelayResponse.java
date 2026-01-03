@@ -22,7 +22,7 @@ public class ContractRelayResponse {
     public static ContractRelayResponse from(ContractRelayEntity entity) {
         ContractRelayResponse response = new ContractRelayResponse();
         response.setContractRelayId(entity.getContractRelayId());
-        response.setPatientNo(entity.getPatientEntity().getPatientNo());
+        response.setPatientNo(entity.getPatientEntity().getPatientNo().getValue());
         response.setPatientName(entity.getPatientEntity().getPatientName());
         response.setContractCode(entity.getContractEntity().getContractCode());
         response.setContractName(entity.getContractEntity().getContractName());

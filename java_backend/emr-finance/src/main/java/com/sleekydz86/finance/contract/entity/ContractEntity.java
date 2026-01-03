@@ -167,5 +167,37 @@ public class ContractEntity extends BaseEntity {
     public String getContractManagerEmailValue() {
         return contractManagerEmail != null ? contractManagerEmail.getValue() : null;
     }
+
+    public void updateContractCode(Long newContractCode) {
+        if (newContractCode == null) {
+            throw new IllegalArgumentException("계약처 코드는 필수입니다.");
+        }
+        this.contractCode = newContractCode;
+    }
+
+    public void updateContractName(String newContractName) {
+        if (newContractName == null || newContractName.isBlank()) {
+            throw new IllegalArgumentException("계약처명은 필수입니다.");
+        }
+        this.contractName = newContractName;
+    }
+
+    public void updateContractRelationship(String newContractRelationship) {
+        if (newContractRelationship == null || newContractRelationship.isBlank()) {
+            throw new IllegalArgumentException("계약 관계는 필수입니다.");
+        }
+        this.contractRelationship = newContractRelationship;
+    }
+
+    public void updateContractTelephone(PhoneNumber newContractTelephone) {
+        this.contractTelephone = newContractTelephone;
+    }
+
+    public void updateContractStatus(ContractStatus newContractStatus) {
+        if (newContractStatus == null) {
+            throw new IllegalArgumentException("계약 상태는 필수입니다.");
+        }
+        this.contractStatus = newContractStatus;
+    }
 }
 
