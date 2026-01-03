@@ -6,7 +6,7 @@ plugins {
 }
 
 application {
-    mainClass.set("com.sleekydz86.emrfinance.EmrFinanceApplication")
+    mainClass.set("com.sleekydz86.finance.EmrFinanceApplication")
 }
 
 tasks.named("bootJar") {

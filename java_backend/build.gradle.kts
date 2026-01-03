@@ -1,5 +1,5 @@
 plugins {
-    java
+    `java-library`
     id("org.springframework.boot") version "4.0.1" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
 }
@@ -14,6 +14,7 @@ allprojects {
 }
 
 subprojects {
+    apply(plugin = "java-library")
     apply(plugin = "org.springframework.boot")
     apply(plugin = "io.spring.dependency-management")
     apply(plugin = "java-test-fixtures")
@@ -31,8 +32,7 @@ subprojects {
     dependencies {
         // Spring 기본
         implementation("org.springframework.boot:spring-boot-starter-web")
-        
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+        implementation("org.springframework.boot:spring-boot-starter-webflux")
 
         // Lombok
         compileOnly("org.projectlombok:lombok")
