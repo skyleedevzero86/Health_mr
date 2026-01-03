@@ -1,5 +1,7 @@
 package com.sleekydz86.finance.medicalfee.service;
 
+import com.sleekydz86.finance.medicalfee.dto.DailyMedicalFeeStatistics;
+import com.sleekydz86.finance.medicalfee.dto.PeriodMedicalFeeStatistics;
 import com.sleekydz86.finance.medicalfee.entity.MedicalFeeEntity;
 import com.sleekydz86.finance.medicalfee.repository.MedicalFeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -101,25 +103,5 @@ public class MedicalFeeStatisticsService {
                 .typeStatistics(typeStatistics)
                 .departmentStatistics(departmentStatistics)
                 .build();
-    }
-
-    @lombok.Builder
-    @lombok.Getter
-    public static class DailyMedicalFeeStatistics {
-        private LocalDate date;
-        private Long count;
-        private Long totalAmount;
-        private Map<String, Long> typeStatistics;
-    }
-
-    @lombok.Builder
-    @lombok.Getter
-    public static class PeriodMedicalFeeStatistics {
-        private LocalDate startDate;
-        private LocalDate endDate;
-        private Long count;
-        private Long totalAmount;
-        private Map<String, Long> typeStatistics;
-        private Map<String, Long> departmentStatistics;
     }
 }
