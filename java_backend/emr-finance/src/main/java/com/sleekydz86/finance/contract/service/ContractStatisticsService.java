@@ -28,17 +28,16 @@ public class ContractStatisticsService {
         List<ContractRelayEntity> relays = contractRelayRepository.findAll();
 
         Map<Long, Long> patientCountByContract = relays.stream()
-                .filter(r -> r.getContractEntity() != null && r.getIsActive())
+                .filter(r -> r.getContractEntity() != null && r.isActive())
                 .collect(Collectors.groupingBy(
                         r -> r.getContractEntity().getContractCode(),
                         Collectors.counting()
                 ));
 
-        // 계약처별 할인 실제 사용 시 Payment 정보 필요 금액 합계
         Map<Long, Long> discountAmountByContract = new HashMap<>();
 
         Map<Long, Long> usageFrequencyByContract = relays.stream()
-                .filter(r -> r.getContractEntity() != null && r.getIsActive())
+                .filter(r -> r.getContractEntity() != null && r.isActive())
                 .collect(Collectors.groupingBy(
                         r -> r.getContractEntity().getContractCode(),
                         Collectors.counting()

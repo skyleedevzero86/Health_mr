@@ -59,11 +59,10 @@ public class ContractRelayService implements BaseService<ContractRelayEntity, Lo
     public Page<ContractRelayResponse> getContractRelaysByContractCode(Long contractCode, Pageable pageable) {
         contractService.getContractByCode(contractCode);
         List<ContractRelayEntity> relays = contractRelayRepository.findByContractEntity_ContractCode(contractCode);
-        return org.springframework.data.domain.PageImpl.of(
+        return new org.springframework.data.domain.PageImpl<>(
                 relays.stream().map(ContractRelayResponse::from).collect(Collectors.toList()),
                 pageable,
-                relays.size()
-        );
+                relays.size());
     }
 
     public List<ContractRelayResponse> getActiveContractRelaysByPatientNo(Long patientNo) {
@@ -103,15 +102,15 @@ public class ContractRelayService implements BaseService<ContractRelayEntity, Lo
                 "연결을 찾을 수 없습니다. ID: " + contractRelayId);
 
         if (request.getIsActive() != null) {
-            relay.setIsActive(request.getIsActive());
+            if (request.getIsActive()) {
+                relay.activate();
+            } else {
+                relay.deactivate();
+            }
         }
 
-        if (request.getRelayStartDate() != null) {
-            relay.setRelayStartDate(request.getRelayStartDate());
-        }
-
-        if (request.getRelayEndDate() != null) {
-            relay.setRelayEndDate(request.getRelayEndDate());
+        if (request.getRelayStartDate() != null || request.getRelayEndDate() != null) {
+            relay.updatePeriod(request.getRelayStartDate(), request.getRelayEndDate());
         }
 
         ContractRelayEntity saved = contractRelayRepository.save(relay);
@@ -124,8 +123,7 @@ public class ContractRelayService implements BaseService<ContractRelayEntity, Lo
         ContractRelayEntity relay = validateExists(contractRelayRepository, contractRelayId,
                 "연결을 찾을 수 없습니다. ID: " + contractRelayId);
 
-        // 소프트 삭제 (isActive를 false로 변경)
-        relay.setIsActive(false);
+        relay.deactivate();
         contractRelayRepository.save(relay);
     }
 
@@ -133,7 +131,7 @@ public class ContractRelayService implements BaseService<ContractRelayEntity, Lo
     public void activateContractRelay(Long contractRelayId) {
         ContractRelayEntity relay = validateExists(contractRelayRepository, contractRelayId,
                 "연결을 찾을 수 없습니다. ID: " + contractRelayId);
-        relay.setIsActive(true);
+        relay.activate();
         contractRelayRepository.save(relay);
     }
 
@@ -141,8 +139,7 @@ public class ContractRelayService implements BaseService<ContractRelayEntity, Lo
     public void deactivateContractRelay(Long contractRelayId) {
         ContractRelayEntity relay = validateExists(contractRelayRepository, contractRelayId,
                 "연결을 찾을 수 없습니다. ID: " + contractRelayId);
-        relay.setIsActive(false);
+        relay.deactivate();
         contractRelayRepository.save(relay);
     }
 }
-

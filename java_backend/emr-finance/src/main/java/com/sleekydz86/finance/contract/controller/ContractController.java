@@ -144,13 +144,13 @@ public class ContractController {
             row.put("계약처코드", contract.getContractCode());
             row.put("계약처명", contract.getContractName());
             row.put("계약관계", contract.getContractRelationship());
-            row.put("전화번호", contract.getContractTelephone());
+            row.put("전화번호", contract.getContractTelephoneValue());
             row.put("할인율", contract.getContractDiscount() != null ? contract.getContractDiscount() : 0);
             row.put("계약상태", contract.getContractStatus() != null ? contract.getContractStatus().name() : "");
             row.put("담당자", contract.getContractManager());
-            row.put("담당자전화", contract.getContractManagerTel());
-            row.put("담당자이메일", contract.getContractManagerEmail());
-            row.put("생성일시", contract.getCreatedAt() != null ? contract.getCreatedAt().toString() : "");
+            row.put("담당자전화", contract.getContractManagerTelValue());
+            row.put("담당자이메일", contract.getContractManagerEmailValue());
+            row.put("생성일시", contract.getCreatedDate() != null ? contract.getCreatedDate().toString() : "");
             data.add(row);
         }
 

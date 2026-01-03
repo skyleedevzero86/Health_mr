@@ -6,7 +6,6 @@ import com.sleekydz86.finance.qualification.dto.AllQualificationsResponse;
 import com.sleekydz86.finance.qualification.dto.BasicLivelihoodResponse;
 import com.sleekydz86.finance.qualification.dto.HealthInsuranceResponse;
 import com.sleekydz86.finance.qualification.dto.MedicalAssistanceResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class QualificationService {
 

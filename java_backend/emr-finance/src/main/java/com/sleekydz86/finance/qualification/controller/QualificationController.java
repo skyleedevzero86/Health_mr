@@ -1,7 +1,6 @@
 package com.sleekydz86.finance.qualification.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
-import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.finance.qualification.service.QualificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +16,7 @@ public class QualificationController {
     private final QualificationService qualificationService;
 
     @GetMapping("/patient/{patientNo}")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public Mono<ResponseEntity<Map<String, Object>>> getAllQualifications(@PathVariable Long patientNo) {
         return qualificationService.getAllQualifications(patientNo)
                 .map(response -> ResponseEntity.ok(Map.of(
@@ -31,7 +30,7 @@ public class QualificationController {
     }
 
     @GetMapping("/patient/{patientNo}/health-insurance")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public Mono<ResponseEntity<Map<String, Object>>> getHealthInsurance(@PathVariable Long patientNo) {
         return qualificationService.getHealthInsuranceInfo(patientNo)
                 .map(response -> ResponseEntity.ok(Map.of(
@@ -45,7 +44,7 @@ public class QualificationController {
     }
 
     @GetMapping("/patient/{patientNo}/medical-assistance")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public Mono<ResponseEntity<Map<String, Object>>> getMedicalAssistance(@PathVariable Long patientNo) {
         return qualificationService.getMedicalAssistanceInfo(patientNo)
                 .map(response -> ResponseEntity.ok(Map.of(
@@ -59,7 +58,7 @@ public class QualificationController {
     }
 
     @GetMapping("/patient/{patientNo}/basic-livelihood")
-    @AuthRole({RoleType.STAFF, RoleType.ADMIN, RoleType.DOCTOR})
+    @AuthRole({"STAFF", "ADMIN", "DOCTOR"})
     public Mono<ResponseEntity<Map<String, Object>>> getBasicLivelihood(@PathVariable Long patientNo) {
         return qualificationService.getBasicLivelihoodInfo(patientNo)
                 .map(response -> ResponseEntity.ok(Map.of(

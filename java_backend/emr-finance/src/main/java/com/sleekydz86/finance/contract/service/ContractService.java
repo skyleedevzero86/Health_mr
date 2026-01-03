@@ -4,6 +4,8 @@ import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.domain.common.service.BaseService;
+import com.sleekydz86.domain.common.valueobject.Email;
+import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.finance.contract.dto.ContractDetailResponse;
 import com.sleekydz86.finance.contract.dto.ContractRequest;
 import com.sleekydz86.finance.contract.dto.ContractResponse;
@@ -75,12 +77,12 @@ public class ContractService implements BaseService<ContractEntity, Long> {
                 .contractCode(request.getContractCode())
                 .contractName(request.getContractName())
                 .contractRelationship(request.getContractRelationship())
-                .contractTelephone(request.getContractTelephone())
+                .contractTelephone(request.getContractTelephone() != null ? PhoneNumber.of(request.getContractTelephone()) : null)
                 .contractDiscount(request.getContractDiscount())
                 .contractStatus(ContractStatus.ACTIVE)
                 .contractManager(request.getContractManager())
-                .contractManagerTel(request.getContractManagerTel())
-                .contractManagerEmail(request.getContractManagerEmail())
+                .contractManagerTel(request.getContractManagerTel() != null ? PhoneNumber.of(request.getContractManagerTel()) : null)
+                .contractManagerEmail(request.getContractManagerEmail() != null ? Email.of(request.getContractManagerEmail()) : null)
                 .build();
 
         ContractEntity saved = contractRepository.save(contract);
@@ -96,33 +98,33 @@ public class ContractService implements BaseService<ContractEntity, Long> {
         if (request.getContractCode() != null && !contract.getContractCode().equals(request.getContractCode())) {
             validateNotDuplicate(contractRepository.existsByContractCode(request.getContractCode()),
                     "이미 존재하는 계약처 코드입니다: " + request.getContractCode());
-            contract.setContractCode(request.getContractCode());
+            contract.updateContractCode(request.getContractCode());
         }
 
         if (request.getContractDiscount() != null) {
             if (request.getContractDiscount() < 0 || request.getContractDiscount() > 100) {
                 throw new BusinessException("할인율은 0 이상 100 이하여야 합니다.");
             }
-            contract.setContractDiscount(request.getContractDiscount());
+            contract.updateDiscount(request.getContractDiscount());
         }
 
         if (request.getContractName() != null) {
-            contract.setContractName(request.getContractName());
+            contract.updateContractName(request.getContractName());
         }
         if (request.getContractRelationship() != null) {
-            contract.setContractRelationship(request.getContractRelationship());
+            contract.updateContractRelationship(request.getContractRelationship());
         }
         if (request.getContractTelephone() != null) {
-            contract.setContractTelephone(request.getContractTelephone());
+            contract.updateContractTelephone(PhoneNumber.of(request.getContractTelephone()));
         }
-        if (request.getContractManager() != null) {
-            contract.setContractManager(request.getContractManager());
-        }
-        if (request.getContractManagerTel() != null) {
-            contract.setContractManagerTel(request.getContractManagerTel());
-        }
-        if (request.getContractManagerEmail() != null) {
-            contract.setContractManagerEmail(request.getContractManagerEmail());
+        if (request.getContractManager() != null || request.getContractManagerTel() != null || request.getContractManagerEmail() != null) {
+            PhoneNumber managerTel = request.getContractManagerTel() != null ? PhoneNumber.of(request.getContractManagerTel()) : contract.getContractManagerTel();
+            Email managerEmail = request.getContractManagerEmail() != null ? Email.of(request.getContractManagerEmail()) : contract.getContractManagerEmail();
+            contract.updateManager(
+                    request.getContractManager() != null ? request.getContractManager() : contract.getContractManager(),
+                    managerTel,
+                    managerEmail
+            );
         }
 
         ContractEntity saved = contractRepository.save(contract);
@@ -141,7 +143,7 @@ public class ContractService implements BaseService<ContractEntity, Long> {
             throw new BusinessException("사용 중인 계약처는 삭제할 수 없습니다.");
         }
 
-        contract.setContractStatus(ContractStatus.INACTIVE);
+        contract.updateContractStatus(ContractStatus.INACTIVE);
         contractRepository.save(contract);
     }
 
@@ -149,7 +151,7 @@ public class ContractService implements BaseService<ContractEntity, Long> {
     public void activateContract(Long contractCode) {
         ContractEntity contract = contractRepository.findByContractCode(contractCode)
                 .orElseThrow(() -> new NotFoundException("계약처를 찾을 수 없습니다. Code: " + contractCode));
-        contract.setContractStatus(ContractStatus.ACTIVE);
+        contract.updateContractStatus(ContractStatus.ACTIVE);
         contractRepository.save(contract);
     }
 
@@ -157,7 +159,7 @@ public class ContractService implements BaseService<ContractEntity, Long> {
     public void deactivateContract(Long contractCode) {
         ContractEntity contract = contractRepository.findByContractCode(contractCode)
                 .orElseThrow(() -> new NotFoundException("계약처를 찾을 수 없습니다. Code: " + contractCode));
-        contract.setContractStatus(ContractStatus.INACTIVE);
+        contract.updateContractStatus(ContractStatus.INACTIVE);
         contractRepository.save(contract);
     }
 }
