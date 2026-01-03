@@ -4,5 +4,6 @@ include(
     "emr-core",
     "emr-domain",
     "emr-clinical",
-    "emr-finance"
+    "emr-finance",
+    "emr-support"
 )
