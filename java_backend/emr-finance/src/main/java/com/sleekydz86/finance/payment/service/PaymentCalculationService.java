@@ -6,6 +6,7 @@ import com.sleekydz86.finance.contract.entity.ContractEntity;
 import com.sleekydz86.finance.contract.entity.ContractRelayEntity;
 import com.sleekydz86.finance.contract.repository.ContractRelayRepository;
 import com.sleekydz86.finance.medicalfee.repository.MedicalFeeRepository;
+import com.sleekydz86.finance.payment.dto.PaymentCalculationResult;
 import com.sleekydz86.finance.qualification.dto.AllQualificationsResponse;
 import com.sleekydz86.finance.qualification.service.QualificationService;
 import lombok.RequiredArgsConstructor;
@@ -109,15 +110,6 @@ public class PaymentCalculationService {
         }
 
         return Math.round(selfPay * discountRate / 100.0);
-    }
-
-    @lombok.Builder
-    @lombok.Getter
-    public static class PaymentCalculationResult {
-        private Long totalAmount;      // 총 금액
-        private Long selfPay;          // 본인 부담금
-        private Long insuranceMoney;  // 보험사 지원금
-        private Long discountAmount;  // 할인 금액
     }
 }
 
