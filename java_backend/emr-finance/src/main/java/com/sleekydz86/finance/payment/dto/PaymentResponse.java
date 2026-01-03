@@ -43,15 +43,15 @@ public class PaymentResponse {
         response.setPaymentId(entity.getPaymentId());
         response.setTreatmentId(entity.getTreatmentEntity().getTreatmentId());
         if (entity.getPatientEntity() != null) {
-            response.setPatientNo(entity.getPatientEntity().getPatientNo());
+            response.setPatientNo(entity.getPatientEntity().getPatientNoValue());
         }
         response.setPaymentStatus(entity.getPaymentStatus());
-        response.setPaymentTotalAmount(entity.getPaymentTotalAmount());
-        response.setPaymentSelfPay(entity.getPaymentSelfPay());
-        response.setPaymentInsuranceMoney(entity.getPaymentInsuranceMoney());
-        response.setPaymentCurrentMoney(entity.getPaymentCurrentMoney());
-        response.setPaymentAmount(entity.getPaymentAmount());
-        response.setPaymentRemainMoney(entity.getPaymentRemainMoney());
+        response.setPaymentTotalAmount(entity.getPaymentTotalAmountValue());
+        response.setPaymentSelfPay(entity.getPaymentSelfPayValue());
+        response.setPaymentInsuranceMoney(entity.getPaymentInsuranceMoneyValue());
+        response.setPaymentCurrentMoney(entity.getPaymentCurrentMoneyValue());
+        response.setPaymentAmount(entity.getPaymentAmountValue());
+        response.setPaymentRemainMoney(entity.getPaymentRemainMoneyValue());
         response.setPaymentMethod(entity.getPaymentMethod());
         response.setPaymentDate(entity.getPaymentDate());
         response.setApprovalNumber(entity.getApprovalNumber());

@@ -8,6 +8,7 @@ import com.sleekydz86.finance.medicalfee.dto.MedicalTypeDetailResponse;
 import com.sleekydz86.finance.medicalfee.dto.MedicalTypeRequest;
 import com.sleekydz86.finance.medicalfee.dto.MedicalTypeResponse;
 import com.sleekydz86.finance.medicalfee.dto.MedicalTypeUpdateRequest;
+import com.sleekydz86.finance.common.valueobject.Money;
 import com.sleekydz86.finance.medicalfee.entity.MedicalFeeEntity;
 import com.sleekydz86.finance.medicalfee.entity.MedicalTypeEntity;
 import com.sleekydz86.finance.medicalfee.repository.MedicalFeeRepository;
@@ -35,7 +36,6 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
                 "진료 유형을 찾을 수 없습니다. ID: " + medicalTypeId);
         return MedicalTypeResponse.from(medicalType);
     }
-
 
     public MedicalTypeDetailResponse getMedicalTypeDetailById(Long medicalTypeId) {
         MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, medicalTypeId,
@@ -77,7 +77,7 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
         MedicalTypeEntity medicalType = MedicalTypeEntity.builder()
                 .medicalTypeCode(request.getMedicalTypeCode())
                 .medicalTypeName(request.getMedicalTypeName())
-                .medicalTypeFee(request.getMedicalTypeFee())
+                .medicalTypeFee(Money.of(request.getMedicalTypeFee()))
                 .medicalTypeDescription(request.getMedicalTypeDescription())
                 .isActive(true)
                 .build();
@@ -102,10 +102,13 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
                     "이미 존재하는 진료 유형명입니다: " + request.getMedicalTypeName());
         }
 
-        medicalType.setMedicalTypeCode(request.getMedicalTypeCode());
-        medicalType.setMedicalTypeName(request.getMedicalTypeName());
-        medicalType.setMedicalTypeFee(request.getMedicalTypeFee());
-        medicalType.setMedicalTypeDescription(request.getMedicalTypeDescription());
+        if (!medicalType.getMedicalTypeCode().equals(request.getMedicalTypeCode())) {
+            medicalType.updateCode(request.getMedicalTypeCode());
+        }
+        medicalType.updateInfo(request.getMedicalTypeName(), request.getMedicalTypeDescription());
+        if (request.getMedicalTypeFee() != null) {
+            medicalType.updateFee(Money.of(request.getMedicalTypeFee()));
+        }
 
         MedicalTypeEntity saved = medicalTypeRepository.save(medicalType);
         return MedicalTypeResponse.from(saved);
@@ -117,14 +120,13 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
         MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, medicalTypeId,
                 "진료 유형을 찾을 수 없습니다. ID: " + medicalTypeId);
 
-        List<MedicalFeeEntity> medicalFees =
-                medicalFeeRepository.findByMedicalTypeEntity_MedicalTypeId(medicalTypeId);
+        List<MedicalFeeEntity> medicalFees = medicalFeeRepository.findByMedicalTypeEntity_MedicalTypeId(medicalTypeId);
         if (!medicalFees.isEmpty()) {
             throw new BusinessException(
                     "사용 중인 진료 유형은 삭제할 수 없습니다.");
         }
 
-        medicalType.setIsActive(false);
+        medicalType.deactivate();
         medicalTypeRepository.save(medicalType);
     }
 
@@ -132,7 +134,7 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
     public void activateMedicalType(Long medicalTypeId) {
         MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, medicalTypeId,
                 "진료 유형을 찾을 수 없습니다. ID: " + medicalTypeId);
-        medicalType.setIsActive(true);
+        medicalType.activate();
         medicalTypeRepository.save(medicalType);
     }
 
@@ -140,8 +142,7 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
     public void deactivateMedicalType(Long medicalTypeId) {
         MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, medicalTypeId,
                 "진료 유형을 찾을 수 없습니다. ID: " + medicalTypeId);
-        medicalType.setIsActive(false);
+        medicalType.deactivate();
         medicalTypeRepository.save(medicalType);
     }
 }
-

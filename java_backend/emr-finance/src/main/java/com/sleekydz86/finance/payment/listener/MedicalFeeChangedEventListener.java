@@ -3,6 +3,7 @@ package com.sleekydz86.finance.payment.listener;
 import com.sleekydz86.finance.medicalfee.event.MedicalFeeCreatedEvent;
 import com.sleekydz86.finance.medicalfee.event.MedicalFeeDeletedEvent;
 import com.sleekydz86.finance.medicalfee.event.MedicalFeeUpdatedEvent;
+import com.sleekydz86.finance.common.valueobject.Money;
 import com.sleekydz86.finance.payment.dto.PaymentCalculationResult;
 import com.sleekydz86.finance.payment.entity.PaymentEntity;
 import com.sleekydz86.finance.payment.repository.PaymentRepository;
@@ -90,15 +91,20 @@ public class MedicalFeeChangedEventListener {
                         payment.getPatientEntity()
                 );
 
-        payment.setPaymentTotalAmount(calculationResult.getTotalAmount());
-        payment.setPaymentSelfPay(calculationResult.getSelfPay());
-        payment.setPaymentInsuranceMoney(calculationResult.getInsuranceMoney());
+        Money totalAmount = Money.of(calculationResult.getTotalAmount());
+        Money selfPay = Money.of(calculationResult.getSelfPay());
+        Money insuranceMoney = Money.of(calculationResult.getInsuranceMoney());
+        
+        payment.initialize(totalAmount, selfPay, insuranceMoney);
 
-        Long currentPaid = payment.getPaymentCurrentMoney() != null ? payment.getPaymentCurrentMoney() : 0L;
-        payment.setPaymentRemainMoney(calculationResult.getSelfPay() - currentPaid);
+        Money currentPaid = payment.getPaymentCurrentMoney() != null ? payment.getPaymentCurrentMoney() : Money.zero();
+        Money newRemainMoney = selfPay.subtract(currentPaid);
 
-        if (payment.getPaymentRemainMoney() < 0) {
-            payment.setPaymentRemainMoney(0L);
+        if (newRemainMoney.isLessThanOrEqual(Money.zero())) {
+            payment.initialize(totalAmount, selfPay, insuranceMoney);
+        } else {
+            payment.initialize(totalAmount, selfPay, insuranceMoney);
+            payment.partialPay(currentPaid);
         }
 
         paymentRepository.save(payment);

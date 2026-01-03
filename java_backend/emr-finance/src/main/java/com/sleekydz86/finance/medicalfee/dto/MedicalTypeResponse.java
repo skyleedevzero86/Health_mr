@@ -24,10 +24,9 @@ public class MedicalTypeResponse {
         response.setMedicalTypeId(entity.getMedicalTypeId());
         response.setMedicalTypeCode(entity.getMedicalTypeCode());
         response.setMedicalTypeName(entity.getMedicalTypeName());
-        response.setMedicalTypeFee(entity.getMedicalTypeFee());
+        response.setMedicalTypeFee(entity.getMedicalTypeFeeValue());
         response.setMedicalTypeDescription(entity.getMedicalTypeDescription());
         response.setIsActive(entity.getIsActive());
         return response;
     }
 }
-

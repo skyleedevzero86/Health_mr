@@ -143,9 +143,9 @@ public class MedicalFeeController {
             LocalDateTime start = startDate.atStartOfDay();
             LocalDateTime end = endDate.atTime(LocalTime.MAX);
             medicalFees = medicalFeeRepository.findAll().stream()
-                    .filter(mf -> mf.getCreatedAt() != null &&
-                            mf.getCreatedAt().isAfter(start) &&
-                            mf.getCreatedAt().isBefore(end))
+                    .filter(mf -> mf.getCreatedDate() != null &&
+                            mf.getCreatedDate().isAfter(start) &&
+                            mf.getCreatedDate().isBefore(end))
                     .toList();
             if (medicalTypeId != null) {
                 medicalFees = medicalFees.stream()
@@ -182,14 +182,12 @@ public class MedicalFeeController {
                     medicalFee.getMedicalTypeEntity() != null
                             ? medicalFee.getMedicalTypeEntity().getMedicalTypeCode()
                             : "");
-            row.put("진료비금액", medicalFee.getMedicalFeeAmount() != null ? medicalFee.getMedicalFeeAmount()
-                    : 0);
+            row.put("진료비금액", medicalFee.getMedicalFeeAmountValue() != null ? medicalFee.getMedicalFeeAmountValue() : 0);
             row.put("수량", medicalFee.getQuantity() != null ? medicalFee.getQuantity() : 1);
-            Long totalAmount = (medicalFee.getMedicalFeeAmount() != null ? medicalFee.getMedicalFeeAmount()
-                    : 0L) *
+            Long totalAmount = (medicalFee.getMedicalFeeAmountValue() != null ? medicalFee.getMedicalFeeAmountValue() : 0L) *
                     (medicalFee.getQuantity() != null ? medicalFee.getQuantity() : 1);
             row.put("총금액", totalAmount);
-            row.put("생성일시", medicalFee.getCreatedAt() != null ? medicalFee.getCreatedAt().toString() : "");
+            row.put("생성일시", medicalFee.getCreatedDate() != null ? medicalFee.getCreatedDate().toString() : "");
             data.add(row);
         }
 

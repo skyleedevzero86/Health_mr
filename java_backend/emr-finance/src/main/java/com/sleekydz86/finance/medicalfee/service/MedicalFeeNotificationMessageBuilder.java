@@ -14,7 +14,8 @@ public class MedicalFeeNotificationMessageBuilder {
     public String buildMessage(PatientEntity patient, MedicalFeeEntity medicalFee) {
         Long totalAmount = calculateTotalAmount(medicalFee);
         String medicalTypeName = getMedicalTypeName(medicalFee);
-        Long medicalFeeAmount = medicalFee.getMedicalFeeAmount() != null ? medicalFee.getMedicalFeeAmount() : 0;
+        Long medicalFeeAmount = medicalFee.getMedicalFeeAmountValue() != null ? medicalFee.getMedicalFeeAmountValue()
+                : 0L;
         Integer quantity = medicalFee.getQuantity() != null ? medicalFee.getQuantity() : 1;
 
         return String.format(
@@ -35,7 +36,7 @@ public class MedicalFeeNotificationMessageBuilder {
     }
 
     private Long calculateTotalAmount(MedicalFeeEntity medicalFee) {
-        Long amount = medicalFee.getMedicalFeeAmount() != null ? medicalFee.getMedicalFeeAmount() : 0L;
+        Long amount = medicalFee.getMedicalFeeAmountValue() != null ? medicalFee.getMedicalFeeAmountValue() : 0L;
         Integer quantity = medicalFee.getQuantity() != null ? medicalFee.getQuantity() : 1;
         return amount * quantity;
     }
@@ -47,4 +48,3 @@ public class MedicalFeeNotificationMessageBuilder {
         return "";
     }
 }
-

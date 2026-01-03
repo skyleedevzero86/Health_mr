@@ -98,5 +98,12 @@ public class MedicalFeeEntity extends BaseEntity {
     public Long getMedicalFeeAmountValue() {
         return medicalFeeAmount != null ? medicalFeeAmount.getValue() : null;
     }
+
+    public void updateMedicalTypeEntity(MedicalTypeEntity newMedicalTypeEntity) {
+        if (newMedicalTypeEntity == null) {
+            throw new IllegalArgumentException("진료 유형은 필수입니다.");
+        }
+        this.medicalTypeEntity = newMedicalTypeEntity;
+    }
 }
 

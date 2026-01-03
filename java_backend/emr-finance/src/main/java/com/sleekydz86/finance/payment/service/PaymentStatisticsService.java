@@ -36,17 +36,17 @@ public class PaymentStatisticsService {
 
         long count = payments.size();
         long totalAmount = payments.stream()
-                .mapToLong(p -> p.getPaymentTotalAmount() != null ? p.getPaymentTotalAmount() : 0L)
+                .mapToLong(p -> p.getPaymentTotalAmountValue() != null ? p.getPaymentTotalAmountValue() : 0L)
                 .sum();
         long paidAmount = payments.stream()
-                .mapToLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                .mapToLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                 .sum();
 
         Map<PaymentMethod, Long> methodStatistics = payments.stream()
                 .filter(p -> p.getPaymentMethod() != null)
                 .collect(Collectors.groupingBy(
                         PaymentEntity::getPaymentMethod,
-                        Collectors.summingLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                        Collectors.summingLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                 ));
 
         Map<PaymentStatus, Long> statusStatistics = payments.stream()
@@ -75,17 +75,17 @@ public class PaymentStatisticsService {
 
         long count = payments.size();
         long totalAmount = payments.stream()
-                .mapToLong(p -> p.getPaymentTotalAmount() != null ? p.getPaymentTotalAmount() : 0L)
+                .mapToLong(p -> p.getPaymentTotalAmountValue() != null ? p.getPaymentTotalAmountValue() : 0L)
                 .sum();
         long paidAmount = payments.stream()
-                .mapToLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                .mapToLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                 .sum();
 
         Map<PaymentMethod, Long> methodStatistics = payments.stream()
                 .filter(p -> p.getPaymentMethod() != null)
                 .collect(Collectors.groupingBy(
                         PaymentEntity::getPaymentMethod,
-                        Collectors.summingLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                        Collectors.summingLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                 ));
 
 
@@ -100,8 +100,8 @@ public class PaymentStatisticsService {
         Map<Long, Long> patientStatistics = payments.stream()
                 .filter(p -> p.getPatientEntity() != null)
                 .collect(Collectors.groupingBy(
-                        p -> p.getPatientEntity().getPatientNo(),
-                        Collectors.summingLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                        p -> p.getPatientEntity().getPatientNoValue(),
+                        Collectors.summingLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                 ));
 
         return PeriodPaymentStatistics.builder()
@@ -124,15 +124,15 @@ public class PaymentStatisticsService {
 
         long count = unpaidPayments.size();
         long totalUnpaidAmount = unpaidPayments.stream()
-                .mapToLong(p -> p.getPaymentRemainMoney() != null ? p.getPaymentRemainMoney() : 0L)
+                .mapToLong(p -> p.getPaymentRemainMoneyValue() != null ? p.getPaymentRemainMoneyValue() : 0L)
                 .sum();
 
 
         Map<Long, Long> patientStatistics = unpaidPayments.stream()
                 .filter(p -> p.getPatientEntity() != null)
                 .collect(Collectors.groupingBy(
-                        p -> p.getPatientEntity().getPatientNo(),
-                        Collectors.summingLong(p -> p.getPaymentRemainMoney() != null ? p.getPaymentRemainMoney() : 0L)
+                        p -> p.getPatientEntity().getPatientNoValue(),
+                        Collectors.summingLong(p -> p.getPaymentRemainMoneyValue() != null ? p.getPaymentRemainMoneyValue() : 0L)
                 ));
 
         return UnpaidPaymentStatistics.builder()

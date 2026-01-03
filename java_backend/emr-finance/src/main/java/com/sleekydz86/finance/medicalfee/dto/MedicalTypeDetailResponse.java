@@ -27,11 +27,11 @@ public class MedicalTypeDetailResponse {
         response.setMedicalTypeId(entity.getMedicalTypeId());
         response.setMedicalTypeCode(entity.getMedicalTypeCode());
         response.setMedicalTypeName(entity.getMedicalTypeName());
-        response.setMedicalTypeFee(entity.getMedicalTypeFee());
+        response.setMedicalTypeFee(entity.getMedicalTypeFeeValue());
         response.setMedicalTypeDescription(entity.getMedicalTypeDescription());
         response.setIsActive(entity.getIsActive());
-        response.setCreatedAt(entity.getCreatedAt());
-        response.setUpdatedAt(entity.getUpdatedAt());
+        response.setCreatedAt(entity.getCreatedDate());
+        response.setUpdatedAt(entity.getLastModifiedDate());
         return response;
     }
 }

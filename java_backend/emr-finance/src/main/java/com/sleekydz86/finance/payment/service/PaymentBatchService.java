@@ -73,7 +73,7 @@ public class PaymentBatchService {
 
             long totalCount = yesterdayPayments.size();
             long totalAmount = yesterdayPayments.stream()
-                    .mapToLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                    .mapToLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                     .sum();
 
             log.info("일일 결제 통계 생성 완료: 날짜={}, 건수={}, 금액={}",
@@ -101,7 +101,7 @@ public class PaymentBatchService {
 
             long totalCount = weeklyPayments.size();
             long totalAmount = weeklyPayments.stream()
-                    .mapToLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                    .mapToLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                     .sum();
 
             log.info("주간 결제 통계 생성 완료: 기간={}~{}, 건수={}, 금액={}",
@@ -131,7 +131,7 @@ public class PaymentBatchService {
 
             long totalCount = monthlyPayments.size();
             long totalAmount = monthlyPayments.stream()
-                    .mapToLong(p -> p.getPaymentCurrentMoney() != null ? p.getPaymentCurrentMoney() : 0L)
+                    .mapToLong(p -> p.getPaymentCurrentMoneyValue() != null ? p.getPaymentCurrentMoneyValue() : 0L)
                     .sum();
 
             log.info("월간 결제 통계 생성 완료: 기간={}~{}, 건수={}, 금액={}",

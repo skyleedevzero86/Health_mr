@@ -27,7 +27,7 @@ public class MedicalFeeResponse {
         response.setMedicalTypeName(entity.getMedicalTypeEntity().getMedicalTypeName());
         response.setMedicalTypeCode(entity.getMedicalTypeEntity().getMedicalTypeCode());
         response.setTreatmentId(entity.getTreatmentEntity().getTreatmentId());
-        response.setMedicalFeeAmount(entity.getMedicalFeeAmount());
+        response.setMedicalFeeAmount(entity.getMedicalFeeAmountValue());
         response.setQuantity(entity.getQuantity());
         return response;
     }

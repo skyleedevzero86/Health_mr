@@ -25,7 +25,7 @@ public class ContractRelayDetailResponse {
     public static ContractRelayDetailResponse from(ContractRelayEntity entity) {
         ContractRelayDetailResponse response = new ContractRelayDetailResponse();
         response.setContractRelayId(entity.getContractRelayId());
-        response.setPatientNo(entity.getPatientEntity().getPatientNo());
+        response.setPatientNo(entity.getPatientEntity().getPatientNo().getValue());
         response.setPatientName(entity.getPatientEntity().getPatientName());
         response.setContractCode(entity.getContractEntity().getContractCode());
         response.setContractName(entity.getContractEntity().getContractName());

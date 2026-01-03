@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AllQualificationsResponse {
 
+    private Long patientNo;
     private HealthInsuranceResponse healthInsurance;
     private MedicalAssistanceResponse medicalAssistance;
     private BasicLivelihoodResponse basicLivelihood;

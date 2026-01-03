@@ -164,6 +164,13 @@ public class PaymentEntity extends BaseEntity {
         this.paymentRemainMoney = Money.zero();
     }
 
+    public void updatePaymentMethod(PaymentMethod method) {
+        if (method == null) {
+            throw new IllegalArgumentException("결제 수단은 필수입니다.");
+        }
+        this.paymentMethod = method;
+    }
+
     public void partialPay(Money amount) {
         if (amount == null || amount.isZero()) {
             throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다.");

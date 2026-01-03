@@ -92,6 +92,13 @@ public class MedicalTypeEntity extends BaseEntity {
         }
     }
 
+    public void updateCode(String code) {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("진료 유형 코드는 필수입니다.");
+        }
+        this.medicalTypeCode = code;
+    }
+
     public boolean isActive() {
         return Boolean.TRUE.equals(isActive);
     }

@@ -30,7 +30,7 @@ public class PaymentCalculationService {
 
         Long totalMedicalFee = calculateTotalMedicalFee(treatment.getTreatmentId());
 
-        AllQualificationsResponse qualifications = qualificationService.getAllQualifications(patient.getPatientNo())
+        AllQualificationsResponse qualifications = qualificationService.getAllQualifications(patient.getPatientNoValue())
                 .block();
 
         double selfPayRate = calculateSelfPayRate(qualifications);
@@ -39,7 +39,7 @@ public class PaymentCalculationService {
 
         Long insuranceMoney = totalMedicalFee - selfPay;
 
-        Long discountAmount = calculateContractDiscount(patient.getPatientNo(), selfPay);
+        Long discountAmount = calculateContractDiscount(patient.getPatientNoValue(), selfPay);
 
         Long finalSelfPay = selfPay - discountAmount;
         if (finalSelfPay < 0) {

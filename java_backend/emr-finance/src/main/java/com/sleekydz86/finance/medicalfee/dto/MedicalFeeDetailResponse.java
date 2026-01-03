@@ -1,5 +1,6 @@
 package com.sleekydz86.finance.medicalfee.dto;
 
+import com.sleekydz86.finance.common.valueobject.Money;
 import com.sleekydz86.finance.medicalfee.entity.MedicalFeeEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,11 +32,12 @@ public class MedicalFeeDetailResponse {
         response.setMedicalTypeName(entity.getMedicalTypeEntity().getMedicalTypeName());
         response.setMedicalTypeCode(entity.getMedicalTypeEntity().getMedicalTypeCode());
         response.setTreatmentId(entity.getTreatmentEntity().getTreatmentId());
-        response.setMedicalFeeAmount(entity.getMedicalFeeAmount());
+        response.setMedicalFeeAmount(entity.getMedicalFeeAmountValue());
         response.setQuantity(entity.getQuantity());
-        response.setTotalAmount(entity.getMedicalFeeAmount() * entity.getQuantity());
-        response.setCreatedAt(entity.getCreatedAt());
-        response.setUpdatedAt(entity.getUpdatedAt());
+        Money totalFee = entity.calculateTotalFee();
+        response.setTotalAmount(totalFee != null ? totalFee.getValue() : 0L);
+        response.setCreatedAt(entity.getCreatedDate());
+        response.setUpdatedAt(entity.getLastModifiedDate());
         return response;
     }
 }

@@ -1,6 +1,5 @@
 package com.sleekydz86.finance.payment.service;
 
-
 import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
@@ -10,6 +9,7 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.treatment.service.TreatmentService;
+import com.sleekydz86.finance.common.valueobject.Money;
 import com.sleekydz86.finance.payment.dto.PaymentCalculationResult;
 import com.sleekydz86.finance.payment.dto.*;
 import com.sleekydz86.finance.payment.entity.PaymentEntity;
@@ -80,12 +80,12 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
                 .treatmentEntity(treatment)
                 .patientEntity(patient)
                 .paymentStatus(PaymentStatus.UNPAID)
-                .paymentTotalAmount(calculationResult.getTotalAmount())
-                .paymentSelfPay(calculationResult.getSelfPay())
-                .paymentInsuranceMoney(calculationResult.getInsuranceMoney())
-                .paymentCurrentMoney(0L)
-                .paymentAmount(0L)
-                .paymentRemainMoney(calculationResult.getSelfPay())
+                .paymentTotalAmount(Money.of(calculationResult.getTotalAmount()))
+                .paymentSelfPay(Money.of(calculationResult.getSelfPay()))
+                .paymentInsuranceMoney(Money.of(calculationResult.getInsuranceMoney()))
+                .paymentCurrentMoney(Money.zero())
+                .paymentAmount(Money.zero())
+                .paymentRemainMoney(Money.of(calculationResult.getSelfPay()))
                 .paymentMethod(request.getPaymentMethod())
                 .paymentDate(LocalDateTime.now())
                 .build();
@@ -95,7 +95,7 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
         eventPublisher.publish(new PaymentCreatedEvent(
                 saved.getPaymentId(),
                 saved.getTreatmentEntity().getTreatmentId(),
-                patient.getPatientNo()));
+                patient.getPatientNoValue()));
 
         return PaymentResponse.from(saved);
     }
@@ -206,11 +206,11 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
         paymentValidationService.validateNotPaid(payment);
 
         paymentValidationService.validatePaymentAmount(request.getPaymentAmount(),
-                payment.getPaymentTotalAmount());
+                payment.getPaymentTotalAmountValue());
 
-        payment.partialPay(request.getPaymentAmount());
+        payment.partialPay(Money.of(request.getPaymentAmount()));
         if (request.getPaymentMethod() != null) {
-            payment.setPaymentMethod(request.getPaymentMethod());
+            payment.updatePaymentMethod(request.getPaymentMethod());
         }
 
         PaymentEntity saved = paymentRepository.save(payment);
@@ -219,7 +219,7 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
             eventPublisher.publish(new PaymentCompletedEvent(
                     saved.getPaymentId(),
                     saved.getTreatmentEntity().getTreatmentId(),
-                    saved.getPatientEntity() != null ? saved.getPatientEntity().getPatientNo() : null));
+                    saved.getPatientEntity() != null ? saved.getPatientEntity().getPatientNoValue() : null));
             paymentNotificationService.sendPaymentCompletedNotification(saved);
         }
 
@@ -239,7 +239,7 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
         eventPublisher.publish(new PaymentCompletedEvent(
                 saved.getPaymentId(),
                 saved.getTreatmentEntity().getTreatmentId(),
-                saved.getPatientEntity() != null ? saved.getPatientEntity().getPatientNo() : null));
+                saved.getPatientEntity() != null ? saved.getPatientEntity().getPatientNoValue() : null));
 
         paymentNotificationService.sendPaymentCompletedNotification(saved);
 
@@ -273,9 +273,9 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
         paymentValidationService.validateCanRefund(payment);
 
         paymentValidationService.validateRefundAmount(request.getRefundAmount(),
-                payment.getPaymentCurrentMoney());
+                payment.getPaymentCurrentMoneyValue());
 
-        payment.refund(request.getRefundAmount(), request.getRefundMethod());
+        payment.refund(Money.of(request.getRefundAmount()), request.getRefundMethod());
 
         PaymentEntity saved = paymentRepository.save(payment);
 
