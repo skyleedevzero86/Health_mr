@@ -114,7 +114,7 @@ public class RecessService {
                 entity.getRecessStart(),
                 entity.getRecessEnd(),
                 entity.getRecessReason(),
-                entity.getRecessCreate()
+                entity.getCreatedDate()
         );
     }
 }

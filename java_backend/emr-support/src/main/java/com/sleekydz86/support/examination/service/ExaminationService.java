@@ -7,7 +7,7 @@ import com.sleekydz86.support.examination.dto.ExaminationResponse;
 import com.sleekydz86.support.examination.dto.ExaminationUpdateRequest;
 import com.sleekydz86.support.examination.entity.ExaminationEntity;
 import com.sleekydz86.support.examination.repository.ExaminationRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -32,13 +32,17 @@ public class ExaminationService {
                     .orElseThrow(() -> new IllegalArgumentException("장비 정보를 찾을 수 없습니다."));
         }
 
+        Long price = request.getExaminationPrice() != null && !request.getExaminationPrice().isBlank()
+                ? Long.parseLong(request.getExaminationPrice())
+                : 0L;
+        
         ExaminationEntity examinationEntity = ExaminationEntity.builder()
                 .equipmentEntity(foundEquipment)
                 .examinationName(request.getExaminationName())
                 .examinationType(request.getExaminationType())
                 .examinationConstraints(request.getExaminationConstraints())
                 .examinationLocation(request.getExaminationLocation())
-                .examinationPrice(request.getExaminationPrice())
+                .examinationPrice(price)
                 .build();
 
         return examinationRepository.save(examinationEntity);
@@ -59,7 +63,7 @@ public class ExaminationService {
                     examinationEntity.getExaminationType(),
                     examinationEntity.getExaminationConstraints(),
                     examinationEntity.getExaminationLocation(),
-                    examinationEntity.getExaminationPrice()
+                    String.valueOf(examinationEntity.getExaminationPrice())
             );
         }
         return null;
@@ -86,7 +90,7 @@ public class ExaminationService {
                             examinationEntity.getExaminationPrice()
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
@@ -107,7 +111,7 @@ public class ExaminationService {
                             examinationEntity.getExaminationPrice()
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -122,13 +126,18 @@ public class ExaminationService {
                     .orElseThrow(() -> new RuntimeException("갱신하려는 해당 장비 정보가 없습니다."));
         }
 
-        ExaminationEntity updatedEntity = existingEntity.toBuilder()
+        Long price = request.getExaminationPrice() != null && !request.getExaminationPrice().isBlank()
+                ? Long.parseLong(request.getExaminationPrice())
+                : existingEntity.getExaminationPrice();
+        
+        ExaminationEntity updatedEntity = ExaminationEntity.builder()
+                .examinationId(existingEntity.getExaminationId())
                 .equipmentEntity(foundEquipment)
                 .examinationName(request.getExaminationName() != null ? request.getExaminationName() : existingEntity.getExaminationName())
                 .examinationType(request.getExaminationType() != null ? request.getExaminationType() : existingEntity.getExaminationType())
                 .examinationConstraints(request.getExaminationConstraints() != null ? request.getExaminationConstraints() : existingEntity.getExaminationConstraints())
                 .examinationLocation(request.getExaminationLocation() != null ? request.getExaminationLocation() : existingEntity.getExaminationLocation())
-                .examinationPrice(request.getExaminationPrice() != null ? request.getExaminationPrice() : existingEntity.getExaminationPrice())
+                .examinationPrice(price)
                 .build();
 
         return examinationRepository.save(updatedEntity);

@@ -87,9 +87,18 @@ public class EquipmentIntegrationService {
         EquipmentIntegrationEntity integration = integrationRepository.findById(integrationId)
                 .orElseThrow(() -> new IllegalArgumentException("연동 정보를 찾을 수 없습니다."));
 
-        EquipmentIntegrationEntity updated = integration.toBuilder()
+        EquipmentIntegrationEntity updated = EquipmentIntegrationEntity.builder()
+                .equipmentEntity(integration.getEquipmentEntity())
+                .integrationType(integration.getIntegrationType())
+                .integrationProtocol(integration.getIntegrationProtocol())
+                .hisEndpointUrl(integration.getHisEndpointUrl())
+                .hl7EndpointUrl(integration.getHl7EndpointUrl())
+                .fhirEndpointUrl(integration.getFhirEndpointUrl())
+                .apiKey(integration.getApiKey())
+                .apiSecret(integration.getApiSecret())
                 .integrationStatus(status)
                 .lastSyncTime(LocalDateTime.now())
+                .integrationConfig(integration.getIntegrationConfig())
                 .build();
 
         EquipmentIntegrationEntity saved = integrationRepository.save(updated);
@@ -101,8 +110,18 @@ public class EquipmentIntegrationService {
         EquipmentIntegrationEntity integration = integrationRepository.findById(integrationId)
                 .orElseThrow(() -> new IllegalArgumentException("연동 정보를 찾을 수 없습니다."));
 
-        EquipmentIntegrationEntity updated = integration.toBuilder()
+        EquipmentIntegrationEntity updated = EquipmentIntegrationEntity.builder()
+                .equipmentEntity(integration.getEquipmentEntity())
+                .integrationType(integration.getIntegrationType())
+                .integrationProtocol(integration.getIntegrationProtocol())
+                .hisEndpointUrl(integration.getHisEndpointUrl())
+                .hl7EndpointUrl(integration.getHl7EndpointUrl())
+                .fhirEndpointUrl(integration.getFhirEndpointUrl())
+                .apiKey(integration.getApiKey())
+                .apiSecret(integration.getApiSecret())
+                .integrationStatus(integration.getIntegrationStatus())
                 .lastSyncTime(LocalDateTime.now())
+                .integrationConfig(integration.getIntegrationConfig())
                 .build();
 
         integrationRepository.save(updated);
@@ -121,8 +140,8 @@ public class EquipmentIntegrationService {
                 .fhirEndpointUrl(integration.getFhirEndpointUrl())
                 .integrationStatus(integration.getIntegrationStatus())
                 .lastSyncTime(integration.getLastSyncTime())
-                .createdAt(integration.getCreatedAt())
-                .updatedAt(integration.getUpdatedAt())
+                .createdAt(integration.getCreatedDate())
+                .updatedAt(integration.getLastModifiedDate())
                 .build();
     }
 }

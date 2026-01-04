@@ -179,7 +179,7 @@ public class DoctorTreatmentService {
 
         return new DoctorTreatmentResponse(
                 entity.getDoctorTreatmentId(),
-                patient.getPatientNo(),
+                patient.getPatientNo().getValue(),
                 patient.getPatientName(),
                 doctor.getId(),
                 doctor.getName(),

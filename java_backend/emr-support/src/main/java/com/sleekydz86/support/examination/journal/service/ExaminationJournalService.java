@@ -104,7 +104,13 @@ public class ExaminationJournalService {
         ExaminationJournalEntity journal = journalRepository.findById(journalId)
                 .orElseThrow(() -> new IllegalArgumentException("검사 일지를 찾을 수 없습니다."));
 
-        ExaminationJournalEntity updated = journal.toBuilder()
+        ExaminationJournalEntity updated = ExaminationJournalEntity.builder()
+                .examinationJournalId(journal.getExaminationJournalId())
+                .examinationEntity(journal.getExaminationEntity())
+                .patientEntity(journal.getPatientEntity())
+                .treatmentEntity(journal.getTreatmentEntity())
+                .userEntity(journal.getUserEntity())
+                .equipmentEntity(journal.getEquipmentEntity())
                 .examinationTime(request.getExaminationTime() != null ? request.getExaminationTime() : journal.getExaminationTime())
                 .examinationEquipmentUsage(request.getExaminationEquipmentUsage() != null ? request.getExaminationEquipmentUsage() : journal.getExaminationEquipmentUsage())
                 .examinationNotes(request.getExaminationNotes() != null ? request.getExaminationNotes() : journal.getExaminationNotes())
@@ -135,7 +141,7 @@ public class ExaminationJournalService {
                 .examinationJournalId(journal.getExaminationJournalId())
                 .examinationId(examination.getExaminationId())
                 .examinationName(examination.getExaminationName())
-                .patientNo(patient.getPatientNo())
+                .patientNo(patient.getPatientNo().getValue())
                 .patientName(patient.getPatientName())
                 .treatmentId(treatment.getTreatmentId())
                 .userId(user.getId())

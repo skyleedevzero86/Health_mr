@@ -14,6 +14,7 @@ import java.time.LocalDate;
 @Table(name = "equipment_journal")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class EquipmentJournalEntity extends BaseEntity {
 
     @Id

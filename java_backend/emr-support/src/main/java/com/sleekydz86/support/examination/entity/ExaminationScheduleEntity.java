@@ -16,6 +16,7 @@ import java.time.LocalDate;
 @Table(name = "examination_schedule")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class ExaminationScheduleEntity extends BaseEntity {
 
     @Id

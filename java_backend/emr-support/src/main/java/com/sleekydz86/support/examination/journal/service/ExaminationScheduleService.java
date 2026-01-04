@@ -93,7 +93,12 @@ public class ExaminationScheduleService {
         ExaminationScheduleEntity schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("검사 일정을 찾을 수 없습니다."));
 
-        ExaminationScheduleEntity updated = schedule.toBuilder()
+        ExaminationScheduleEntity updated = ExaminationScheduleEntity.builder()
+                .examinationScheduleId(schedule.getExaminationScheduleId())
+                .examinationEntity(schedule.getExaminationEntity())
+                .patientEntity(schedule.getPatientEntity())
+                .treatmentEntity(schedule.getTreatmentEntity())
+                .userEntity(schedule.getUserEntity())
                 .examinationDate(request.getExaminationDate() != null ? request.getExaminationDate() : schedule.getExaminationDate())
                 .build();
 
@@ -121,7 +126,7 @@ public class ExaminationScheduleService {
                 .examinationScheduleId(schedule.getExaminationScheduleId())
                 .examinationId(examination.getExaminationId())
                 .examinationName(examination.getExaminationName())
-                .patientNo(patient.getPatientNo())
+                .patientNo(patient.getPatientNo().getValue())
                 .patientName(patient.getPatientName())
                 .treatmentId(treatment.getTreatmentId())
                 .userId(user.getId())

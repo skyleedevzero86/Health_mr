@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @Table(name = "examination_journal")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class ExaminationJournalEntity extends BaseEntity {
 
     @Id

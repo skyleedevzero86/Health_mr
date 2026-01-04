@@ -89,7 +89,11 @@ public class ExaminationResultService {
         ExaminationResultEntity result = resultRepository.findById(resultId)
                 .orElseThrow(() -> new IllegalArgumentException("검사 결과를 찾을 수 없습니다."));
 
-        ExaminationResultEntity updated = result.toBuilder()
+        ExaminationResultEntity updated = ExaminationResultEntity.builder()
+                .examinationResultId(result.getExaminationResultId())
+                .examinationEntity(result.getExaminationEntity())
+                .patientEntity(result.getPatientEntity())
+                .treatmentEntity(result.getTreatmentEntity())
                 .examinationDate(request.getExaminationDate() != null ? request.getExaminationDate() : result.getExaminationDate())
                 .examinationResult(request.getExaminationResult() != null ? request.getExaminationResult() : result.getExaminationResult())
                 .examinationNormal(request.getExaminationNormal() != null ? request.getExaminationNormal() : result.getExaminationNormal())
@@ -119,7 +123,7 @@ public class ExaminationResultService {
                 .examinationResultId(result.getExaminationResultId())
                 .examinationId(examination.getExaminationId())
                 .examinationName(examination.getExaminationName())
-                .patientNo(patient.getPatientNo())
+                .patientNo(patient.getPatientNo().getValue())
                 .patientName(patient.getPatientName())
                 .treatmentId(treatment.getTreatmentId())
                 .examinationDate(result.getExaminationDate())

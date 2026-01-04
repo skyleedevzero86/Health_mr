@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "blood_bank")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class BloodBankEntity extends BaseEntity {
 
     @Id

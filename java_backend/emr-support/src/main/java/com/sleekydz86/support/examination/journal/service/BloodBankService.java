@@ -86,7 +86,12 @@ public class BloodBankService {
         BloodBankEntity bloodBank = bloodBankRepository.findById(bloodBankId)
                 .orElseThrow(() -> new IllegalArgumentException("혈액은행 정보를 찾을 수 없습니다."));
 
-        BloodBankEntity updated = bloodBank.toBuilder()
+        BloodBankEntity updated = BloodBankEntity.builder()
+                .bloodBankId(bloodBank.getBloodBankId())
+                .examinationEntity(bloodBank.getExaminationEntity())
+                .patientEntity(bloodBank.getPatientEntity())
+                .treatmentEntity(bloodBank.getTreatmentEntity())
+                .userEntity(bloodBank.getUserEntity())
                 .examinationTime(request.getExaminationTime() != null ? request.getExaminationTime() : bloodBank.getExaminationTime())
                 .bloodType(request.getBloodType() != null ? request.getBloodType() : bloodBank.getBloodType())
                 .build();
@@ -115,7 +120,7 @@ public class BloodBankService {
                 .bloodBankId(bloodBank.getBloodBankId())
                 .examinationId(examination.getExaminationId())
                 .examinationName(examination.getExaminationName())
-                .patientNo(patient.getPatientNo())
+                .patientNo(patient.getPatientNo().getValue())
                 .patientName(patient.getPatientName())
                 .treatmentId(treatment.getTreatmentId())
                 .userId(user.getId())

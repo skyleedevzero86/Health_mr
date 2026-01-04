@@ -60,7 +60,7 @@ public class DisabilityService {
 
             return new DisabilityResponse(
                     disabilityEntity.getDisabilityId(),
-                    patient.getPatientNo(),
+                    patient.getPatientNo().getValue(),
                     patient.getPatientName(),
                     disabilityEntity.getDisabilityGrade(),
                     disabilityEntity.getDisabilityType(),
@@ -79,7 +79,7 @@ public class DisabilityService {
                     PatientEntity patient = disabilityEntity.getPatientEntity();
                     return new DisabilityResponse(
                             disabilityEntity.getDisabilityId(),
-                            patient.getPatientNo(),
+                            patient.getPatientNo().getValue(),
                             patient.getPatientName(),
                             disabilityEntity.getDisabilityGrade(),
                             disabilityEntity.getDisabilityType(),
@@ -87,7 +87,7 @@ public class DisabilityService {
                             disabilityEntity.getDisabilityDeviceType()
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -140,7 +140,7 @@ public class DisabilityService {
         PatientEntity patient = disabilityEntity.getPatientEntity();
         DisabilityResponse deletedDisability = new DisabilityResponse(
                 disabilityEntity.getDisabilityId(),
-                patient.getPatientNo(),
+                patient.getPatientNo().getValue(),
                 patient.getPatientName(),
                 disabilityEntity.getDisabilityGrade(),
                 disabilityEntity.getDisabilityType(),

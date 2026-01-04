@@ -53,7 +53,6 @@ public class EquipmentIntegrationEntity extends BaseEntity {
 
     @Column(name = "integration_status", nullable = false, length = 20)
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private IntegrationStatus integrationStatus = IntegrationStatus.ACTIVE;
 
     @Column(name = "last_sync_time")
