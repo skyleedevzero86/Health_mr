@@ -6,6 +6,7 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 @Table(name = "examination_result")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class ExaminationResultEntity extends BaseEntity {
 

@@ -87,10 +87,10 @@ public class ExaminationService {
                             examinationEntity.getExaminationType(),
                             examinationEntity.getExaminationConstraints(),
                             examinationEntity.getExaminationLocation(),
-                            examinationEntity.getExaminationPrice()
+                            String.valueOf(examinationEntity.getExaminationPrice())
                     );
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
 
@@ -108,10 +108,10 @@ public class ExaminationService {
                             examinationEntity.getExaminationType(),
                             examinationEntity.getExaminationConstraints(),
                             examinationEntity.getExaminationLocation(),
-                            examinationEntity.getExaminationPrice()
+                            String.valueOf(examinationEntity.getExaminationPrice())
                     );
                 })
-                .toList();
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -158,7 +158,7 @@ public class ExaminationService {
                 examinationEntity.getExaminationType(),
                 examinationEntity.getExaminationConstraints(),
                 examinationEntity.getExaminationLocation(),
-                examinationEntity.getExaminationPrice()
+                String.valueOf(examinationEntity.getExaminationPrice())
         );
 
         examinationRepository.delete(examinationEntity);

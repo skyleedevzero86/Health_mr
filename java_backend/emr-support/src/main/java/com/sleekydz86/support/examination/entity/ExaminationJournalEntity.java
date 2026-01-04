@@ -8,6 +8,7 @@ import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.support.equipment.entity.EquipmentEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Table(name = "examination_journal")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class ExaminationJournalEntity extends BaseEntity {
 

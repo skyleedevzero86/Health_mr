@@ -9,6 +9,7 @@ import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.support.examination.entity.ExaminationEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 @Table(name = "blood_bank")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 public class BloodBankEntity extends BaseEntity {
 
