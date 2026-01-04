@@ -15,6 +15,7 @@ application-test.yml
 application-local.yml
 .gradle
 build/
+samples/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
