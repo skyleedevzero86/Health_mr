@@ -6,7 +6,7 @@ plugins {
 }
 
 application {
-    mainClass.set("com.sleekydz86.finance.EmrFinanceApplication")
+    mainClass.set("com.sleekydz86.support.EmrSupportApplication")
 }
 
 tasks.named("bootJar") {
@@ -22,5 +22,4 @@ dependencies {
     implementation(project(":emr-domain"))
     implementation(project(":emr-clinical"))
     implementation("org.modelmapper:modelmapper:3.1.1")
-
 }
