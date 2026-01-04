@@ -5,6 +5,7 @@ import com.sleekydz86.domain.common.entity.BaseEntity;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,8 @@ import java.time.LocalDate;
 @Table(name = "equipment_journal")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
 public class EquipmentJournalEntity extends BaseEntity {
 
     @Id

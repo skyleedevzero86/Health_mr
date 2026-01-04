@@ -9,7 +9,7 @@ import com.sleekydz86.support.equipment.journal.dto.EquipmentJournalResponse;
 import com.sleekydz86.support.equipment.journal.dto.EquipmentJournalUpdateRequest;
 import com.sleekydz86.support.equipment.journal.repository.EquipmentJournalRepository;
 import com.sleekydz86.support.equipment.repository.EquipmentRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;

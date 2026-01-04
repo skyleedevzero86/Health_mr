@@ -7,7 +7,7 @@ import com.sleekydz86.support.recess.dto.RecessRequest;
 import com.sleekydz86.support.recess.dto.RecessResponse;
 import com.sleekydz86.support.recess.entity.RecessEntity;
 import com.sleekydz86.support.recess.repository.RecessRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -114,7 +114,7 @@ public class RecessService {
                 entity.getRecessStart(),
                 entity.getRecessEnd(),
                 entity.getRecessReason(),
-                entity.getRecessCreate()
+                entity.getCreatedDate()
         );
     }
 }

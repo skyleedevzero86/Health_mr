@@ -4,7 +4,7 @@ import com.sleekydz86.support.holiday.dto.HolidayRequest;
 import com.sleekydz86.support.holiday.dto.HolidayResponse;
 import com.sleekydz86.support.holiday.entity.HolidayEntity;
 import com.sleekydz86.support.holiday.repository.HolidayRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;

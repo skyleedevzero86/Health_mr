@@ -8,7 +8,7 @@ import com.sleekydz86.support.disability.dto.DisabilityResponse;
 import com.sleekydz86.support.disability.dto.DisabilityUpdateRequest;
 import com.sleekydz86.support.disability.entity.DisabilityEntity;
 import com.sleekydz86.support.disability.repository.DisabilityRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -36,11 +36,14 @@ public class DisabilityService {
             throw new IllegalStateException("이미 해당 환자에 대한 장애인 정보가 등록되어 있습니다.");
         }
 
+        Boolean needsAssistiveDevice = "Y".equalsIgnoreCase(request.getDisabilityDeviceYN()) || 
+                                        "true".equalsIgnoreCase(request.getDisabilityDeviceYN());
+        
         DisabilityEntity disabilityEntity = DisabilityEntity.builder()
                 .patientEntity(patient)
                 .disabilityGrade(request.getDisabilityGrade())
                 .disabilityType(request.getDisabilityType())
-                .disabilityDeviceYN(request.getDisabilityDeviceYN())
+                .needsAssistiveDevice(needsAssistiveDevice)
                 .disabilityDeviceType(request.getDisabilityDeviceType())
                 .build();
 
@@ -57,11 +60,11 @@ public class DisabilityService {
 
             return new DisabilityResponse(
                     disabilityEntity.getDisabilityId(),
-                    patient.getPatientNo(),
+                    patient.getPatientNo().getValue(),
                     patient.getPatientName(),
                     disabilityEntity.getDisabilityGrade(),
                     disabilityEntity.getDisabilityType(),
-                    disabilityEntity.getDisabilityDeviceYN(),
+                    disabilityEntity.getDisabilityDeviceYNValue(),
                     disabilityEntity.getDisabilityDeviceType()
             );
         }
@@ -76,15 +79,15 @@ public class DisabilityService {
                     PatientEntity patient = disabilityEntity.getPatientEntity();
                     return new DisabilityResponse(
                             disabilityEntity.getDisabilityId(),
-                            patient.getPatientNo(),
+                            patient.getPatientNo().getValue(),
                             patient.getPatientName(),
                             disabilityEntity.getDisabilityGrade(),
                             disabilityEntity.getDisabilityType(),
-                            disabilityEntity.getDisabilityDeviceYN(),
+                            disabilityEntity.getDisabilityDeviceYNValue(),
                             disabilityEntity.getDisabilityDeviceType()
                     );
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -97,6 +100,14 @@ public class DisabilityService {
             throw new RuntimeException("해당 장애인 정보가 없습니다.");
         }
 
+        Boolean needsAssistiveDevice;
+        if (request.getDisabilityDeviceYN() != null && !request.getDisabilityDeviceYN().isBlank()) {
+            needsAssistiveDevice = "Y".equalsIgnoreCase(request.getDisabilityDeviceYN()) || 
+                                   "true".equalsIgnoreCase(request.getDisabilityDeviceYN());
+        } else {
+            needsAssistiveDevice = disabilityEntity.getNeedsAssistiveDevice();
+        }
+        
         DisabilityEntity updatedEntity = DisabilityEntity.builder()
                 .disabilityId(disabilityEntity.getDisabilityId())
                 .patientEntity(patientEntity)
@@ -106,9 +117,7 @@ public class DisabilityService {
                 .disabilityType(request.getDisabilityType() != null && !request.getDisabilityType().isBlank()
                         ? request.getDisabilityType()
                         : disabilityEntity.getDisabilityType())
-                .disabilityDeviceYN(request.getDisabilityDeviceYN() != null && !request.getDisabilityDeviceYN().isBlank()
-                        ? request.getDisabilityDeviceYN()
-                        : disabilityEntity.getDisabilityDeviceYN())
+                .needsAssistiveDevice(needsAssistiveDevice)
                 .disabilityDeviceType(request.getDisabilityDeviceType() != null && !request.getDisabilityDeviceType().isBlank()
                         ? request.getDisabilityDeviceType()
                         : disabilityEntity.getDisabilityDeviceType())
@@ -131,11 +140,11 @@ public class DisabilityService {
         PatientEntity patient = disabilityEntity.getPatientEntity();
         DisabilityResponse deletedDisability = new DisabilityResponse(
                 disabilityEntity.getDisabilityId(),
-                patient.getPatientNo(),
+                patient.getPatientNo().getValue(),
                 patient.getPatientName(),
                 disabilityEntity.getDisabilityGrade(),
                 disabilityEntity.getDisabilityType(),
-                disabilityEntity.getDisabilityDeviceYN(),
+                disabilityEntity.getDisabilityDeviceYNValue(),
                 disabilityEntity.getDisabilityDeviceType()
         );
 
