@@ -13,7 +13,7 @@ import com.sleekydz86.support.examination.journal.dto.BloodBankResponse;
 import com.sleekydz86.support.examination.journal.dto.BloodBankUpdateRequest;
 import com.sleekydz86.support.examination.journal.repository.BloodBankRepository;
 import com.sleekydz86.support.examination.repository.ExaminationRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;

@@ -9,7 +9,7 @@ import com.sleekydz86.support.equipment.integration.type.IntegrationProtocol;
 import com.sleekydz86.support.equipment.integration.type.IntegrationStatus;
 import com.sleekydz86.support.equipment.integration.type.IntegrationType;
 import com.sleekydz86.support.equipment.repository.EquipmentRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;

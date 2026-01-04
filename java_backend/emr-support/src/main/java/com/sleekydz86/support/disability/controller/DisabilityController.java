@@ -24,8 +24,10 @@ public class DisabilityController {
             @RequestBody DisabilityRegisterRequest request) {
         try {
             DisabilityEntity responseData = disabilityService.registerDisability(request);
-
-            String patientName = responseData.getPatientEntity().getPatientName();
+            
+            String patientName = responseData.getPatientEntity() != null 
+                    ? responseData.getPatientEntity().getPatientName() 
+                    : "Unknown";
 
             return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                     "message", "등록 성공",

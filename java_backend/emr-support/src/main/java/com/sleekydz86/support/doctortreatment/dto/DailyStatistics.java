@@ -8,12 +8,17 @@ import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class DailyStatistics {
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private Long count;
     private Long totalDuration;
+    
+    public DailyStatistics(LocalDate date, Long count, Long totalDuration) {
+        this.date = date;
+        this.count = count;
+        this.totalDuration = totalDuration;
+    }
 }
 

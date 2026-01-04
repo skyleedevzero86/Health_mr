@@ -11,7 +11,7 @@ import com.sleekydz86.support.examination.journal.dto.ExaminationResultResponse;
 import com.sleekydz86.support.examination.journal.dto.ExaminationResultUpdateRequest;
 import com.sleekydz86.support.examination.journal.repository.ExaminationResultRepository;
 import com.sleekydz86.support.examination.repository.ExaminationRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;

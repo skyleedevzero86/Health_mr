@@ -2,6 +2,7 @@ package com.sleekydz86.support.examination.controller;
 
 import com.sleekydz86.support.examination.dto.ExaminationRegisterRequest;
 import com.sleekydz86.support.examination.dto.ExaminationResponse;
+import com.sleekydz86.support.examination.dto.ExaminationUpdateRequest;
 import com.sleekydz86.support.examination.entity.ExaminationEntity;
 import com.sleekydz86.support.examination.service.ExaminationService;
 import org.springframework.http.HttpStatus;

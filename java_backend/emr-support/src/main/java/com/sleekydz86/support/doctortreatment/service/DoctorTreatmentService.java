@@ -7,7 +7,7 @@ import com.sleekydz86.domain.user.repository.UserRepository;
 import com.sleekydz86.support.doctortreatment.dto.*;
 import com.sleekydz86.support.doctortreatment.entity.DoctorTreatmentEntity;
 import com.sleekydz86.support.doctortreatment.repository.DoctorTreatmentRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.Duration;

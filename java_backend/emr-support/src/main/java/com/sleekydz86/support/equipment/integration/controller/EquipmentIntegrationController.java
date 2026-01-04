@@ -1,7 +1,6 @@
 package com.sleekydz86.support.equipment.integration.controller;
 
 import com.sleekydz86.core.common.annotation.AuthRole;
-import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.support.equipment.integration.dto.EquipmentIntegrationRequest;
 import com.sleekydz86.support.equipment.integration.dto.EquipmentIntegrationResponse;
 import com.sleekydz86.support.equipment.integration.service.EquipmentIntegrationService;
@@ -24,7 +23,7 @@ public class EquipmentIntegrationController {
 
 
     @PostMapping("/register")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Map<String, Object>> registerIntegration(@RequestBody EquipmentIntegrationRequest request) {
         try {
             EquipmentIntegrationResponse response = integrationService.registerIntegration(request);
@@ -114,7 +113,7 @@ public class EquipmentIntegrationController {
     }
 
     @PostMapping("/{integrationId}/status")
-    @AuthRole(roles = {RoleType.ADMIN})
+    @AuthRole(roles = {"ADMIN"})
     public ResponseEntity<Map<String, Object>> updateIntegrationStatus(
             @PathVariable Long integrationId,
             @RequestParam IntegrationStatus status) {
