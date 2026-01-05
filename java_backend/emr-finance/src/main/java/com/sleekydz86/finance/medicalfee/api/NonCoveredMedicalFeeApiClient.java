@@ -2,6 +2,9 @@ package com.sleekydz86.finance.medicalfee.api;
 
 import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemHospDtlResponse;
 import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemHospSummaryResponse;
+import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemCodeList2Response;
+import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemClcdListResponse;
+import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemSidoCdListResponse;
 import com.sleekydz86.finance.medicalfee.api.exception.NonCoveredMedicalFeeApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -132,6 +135,129 @@ public class NonCoveredMedicalFeeApiClient {
                                     ));
                                 }))
                 .bodyToMono(NonPaymentItemHospSummaryResponse.class)
+                .doOnNext(response -> {
+                    if (response.getHeader() != null && !"00".equals(response.getHeader().getResultCode())) {
+                        String errorCode = response.getHeader().getResultCode();
+                        String errorMsg = response.getHeader().getResultMsg();
+                        log.error("API 오류 응답: Code={}, Message={}", errorCode, errorMsg);
+                        throw NonCoveredMedicalFeeApiException.fromErrorCode(errorCode);
+                    }
+                })
+                .onErrorMap(throwable -> {
+                    if (throwable instanceof NonCoveredMedicalFeeApiException) {
+                        return throwable;
+                    }
+                    log.error("API 호출 중 예외 발생", throwable);
+                    return new NonCoveredMedicalFeeApiException("99", "API 호출 중 예외 발생: " + throwable.getMessage(), throwable);
+                });
+    }
+
+    public Mono<NonPaymentItemCodeList2Response> getNonPaymentItemCodeList2(
+            int pageNo,
+            int numOfRows
+    ) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/getNonPaymentItemCodeList2")
+                .queryParam("serviceKey", encodeServiceKey(serviceKey))
+                .queryParam("pageNo", pageNo)
+                .queryParam("numOfRows", numOfRows);
+
+        String uri = builder.toUriString();
+
+        return nonCoveredMedicalFeeWebClient.get()
+                .uri(uri)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> {
+                                    log.error("API 호출 실패: Status={}, Body={}", response.statusCode(), body);
+                                    return Mono.error(new NonCoveredMedicalFeeApiException(
+                                            String.valueOf(response.statusCode().value()),
+                                            "API 호출 실패: " + response.statusCode()
+                                    ));
+                                }))
+                .bodyToMono(NonPaymentItemCodeList2Response.class)
+                .doOnNext(response -> {
+                    if (response.getHeader() != null && !"00".equals(response.getHeader().getResultCode())) {
+                        String errorCode = response.getHeader().getResultCode();
+                        String errorMsg = response.getHeader().getResultMsg();
+                        log.error("API 오류 응답: Code={}, Message={}", errorCode, errorMsg);
+                        throw NonCoveredMedicalFeeApiException.fromErrorCode(errorCode);
+                    }
+                })
+                .onErrorMap(throwable -> {
+                    if (throwable instanceof NonCoveredMedicalFeeApiException) {
+                        return throwable;
+                    }
+                    log.error("API 호출 중 예외 발생", throwable);
+                    return new NonCoveredMedicalFeeApiException("99", "API 호출 중 예외 발생: " + throwable.getMessage(), throwable);
+                });
+    }
+
+    public Mono<NonPaymentItemClcdListResponse> getNonPaymentItemClcdList(
+            int pageNo,
+            int numOfRows
+    ) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/getNonPaymentItemClcdList")
+                .queryParam("serviceKey", encodeServiceKey(serviceKey))
+                .queryParam("pageNo", pageNo)
+                .queryParam("numOfRows", numOfRows);
+
+        String uri = builder.toUriString();
+
+        return nonCoveredMedicalFeeWebClient.get()
+                .uri(uri)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> {
+                                    log.error("API 호출 실패: Status={}, Body={}", response.statusCode(), body);
+                                    return Mono.error(new NonCoveredMedicalFeeApiException(
+                                            String.valueOf(response.statusCode().value()),
+                                            "API 호출 실패: " + response.statusCode()
+                                    ));
+                                }))
+                .bodyToMono(NonPaymentItemClcdListResponse.class)
+                .doOnNext(response -> {
+                    if (response.getHeader() != null && !"00".equals(response.getHeader().getResultCode())) {
+                        String errorCode = response.getHeader().getResultCode();
+                        String errorMsg = response.getHeader().getResultMsg();
+                        log.error("API 오류 응답: Code={}, Message={}", errorCode, errorMsg);
+                        throw NonCoveredMedicalFeeApiException.fromErrorCode(errorCode);
+                    }
+                })
+                .onErrorMap(throwable -> {
+                    if (throwable instanceof NonCoveredMedicalFeeApiException) {
+                        return throwable;
+                    }
+                    log.error("API 호출 중 예외 발생", throwable);
+                    return new NonCoveredMedicalFeeApiException("99", "API 호출 중 예외 발생: " + throwable.getMessage(), throwable);
+                });
+    }
+
+    public Mono<NonPaymentItemSidoCdListResponse> getNonPaymentItemSidoCdList(
+            int pageNo,
+            int numOfRows
+    ) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/getNonPaymentItemSidoCdList")
+                .queryParam("serviceKey", encodeServiceKey(serviceKey))
+                .queryParam("pageNo", pageNo)
+                .queryParam("numOfRows", numOfRows);
+
+        String uri = builder.toUriString();
+
+        return nonCoveredMedicalFeeWebClient.get()
+                .uri(uri)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(body -> {
+                                    log.error("API 호출 실패: Status={}, Body={}", response.statusCode(), body);
+                                    return Mono.error(new NonCoveredMedicalFeeApiException(
+                                            String.valueOf(response.statusCode().value()),
+                                            "API 호출 실패: " + response.statusCode()
+                                    ));
+                                }))
+                .bodyToMono(NonPaymentItemSidoCdListResponse.class)
                 .doOnNext(response -> {
                     if (response.getHeader() != null && !"00".equals(response.getHeader().getResultCode())) {
                         String errorCode = response.getHeader().getResultCode();
