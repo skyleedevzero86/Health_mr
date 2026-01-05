@@ -7,6 +7,8 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
+import com.sleekydz86.emrclinical.prescription.api.dto.AdministrativeActionItemResponse;
+import com.sleekydz86.emrclinical.prescription.api.dto.AdministrativeActionResponse;
 import com.sleekydz86.emrclinical.prescription.api.dto.DrugInfoItemResponse;
 import com.sleekydz86.emrclinical.prescription.dto.PrescriptionCreateRequest;
 import com.sleekydz86.emrclinical.prescription.dto.PrescriptionItemCreateRequest;
@@ -14,6 +16,7 @@ import com.sleekydz86.emrclinical.prescription.dto.PrescriptionUpdateRequest;
 import com.sleekydz86.emrclinical.prescription.entity.PrescriptionEntity;
 import com.sleekydz86.emrclinical.prescription.entity.PrescriptionItemEntity;
 import com.sleekydz86.emrclinical.prescription.repository.PrescriptionRepository;
+import com.sleekydz86.emrclinical.prescription.service.DrugAdministrativeActionService.WarningLevel;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.treatment.service.TreatmentService;
 import com.sleekydz86.emrclinical.types.PrescriptionStatus;
@@ -28,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,9 +46,13 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
     private final PatientService patientService;
     private final UserService userService;
     private final DrugInfoService drugInfoService;
+    private final DrugAdministrativeActionService adminActionService;
     
     @Value("${drug-info.api.validation.enabled:true}")
     private boolean drugValidationEnabled;
+    
+    @Value("${drug-administrative-action.validation.check-on-prescription:true}")
+    private boolean checkAdministrativeActionOnPrescription;
 
     public PrescriptionEntity getPrescriptionById(Long prescriptionId) {
         return validateExists(prescriptionRepository, prescriptionId, "처방을 찾을 수 없습니다. ID: " + prescriptionId);
@@ -119,10 +127,37 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
                 }
             }
             
+            List<String> warnings = new ArrayList<>();
             List<PrescriptionItemEntity> items = request.getPrescriptionItems().stream()
-                    .map(itemRequest -> createPrescriptionItemWithValidation(itemRequest, prescription))
+                    .map(itemRequest -> {
+                        PrescriptionItemEntity item = createPrescriptionItemWithValidation(itemRequest, prescription);
+                        if (checkAdministrativeActionOnPrescription && itemRequest.getDrugCode() != null) {
+                            AdministrativeActionResponse actions = adminActionService.checkAdministrativeAction(itemRequest.getDrugCode());
+                            if (actions != null && !actions.getItems().isEmpty()) {
+                                boolean hasActive = adminActionService.hasActiveAction(itemRequest.getDrugCode());
+                                if (hasActive && !actions.getItems().isEmpty()) {
+                                    AdministrativeActionItemResponse latestAction = actions.getItems().get(0);
+                                    String warning = adminActionService.buildWarningMessage(latestAction);
+                                    warnings.add(warning);
+                                    
+                                    String currentNote = item.getSpecialNote();
+                                    if (currentNote == null || currentNote.isBlank()) {
+                                        item.setSpecialNote(warning);
+                                    } else {
+                                        item.setSpecialNote(currentNote + "\n\n" + warning);
+                                    }
+                                }
+                            }
+                        }
+                        return item;
+                    })
                     .collect(Collectors.toList());
             items.forEach(prescription::addItem);
+            
+            if (!warnings.isEmpty()) {
+                log.warn("처방전에 행정처분 이력이 있는 약물 포함: prescriptionId={}, warnings={}", 
+                        prescription.getPrescriptionId(), warnings.size());
+            }
         }
 
         return prescriptionRepository.save(prescription);
