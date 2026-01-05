@@ -22,5 +22,5 @@ dependencies {
     implementation(project(":emr-domain"))
     implementation(project(":emr-clinical"))
     implementation("org.modelmapper:modelmapper:3.1.1")
-
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 }

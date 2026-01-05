@@ -1,6 +1,7 @@
 package com.sleekydz86.finance.medicalfee.service;
 
 import com.sleekydz86.core.audit.annotation.AuditLog;
+import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
     private final EventPublisher eventPublisher;
     private final MedicalFeeNotificationService medicalFeeNotificationService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final NonCoveredMedicalFeeSyncService nonCoveredMedicalFeeSyncService;
 
     private static final String CACHE_PREFIX_MEDICAL_FEE = "medicalfee:";
     private static final String CACHE_PREFIX_MEDICAL_FEE_TREATMENT = "medicalfee:treatment:";
@@ -61,10 +64,31 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
             throw new DuplicateException("이미 등록된 진료 유형입니다.");
         }
 
+        Money feeAmount = medicalType.getMedicalTypeFee();
+
+        if (feeAmount == null || feeAmount.isZero()) {
+            log.warn("DB에 금액이 없음. API 조회 시도: MedicalTypeId={}", medicalType.getMedicalTypeId());
+
+            Long apiAmount = nonCoveredMedicalFeeSyncService.getNonCoveredFeeAmountForCurrentInstitution(
+                    medicalType.getMedicalTypeCode()
+            ).block(Duration.ofSeconds(5));
+
+            if (apiAmount != null && apiAmount > 0) {
+                feeAmount = Money.of(apiAmount);
+                medicalType.updateFee(feeAmount);
+                medicalTypeRepository.save(medicalType);
+            } else {
+                throw new BusinessException(
+                        "진료 유형의 금액을 조회할 수 없습니다. 관리자에게 문의하세요. " +
+                        "MedicalTypeCode: " + medicalType.getMedicalTypeCode()
+                );
+            }
+        }
+
         MedicalFeeEntity medicalFee = MedicalFeeEntity.builder()
                 .medicalTypeEntity(medicalType)
                 .treatmentEntity(treatment)
-                .medicalFeeAmount(medicalType.getMedicalTypeFee())
+                .medicalFeeAmount(feeAmount)
                 .quantity(request.getQuantity() != null ? request.getQuantity() : 1)
                 .build();
 
@@ -77,6 +101,8 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
                 saved.getMedicalTypeEntity().getMedicalTypeId()));
         medicalFeeNotificationService.sendMedicalFeeRegisteredNotification(saved);
         invalidateMedicalFeeCache(saved);
+
+        nonCoveredMedicalFeeSyncService.syncMedicalTypeFeeForCurrentInstitution(medicalType.getMedicalTypeId());
 
         return MedicalFeeResponse.from(saved);
     }
