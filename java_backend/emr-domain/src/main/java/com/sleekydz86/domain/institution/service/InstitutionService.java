@@ -166,5 +166,10 @@ public class InstitutionService {
     public boolean existsActiveByCode(String institutionCode) {
         return institutionRepository.findActiveByInstitutionCode(institutionCode).isPresent();
     }
+
+    public InstitutionEntity getInstitutionEntityByCode(String institutionCode) {
+        return institutionRepository.findByInstitutionCode(institutionCode)
+                .orElseThrow(() -> new NotFoundException("기관을 찾을 수 없습니다."));
+    }
 }
 

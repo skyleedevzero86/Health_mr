@@ -3,9 +3,11 @@ package com.sleekydz86.support.disability.service;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.repository.PatientRepository;
 import com.sleekydz86.domain.patient.service.PatientService;
+import com.sleekydz86.support.disability.dto.CareInstitutionRecommendationResponse;
 import com.sleekydz86.support.disability.dto.DisabilityRegisterRequest;
 import com.sleekydz86.support.disability.dto.DisabilityResponse;
 import com.sleekydz86.support.disability.dto.DisabilityUpdateRequest;
+import com.sleekydz86.support.disability.dto.DisabilityWithCareInstitutionResponse;
 import com.sleekydz86.support.disability.entity.DisabilityEntity;
 import com.sleekydz86.support.disability.repository.DisabilityRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ public class DisabilityService {
     private final DisabilityRepository disabilityRepository;
     private final PatientRepository patientRepository;
     private final PatientService patientService;
+    private final DisabilityCareInstitutionService careInstitutionService;
 
     @Transactional
     public DisabilityEntity registerDisability(DisabilityRegisterRequest request) {
@@ -151,5 +154,21 @@ public class DisabilityService {
         disabilityRepository.delete(disabilityEntity);
 
         return deletedDisability;
+    }
+
+    public DisabilityWithCareInstitutionResponse getDisabilityWithRecommendations(Long patientNo) {
+        DisabilityResponse disabilityInfo = readDisabilityByPatientNo(patientNo);
+
+        if (disabilityInfo == null) {
+            return null;
+        }
+
+        List<CareInstitutionRecommendationResponse> recommendations =
+            careInstitutionService.recommendInstitutions(patientNo);
+
+        return DisabilityWithCareInstitutionResponse.builder()
+            .disabilityInfo(disabilityInfo)
+            .recommendedInstitutions(recommendations)
+            .build();
     }
 }

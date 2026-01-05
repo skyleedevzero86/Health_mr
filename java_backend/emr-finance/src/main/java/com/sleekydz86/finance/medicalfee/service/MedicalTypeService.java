@@ -30,6 +30,7 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
 
     private final MedicalTypeRepository medicalTypeRepository;
     private final MedicalFeeRepository medicalFeeRepository;
+    private final NonCoveredMedicalFeeSyncService nonCoveredMedicalFeeSyncService;
 
     public MedicalTypeResponse getMedicalTypeById(Long medicalTypeId) {
         MedicalTypeEntity medicalType = validateExists(medicalTypeRepository, medicalTypeId,
@@ -83,6 +84,9 @@ public class MedicalTypeService implements BaseService<MedicalTypeEntity, Long> 
                 .build();
 
         MedicalTypeEntity saved = medicalTypeRepository.save(medicalType);
+
+        nonCoveredMedicalFeeSyncService.syncMedicalTypeFeeForCurrentInstitution(saved.getMedicalTypeId());
+
         return MedicalTypeResponse.from(saved);
     }
 
