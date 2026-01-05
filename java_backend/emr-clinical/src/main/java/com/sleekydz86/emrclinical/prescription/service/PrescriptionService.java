@@ -7,6 +7,7 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
+import com.sleekydz86.emrclinical.prescription.api.dto.DrugInfoItemResponse;
 import com.sleekydz86.emrclinical.prescription.dto.PrescriptionCreateRequest;
 import com.sleekydz86.emrclinical.prescription.dto.PrescriptionItemCreateRequest;
 import com.sleekydz86.emrclinical.prescription.dto.PrescriptionUpdateRequest;
@@ -18,6 +19,8 @@ import com.sleekydz86.emrclinical.treatment.service.TreatmentService;
 import com.sleekydz86.emrclinical.types.PrescriptionStatus;
 import com.sleekydz86.emrclinical.types.PrescriptionType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -37,6 +41,10 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
     private final TreatmentService treatmentService;
     private final PatientService patientService;
     private final UserService userService;
+    private final DrugInfoService drugInfoService;
+    
+    @Value("${drug-info.api.validation.enabled:true}")
+    private boolean drugValidationEnabled;
 
     public PrescriptionEntity getPrescriptionById(Long prescriptionId) {
         return validateExists(prescriptionRepository, prescriptionId, "처방을 찾을 수 없습니다. ID: " + prescriptionId);
@@ -96,8 +104,23 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
                 .build();
 
         if (request.getPrescriptionItems() != null && !request.getPrescriptionItems().isEmpty()) {
+            if (drugValidationEnabled && request.getPrescriptionItems().size() > 1) {
+                List<String> drugCodes = request.getPrescriptionItems().stream()
+                        .map(PrescriptionItemCreateRequest::getDrugCode)
+                        .filter(code -> code != null && !code.isBlank())
+                        .collect(Collectors.toList());
+                
+                if (drugCodes.size() > 1) {
+                    List<String> interactionWarnings = drugInfoService.checkDrugInteractions(drugCodes);
+                    if (!interactionWarnings.isEmpty()) {
+                        log.warn("약물 상호작용 경고: prescriptionId={}, warnings={}", 
+                                prescription.getPrescriptionId(), interactionWarnings.size());
+                    }
+                }
+            }
+            
             List<PrescriptionItemEntity> items = request.getPrescriptionItems().stream()
-                    .map(itemRequest -> createPrescriptionItem(itemRequest, prescription))
+                    .map(itemRequest -> createPrescriptionItemWithValidation(itemRequest, prescription))
                     .collect(Collectors.toList());
             items.forEach(prescription::addItem);
         }
@@ -121,6 +144,58 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
         item.calculateTotalQuantity();
         return item;
     }
+    
+    private PrescriptionItemEntity createPrescriptionItemWithValidation(
+            PrescriptionItemCreateRequest request, PrescriptionEntity prescription) {
+        
+        String specialNote = request.getSpecialNote();
+        
+        if (drugValidationEnabled && request.getDrugCode() != null && !request.getDrugCode().isBlank()) {
+            try {
+                DrugInfoItemResponse drugInfo = drugInfoService.getDrugInfoByItemSeq(request.getDrugCode());
+                
+                if (drugInfo != null) {
+                    if (specialNote == null || specialNote.isBlank()) {
+                        specialNote = drugInfoService.buildSpecialNote(drugInfo);
+                    } else {
+                        String drugInfoNote = drugInfoService.buildSpecialNote(drugInfo);
+                        if (drugInfoNote != null && !drugInfoNote.isBlank()) {
+                            specialNote = specialNote + "\n\n" + drugInfoNote;
+                        }
+                    }
+                    
+                    if ((request.getDosage() == null || request.getDosage().isBlank()) 
+                            && drugInfo.getUseMethodQesitm() != null 
+                            && !drugInfo.getUseMethodQesitm().isBlank()) {
+                        request.setDosage(drugInfo.getUseMethodQesitm());
+                    }
+                    
+                    log.debug("약물 정보 검증 완료: drugCode={}, drugName={}", 
+                            request.getDrugCode(), drugInfo.getItemName());
+                } else {
+                    log.warn("약물 정보를 찾을 수 없습니다: drugCode={}", request.getDrugCode());
+                }
+            } catch (Exception e) {
+                log.error("약물 정보 검증 중 오류 발생: drugCode={}, error={}", 
+                        request.getDrugCode(), e.getMessage(), e);
+            }
+        }
+        
+        PrescriptionItemEntity item = PrescriptionItemEntity.builder()
+                .prescriptionEntity(prescription)
+                .drugCode(request.getDrugCode())
+                .drugName(request.getDrugName())
+                .dosage(request.getDosage())
+                .dose(request.getDose())
+                .frequency(request.getFrequency())
+                .days(request.getDays())
+                .totalQuantity(request.getTotalQuantity())
+                .unit(request.getUnit())
+                .specialNote(specialNote)
+                .build();
+        item.calculateTotalQuantity();
+        return item;
+    }
 
     @Transactional
     public PrescriptionEntity updatePrescription(Long prescriptionId, PrescriptionUpdateRequest request) {
@@ -135,9 +210,24 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
         }
 
         if (request.getPrescriptionItems() != null && !request.getPrescriptionItems().isEmpty()) {
+            if (drugValidationEnabled && request.getPrescriptionItems().size() > 1) {
+                List<String> drugCodes = request.getPrescriptionItems().stream()
+                        .map(PrescriptionItemCreateRequest::getDrugCode)
+                        .filter(code -> code != null && !code.isBlank())
+                        .collect(Collectors.toList());
+                
+                if (drugCodes.size() > 1) {
+                    List<String> interactionWarnings = drugInfoService.checkDrugInteractions(drugCodes);
+                    if (!interactionWarnings.isEmpty()) {
+                        log.warn("약물 상호작용 경고: prescriptionId={}, warnings={}", 
+                                prescription.getPrescriptionId(), interactionWarnings.size());
+                    }
+                }
+            }
+            
             prescription.getPrescriptionItems().clear();
             List<PrescriptionItemEntity> items = request.getPrescriptionItems().stream()
-                    .map(itemRequest -> createPrescriptionItem(itemRequest, prescription))
+                    .map(itemRequest -> createPrescriptionItemWithValidation(itemRequest, prescription))
                     .collect(Collectors.toList());
             items.forEach(prescription::addItem);
         }
