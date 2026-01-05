@@ -17,6 +17,7 @@ import java.util.Map;
 public class TreatmentStatisticsService {
 
     private final TreatmentRepository treatmentRepository;
+    private final com.sleekydz86.emrclinical.treatment.inpatient.statistics.service.InpatientStatisticsService inpatientStatisticsService;
 
     public TreatmentStatisticsResponse getDailyStatistics(LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
@@ -135,5 +136,28 @@ public class TreatmentStatisticsService {
                 .cancelledCount(cancelledCount)
                 .typeCount(typeCount)
                 .build();
+    }
+
+    public Map<String, Object> getInpatientStatisticsByYear(String year) {
+        com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.InpatientStatisticsByYearResponse response =
+                inpatientStatisticsService.getStatisticsByYear(year);
+        return Map.of(
+                "year", response.getYear(),
+                "inpatientStatistics", response.getInpatientStatistics(),
+                "outpatientStatistics", response.getOutpatientStatistics(),
+                "prescriptionStatistics", response.getPrescriptionStatistics(),
+                "totalStatistics", response.getTotalStatistics()
+        );
+    }
+
+    public Map<String, Object> getInpatientStatisticsByRegion(String year, String regionCode) {
+        com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.InpatientStatisticsByRegionResponse response =
+                inpatientStatisticsService.getStatisticsByRegion(year, regionCode);
+        return Map.of(
+                "year", response.getYear(),
+                "regionCode", response.getRegionCode(),
+                "internalStatistics", response.getInternalStatistics(),
+                "publicStatistics", response.getPublicStatistics()
+        );
     }
 }
