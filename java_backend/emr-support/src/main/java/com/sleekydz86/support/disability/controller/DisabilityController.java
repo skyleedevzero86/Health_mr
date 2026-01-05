@@ -1,8 +1,10 @@
 package com.sleekydz86.support.disability.controller;
 
+import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.support.disability.dto.DisabilityRegisterRequest;
 import com.sleekydz86.support.disability.dto.DisabilityResponse;
 import com.sleekydz86.support.disability.dto.DisabilityUpdateRequest;
+import com.sleekydz86.support.disability.dto.DisabilityWithCareInstitutionResponse;
 import com.sleekydz86.support.disability.entity.DisabilityEntity;
 import com.sleekydz86.support.disability.service.DisabilityService;
 import lombok.RequiredArgsConstructor;
@@ -113,6 +115,32 @@ public class DisabilityController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "message", "삭제 실패",
                     "error", e.getMessage()
+            ));
+        }
+    }
+
+    @GetMapping("/{patientNo}/recommendations")
+    @AuthRole(roles = {"STAFF", "ADMIN", "DOCTOR"})
+    public ResponseEntity<Map<String, Object>> getDisabilityWithRecommendations(
+            @PathVariable Long patientNo) {
+        try {
+            DisabilityWithCareInstitutionResponse response =
+                disabilityService.getDisabilityWithRecommendations(patientNo);
+
+            if (response == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "message", "장애인 정보를 찾을 수 없습니다."
+                ));
+            }
+
+            return ResponseEntity.ok(Map.of(
+                "message", "조회 성공",
+                "data", response
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                "message", "조회 실패",
+                "error", e.getMessage()
             ));
         }
     }
