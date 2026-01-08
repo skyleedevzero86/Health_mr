@@ -51,5 +51,8 @@ public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Lon
 
     @Query("SELECT COUNT(t) FROM Treatments t WHERE t.treatmentDoc.id = :doctorId AND t.treatmentDate BETWEEN :start AND :end")
     Long countByDoctorAndDateRange(@Param("doctorId") Long doctorId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT t FROM Treatments t WHERE t.checkInEntity.checkInId IN :checkInIds")
+    List<TreatmentEntity> findByCheckInEntity_CheckInIdIn(@Param("checkInIds") List<Long> checkInIds);
 }
 
