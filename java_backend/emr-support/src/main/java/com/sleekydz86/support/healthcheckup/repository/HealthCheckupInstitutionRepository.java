@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface HealthCheckupInstitutionRepository extends BaseRepository<HealthCheckupInstitutionEntity, Long> {
+public interface HealthCheckupInstitutionRepository extends BaseRepository<HealthCheckupInstitutionEntity, Long>, HealthCheckupInstitutionRepositoryCustom {
 
     List<HealthCheckupInstitutionEntity> findByRegionCodeAndIsActive(String regionCode, Boolean isActive);
 
@@ -19,20 +19,5 @@ public interface HealthCheckupInstitutionRepository extends BaseRepository<Healt
 
     List<HealthCheckupInstitutionEntity> findByInstitutionTypeAndIsActive(String institutionType, Boolean isActive);
 
-    @Query("SELECT h FROM HealthCheckupInstitution h WHERE " +
-           "(:regionCode IS NULL OR h.regionCode = :regionCode) AND " +
-           "(:institutionType IS NULL OR h.institutionType = :institutionType) AND " +
-           "(:institutionName IS NULL OR h.institutionName LIKE %:institutionName%) AND " +
-           "(:sido IS NULL OR h.sido = :sido) AND " +
-           "h.isActive = true")
-    Page<HealthCheckupInstitutionEntity> searchInstitutions(
-            @Param("regionCode") String regionCode,
-            @Param("institutionType") String institutionType,
-            @Param("institutionName") String institutionName,
-            @Param("sido") String sido,
-            Pageable pageable);
-
-    @Query("SELECT h FROM HealthCheckupInstitution h WHERE h.isActive = true")
-    Page<HealthCheckupInstitutionEntity> findAllActive(Pageable pageable);
 }
 

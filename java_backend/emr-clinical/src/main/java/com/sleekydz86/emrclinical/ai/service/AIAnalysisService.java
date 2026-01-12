@@ -36,21 +36,15 @@ public class AIAnalysisService {
         LocalDateTime startDateTime = request.getStartDate().atStartOfDay();
         LocalDateTime endDateTime = request.getEndDate().atTime(23, 59, 59);
 
-        List<TreatmentEntity> treatments = treatmentRepository.findByTreatmentDateBetween(startDateTime, endDateTime);
-
-        if (request.getDepartmentId() != null) {
-            treatments = treatments.stream()
-                    .filter(t -> t.getDepartmentEntity() != null && 
-                            t.getDepartmentEntity().getDepartmentId().equals(request.getDepartmentId()))
-                    .collect(Collectors.toList());
-        }
-
-        if (request.getDoctorId() != null) {
-            treatments = treatments.stream()
-                    .filter(t -> t.getTreatmentDoc() != null && 
-                            t.getTreatmentDoc().getId().equals(request.getDoctorId()))
-                    .collect(Collectors.toList());
-        }
+        List<TreatmentEntity> treatments = treatmentRepository.findByConditions(
+                null,
+                request.getDoctorId(),
+                request.getDepartmentId(),
+                null,
+                null,
+                startDateTime,
+                endDateTime
+        );
 
         Map<String, Integer> typeDistribution = treatments.stream()
                 .collect(Collectors.groupingBy(
@@ -97,12 +91,12 @@ public class AIAnalysisService {
     public PatientHistoryAnalysisResponse analyzePatientHistory(Long patientNo) {
         PatientEntity patient = patientService.getPatientByNo(patientNo);
 
-        List<CheckInEntity> checkIns = checkInRepository.findByPatientEntity_PatientNo(patientNo);
+        List<CheckInEntity> checkIns = checkInRepository.findByConditions(patientNo, null, null, null, null);
         List<Long> checkInIds = checkIns.stream()
                 .map(CheckInEntity::getCheckInId)
                 .collect(Collectors.toList());
 
-        List<TreatmentEntity> treatments = treatmentRepository.findByCheckInEntity_CheckInIdIn(checkInIds);
+        List<TreatmentEntity> treatments = treatmentRepository.findByCheckInIds(checkInIds);
 
         if (treatments.isEmpty()) {
             return PatientHistoryAnalysisResponse.builder()
@@ -171,7 +165,9 @@ public class AIAnalysisService {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-        List<TreatmentEntity> treatments = treatmentRepository.findByTreatmentDateBetween(startDateTime, endDateTime);
+        List<TreatmentEntity> treatments = treatmentRepository.findByConditions(
+                null, null, null, null, null, startDateTime, endDateTime
+        );
 
         List<AnomalyDetectionResponse.Anomaly> anomalies = new ArrayList<>();
 

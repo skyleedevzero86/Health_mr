@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface TreatmentDepartmentStatisticsRepository extends BaseRepository<TreatmentDepartmentStatisticsEntity, Long> {
+public interface TreatmentDepartmentStatisticsRepository extends BaseRepository<TreatmentDepartmentStatisticsEntity, Long>, TreatmentDepartmentStatisticsRepositoryCustom {
 
     List<TreatmentDepartmentStatisticsEntity> findByStatisticsYear(String year);
 
@@ -17,13 +17,5 @@ public interface TreatmentDepartmentStatisticsRepository extends BaseRepository<
 
     List<TreatmentDepartmentStatisticsEntity> findByStatisticsYearAndRegionCode(String year, String regionCode);
 
-    @Query("SELECT s FROM TreatmentDepartmentStatistics s WHERE " +
-           "s.statisticsYear = :year AND " +
-           "(:departmentName IS NULL OR s.departmentName = :departmentName) AND " +
-           "(:regionCode IS NULL OR s.regionCode = :regionCode)")
-    List<TreatmentDepartmentStatisticsEntity> findByYearAndDepartmentAndRegion(
-            @Param("year") String year,
-            @Param("departmentName") String departmentName,
-            @Param("regionCode") String regionCode);
 }
 

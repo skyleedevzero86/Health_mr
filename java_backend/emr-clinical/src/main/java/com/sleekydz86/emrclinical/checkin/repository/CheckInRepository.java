@@ -11,20 +11,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CheckInRepository extends BaseRepository<CheckInEntity, Long> {
+public interface CheckInRepository extends BaseRepository<CheckInEntity, Long>, CheckInRepositoryCustom {
 
-    @Query("SELECT c FROM CheckIn c WHERE c.patientEntity.patientNo = :patientNo")
-    List<CheckInEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);
-
-    @Query("SELECT c FROM CheckIn c WHERE c.checkInDate >= :startDate AND c.checkInDate <= :endDate")
-    List<CheckInEntity> findByCheckInDateBetween(@Param("startDate") java.time.LocalDateTime startDate, 
-                                                  @Param("endDate") java.time.LocalDateTime endDate);
-
-    @Query("SELECT c FROM CheckIn c WHERE DATE(c.checkInDate) = :date")
-    List<CheckInEntity> findTodayCheckIns(@Param("date") LocalDate date);
-
-    @Query("SELECT c FROM CheckIn c WHERE c.checkInStatus = :status")
-    List<CheckInEntity> findByCheckInStatus(@Param("status") CheckInStatus status);
+    List<CheckInEntity> findByPatientEntity_PatientNo(Long patientNo);
+    List<CheckInEntity> findByCheckInDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
+    List<CheckInEntity> findByCheckInStatus(CheckInStatus status);
 
     Optional<CheckInEntity> findByCheckInId(Long checkInId);
 }

@@ -119,16 +119,13 @@ public class AIRecommendationService {
         Map<Long, DoctorWorkload> doctorWorkloads = new HashMap<>();
         
         for (UserEntity doctor : deptDoctors) {
-            List<TreatmentEntity> recentTreatments = treatmentRepository.findByTreatmentDoc_Id(doctor.getId())
-                    .stream()
-                    .filter(t -> t.getTreatmentDate().isAfter(weekAgo) && 
-                                t.getTreatmentDate().isBefore(now))
-                    .collect(Collectors.toList());
+            List<TreatmentEntity> recentTreatments = treatmentRepository.findByConditions(
+                    null, doctor.getId(), null, null, null, weekAgo, now
+            );
 
-            long experience = treatmentRepository.findByTreatmentDoc_Id(doctor.getId())
-                    .stream()
-                    .filter(t -> t.getTreatmentType() == request.getTreatmentType())
-                    .count();
+            long experience = treatmentRepository.findByConditions(
+                    null, doctor.getId(), null, request.getTreatmentType(), null, null, null
+            ).size();
 
             doctorWorkloads.put(doctor.getId(), DoctorWorkload.builder()
                     .doctor(doctor)
