@@ -148,7 +148,7 @@ public class PrescriptionItemEntity extends BaseEntity {
                 throw new IllegalArgumentException("횟수는 1회 이상 10회 이하여야 합니다: " + frequency);
             }
             this.frequency = frequency;
-            calculateTotalQuantity(); // 총 수량 재계산
+            calculateTotalQuantity();
         }
         if (days != null) {
             if (days < 1 || days > 365) {

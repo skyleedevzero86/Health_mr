@@ -25,7 +25,7 @@ public class QualificationService {
     private final RedisTemplate<String, Object> redisTemplate;
     private static final String MOCK_API_URL = "http://localhost:8085/mock/insurance/eligibility";
     private static final String CACHE_PREFIX_QUALIFICATION = "qualification:patient:";
-    private static final long CACHE_TTL_DAYS = 1; // 1일
+    private static final long CACHE_TTL_DAYS = 1;
     private WebClient webClient;
 
     public QualificationService(WebClient.Builder webClientBuilder, PatientService patientService, RedisTemplate<String, Object> redisTemplate) {

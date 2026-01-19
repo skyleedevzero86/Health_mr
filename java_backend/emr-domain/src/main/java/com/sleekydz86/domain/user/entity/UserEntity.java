@@ -201,7 +201,6 @@ public class UserEntity extends BaseEntity {
         }
     }
 
-    // 값 객체를 String으로 변환하는 헬퍼 메서드 (하위 호환성)
     public String getLoginIdValue() {
         return loginId != null ? loginId.getValue() : null;
     }

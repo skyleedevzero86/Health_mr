@@ -76,7 +76,6 @@ public class HolidayService {
 
     private List<HolidayEntity> getHolidayDateByNumber(String period, String number) {
         if ("day".equals(period)) {
-            // YYYYMMDD 형식 파싱
             int year = Integer.parseInt(number.substring(0, 4));
             int month = Integer.parseInt(number.substring(4, 6));
             int day = Integer.parseInt(number.substring(6, 8));
@@ -86,7 +85,6 @@ public class HolidayService {
 
             return holiday != null ? List.of(holiday) : Collections.emptyList();
         } else if ("year".equals(period)) {
-            // YYYY 형식 파싱
             int year = Integer.parseInt(number);
             LocalDate start = LocalDate.of(year, 1, 1);
             LocalDate end = LocalDate.of(year, 12, 31);

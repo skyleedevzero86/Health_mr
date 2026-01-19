@@ -6,11 +6,11 @@ import lombok.Getter;
 @Getter
 @Builder
 public class DrugInfoSearchRequest {
-    private String itemName;      // 제품명
-    private String itemSeq;       // 품목기준코드
-    private String entpName;      // 업체명
-    private Integer pageNo;       // 페이지 번호
-    private Integer numOfRows;   // 한 페이지 결과수
+    private String itemName;
+    private String itemSeq;
+    private String entpName;
+    private Integer pageNo;
+    private Integer numOfRows;
     
     public DrugInfoSearchRequest() {
         this.pageNo = 1;

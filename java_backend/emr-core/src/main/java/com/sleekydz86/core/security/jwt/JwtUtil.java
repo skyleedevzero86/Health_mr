@@ -91,7 +91,6 @@ public class JwtUtil {
 
     public TokenPair generateTokens(Object userEntity, String primaryInstitutionCode) {
         try {
-            // 리플렉션을 사용하여 userId, role 추출
             Long userId = extractUserId(userEntity);
             String role = extractRole(userEntity);
 

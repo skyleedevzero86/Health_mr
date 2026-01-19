@@ -40,7 +40,6 @@ public class FileUtil {
         if (filename == null) {
             return null;
         }
-        // 특수문자 제거 (알파벳, 숫자, 점, 하이픈, 언더스코어만 허용)
         return filename.replaceAll("[^a-zA-Z0-9._-]", "");
     }
 

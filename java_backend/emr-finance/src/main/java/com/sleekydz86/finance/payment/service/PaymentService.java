@@ -4,6 +4,8 @@ import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
+import com.sleekydz86.core.lock.annotation.DistributedLock;
+import com.sleekydz86.core.lock.annotation.Idempotent;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
@@ -54,6 +56,17 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
 
     @Transactional
     @AuditLog(action = AuditLog.ActionType.CREATE)
+    @DistributedLock(
+            key = "'payment_register:' + #request.treatmentId",
+            waitTime = 3L,
+            leaseTime = 10L
+    )
+    @Idempotent(
+            keyType = Idempotent.IdempotencyKeyType.HEADER,
+            headerName = "X-Idempotency-Key",
+            ttl = 3600L,
+            throwExceptionOnDuplicate = false
+    )
     public PaymentResponse registerPayment(PaymentRegisterRequest request) {
 
         TreatmentEntity treatment = treatmentService.getTreatmentById(request.getTreatmentId());
@@ -199,6 +212,11 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
 
     @Transactional
     @AuditLog(action = AuditLog.ActionType.UPDATE)
+    @DistributedLock(
+            key = "'payment_update:' + #paymentId",
+            waitTime = 3L,
+            leaseTime = 10L
+    )
     public PaymentResponse updatePayment(Long paymentId, PaymentUpdateRequest request) {
         PaymentEntity payment = validateExists(paymentRepository, paymentId,
                 "결제를 찾을 수 없습니다. ID: " + paymentId);
@@ -228,6 +246,16 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
 
     @Transactional
     @AuditLog(action = AuditLog.ActionType.UPDATE)
+    @DistributedLock(
+            key = "'payment_complete:' + #paymentId",
+            waitTime = 3L,
+            leaseTime = 10L
+    )
+    @Idempotent(
+            key = "'payment_complete:' + #paymentId + ':' + (#request.approvalNumber != null ? #request.approvalNumber : '')",
+            ttl = 86400L,
+            throwExceptionOnDuplicate = false
+    )
     public PaymentResponse completePayment(Long paymentId, PaymentCompleteRequest request) {
         PaymentEntity payment = validateExists(paymentRepository, paymentId,
                 "결제를 찾을 수 없습니다. ID: " + paymentId);

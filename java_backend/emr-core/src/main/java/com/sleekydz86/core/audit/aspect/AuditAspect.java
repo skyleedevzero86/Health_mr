@@ -40,11 +40,8 @@ public class AuditAspect {
                 userAgent = request.getHeader("User-Agent");
             }
 
-            // 실제 구현 시 UserEntity 타입 기능 완성처리필요
             Object[] args = joinPoint.getArgs();
             for (Object arg : args) {
-                // UserEntity는 실제 도메인 모듈에서 확인
-                //  Object의 id 필드를 리플렉션으로 추출하기
                 if (arg != null) {
                     try {
                         java.lang.reflect.Method getIdMethod = arg.getClass().getMethod("getId");
@@ -54,7 +51,6 @@ public class AuditAspect {
                             break;
                         }
                     } catch (Exception e) {
-                        // 무시 하는 기능만들기
                     }
                 }
             }

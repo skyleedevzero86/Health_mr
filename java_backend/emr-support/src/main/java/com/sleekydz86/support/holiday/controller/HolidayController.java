@@ -19,76 +19,41 @@ public class HolidayController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> register(@RequestBody HolidayRequest req) {
-        try {
-            HolidayResponse dto = holidayService.registerHoliday(req);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "휴일 등록 성공",
-                    "data", dto
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴일 등록 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        HolidayResponse dto = holidayService.registerHoliday(req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "휴일 등록 성공",
+                "data", dto
+        ));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable Long id,
             @RequestBody HolidayRequest req) {
-        try {
-            HolidayResponse dto = holidayService.updateHoliday(id, req);
-            return ResponseEntity.ok(Map.of(
-                    "message", "휴일 수정 성공",
-                    "data", dto
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴일 수정 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        HolidayResponse dto = holidayService.updateHoliday(id, req);
+        return ResponseEntity.ok(Map.of(
+                "message", "휴일 수정 성공",
+                "data", dto
+        ));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
-        try {
-            holidayService.deleteHoliday(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of(
-                    "message", "휴일 삭제 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴일 삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        holidayService.deleteHoliday(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of(
+                "message", "휴일 삭제 성공"
+        ));
     }
 
     @GetMapping("/{period}/{number}")
     public ResponseEntity<Map<String, Object>> list(
             @PathVariable String period,
             @PathVariable String number) {
-        try {
-            List<HolidayResponse> list = holidayService.listByPeriod(period, number);
-
-            if (list.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of(
-                        "message", "조회된 휴일이 없습니다."
-                ));
-            }
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "휴일 목록 조회 성공",
-                    "data", list
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴일 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<HolidayResponse> list = holidayService.listByPeriod(period, number);
+        return ResponseEntity.ok(Map.of(
+                "message", "휴일 목록 조회 성공",
+                "data", list
+        ));
     }
 }
 

@@ -18,7 +18,7 @@ import java.util.Locale;
 public class Money {
 
     private static final long MIN_AMOUNT = 0L;
-    private static final int SCALE = 0; // 원 단위이므로 소수점 없음
+    private static final int SCALE = 0;
 
     @Column(name = "amount", nullable = false)
     private Long value;

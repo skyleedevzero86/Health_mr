@@ -13,7 +13,7 @@ import java.util.Date;
 @EqualsAndHashCode
 public class RefreshToken {
 
-    public static final long EXPIRE_TIME_MS = 1000 * 60 * 60 * 24 * 7; // 7일
+    public static final long EXPIRE_TIME_MS = 1000 * 60 * 60 * 24 * 7;
 
     private String value;
     private Long userId;

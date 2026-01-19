@@ -6,6 +6,8 @@ import com.sleekydz86.core.event.domain.ReservationCreatedEvent;
 import com.sleekydz86.core.event.domain.ReservationUpdatedEvent;
 import com.sleekydz86.core.event.domain.ReservationCancelledEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
+import com.sleekydz86.core.lock.annotation.DistributedLock;
+import com.sleekydz86.core.lock.annotation.Idempotent;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
@@ -46,6 +48,16 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
     private boolean autoCreateCheckInOnReservationComplete;
 
     @Transactional
+    @DistributedLock(
+            key = "'reservation:' + #request.patientNo + ':' + #request.reservationDate.toString()",
+            waitTime = 5L,
+            leaseTime = 10L
+    )
+    @Idempotent(
+            key = "'reservation_create:' + #userId + ':' + #request.patientNo + ':' + #request.reservationDate.toString()",
+            ttl = 3600L,
+            throwExceptionOnDuplicate = false
+    )
     public ReservationEntity createReservation(ReservationCreateRequest request, Long userId) {
 
         PatientEntity patient = patientService.getPatientByNo(request.getPatientNo());
@@ -133,6 +145,11 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
     }
 
     @Transactional
+    @DistributedLock(
+            key = "'reservation_update:' + #reservationId",
+            waitTime = 3L,
+            leaseTime = 10L
+    )
     public ReservationEntity updateReservation(Long reservationId, ReservationUpdateRequest request) {
         ReservationEntity reservation = getReservationById(reservationId);
 
@@ -178,6 +195,11 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
     }
 
     @Transactional
+    @DistributedLock(
+            key = "'reservation_cancel:' + #reservationId",
+            waitTime = 3L,
+            leaseTime = 10L
+    )
     public void cancelReservation(Long reservationId, String cancelReason) {
         ReservationEntity reservation = getReservationById(reservationId);
 
@@ -236,8 +258,6 @@ public class ReservationService implements BaseService<ReservationEntity, Long> 
 
         CheckInEntity checkIn = checkInService.getCheckInById(checkInId);
 
-        // 환자 번호와 예약 날짜를 기준으로 예약 찾기
-        // 예약 날짜가 접수 날짜와 같은 예약을 찾아야함.. 추후 확인
         List<ReservationEntity> reservations = reservationRepository.findByPatientEntity_PatientNo(
                 checkIn.getPatientEntity().getPatientNoValue());
 

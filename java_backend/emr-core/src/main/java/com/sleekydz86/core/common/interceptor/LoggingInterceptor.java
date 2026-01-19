@@ -28,7 +28,6 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-        // 응답 상태 코드 로깅은 afterCompletion에서 처리할예정
     }
 
     @Override

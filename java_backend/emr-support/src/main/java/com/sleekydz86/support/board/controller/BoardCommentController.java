@@ -26,35 +26,21 @@ public class BoardCommentController {
             @AuthUser Long userId,
             @PathVariable Long boardId,
             @Valid @RequestBody CommentCreateRequest request) {
-        try {
-            CommentResponse response = boardCommentService.createComment(boardId, userId, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "댓글 작성 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "댓글 작성 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        CommentResponse response = boardCommentService.createComment(boardId, userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "댓글 작성 성공",
+                "data", response
+        ));
     }
 
     @GetMapping
     @AuthRole
     public ResponseEntity<Map<String, Object>> getComments(@PathVariable Long boardId) {
-        try {
-            List<CommentResponse> responses = boardCommentService.getComments(boardId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "댓글 조회 성공",
-                    "data", responses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "댓글 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<CommentResponse> responses = boardCommentService.getComments(boardId);
+        return ResponseEntity.ok(Map.of(
+                "message", "댓글 조회 성공",
+                "data", responses
+        ));
     }
 
     @PutMapping("/{commentId}")
@@ -64,18 +50,11 @@ public class BoardCommentController {
             @PathVariable Long boardId,
             @PathVariable Long commentId,
             @Valid @RequestBody CommentCreateRequest request) {
-        try {
-            CommentResponse response = boardCommentService.updateComment(commentId, userId, request.getContent());
-            return ResponseEntity.ok(Map.of(
-                    "message", "댓글 수정 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "댓글 수정 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        CommentResponse response = boardCommentService.updateComment(commentId, userId, request.getContent());
+        return ResponseEntity.ok(Map.of(
+                "message", "댓글 수정 성공",
+                "data", response
+        ));
     }
 
     @DeleteMapping("/{commentId}")
@@ -84,17 +63,10 @@ public class BoardCommentController {
             @AuthUser Long userId,
             @PathVariable Long boardId,
             @PathVariable Long commentId) {
-        try {
-            boardCommentService.deleteComment(commentId, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "댓글 삭제 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "댓글 삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        boardCommentService.deleteComment(commentId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "댓글 삭제 성공"
+        ));
     }
 }
 

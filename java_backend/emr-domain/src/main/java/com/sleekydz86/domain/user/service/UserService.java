@@ -130,11 +130,6 @@ public class UserService implements BaseService<UserEntity, Long> {
             user.changePhoneNumber(newPhoneNumber);
         }
 
-        // 부서 변경은 별도 처리 필요 DepartmentService 의존성 확인하기
-        // if (request.getDepartmentId() != null) {
-        //     DepartmentEntity department = departmentService.getDepartmentById(request.getDepartmentId());
-        //     user.changeDepartment(department);
-        // }
 
         return userRepository.save(user);
     }
@@ -172,13 +167,11 @@ public class UserService implements BaseService<UserEntity, Long> {
     @Transactional
     public void activateUser(Long userId) {
         UserEntity user = getUserById(userId);
-        // 활성화 로직 필요시 활성화 필드 추가 하기
     }
 
     @Transactional
     public void deactivateUser(Long userId) {
         UserEntity user = getUserById(userId);
-        // 비활성화 로직 필요시 활성화 필드 추가 하기
     }
 
     @Transactional

@@ -16,7 +16,7 @@ public class RefreshTokenService {
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtUtil jwtUtil;
 
-    @Value("${jwt.refresh-token-expiration:604800000}") // 7일 (기본값)
+    @Value("${jwt.refresh-token-expiration:604800000}")
     private long refreshTokenExpiration;
 
     private static final String REFRESH_TOKEN_PREFIX = "refresh_token:";
@@ -57,7 +57,6 @@ public class RefreshTokenService {
         String userIdStr = redisTemplate.opsForValue().get(tokenKey);
 
         if (userIdStr == null) {
-            // Redis에 없으면 JWT에서 추출
             return jwtUtil.getUserIdFromToken(refreshToken);
         }
 
@@ -86,7 +85,6 @@ public class RefreshTokenService {
     }
 
     public boolean isTokenBlacklisted(String token) {
-        // emr-core의 TokenBlacklistService 활용 예정
         return false;
     }
 }

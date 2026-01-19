@@ -25,69 +25,41 @@ public class DoctorTreatmentController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerDoctorTreatment(
             @RequestBody DoctorTreatmentRegisterRequest request) {
-        try {
-            DoctorTreatmentResponse response = doctorTreatmentService.registerDoctorTreatment(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "의사 진료 시간 등록 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사 진료 시간 등록 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DoctorTreatmentResponse response = doctorTreatmentService.registerDoctorTreatment(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "의사 진료 시간 등록 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/{doctorTreatmentId}")
     public ResponseEntity<Map<String, Object>> getDoctorTreatment(
             @PathVariable Long doctorTreatmentId) {
-        try {
-            DoctorTreatmentResponse response = doctorTreatmentService.getDoctorTreatment(doctorTreatmentId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "의사 진료 정보 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사 진료 정보 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DoctorTreatmentResponse response = doctorTreatmentService.getDoctorTreatment(doctorTreatmentId);
+        return ResponseEntity.ok(Map.of(
+                "message", "의사 진료 정보 조회 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/doctor/{userId}")
     public ResponseEntity<Map<String, Object>> getDoctorTreatmentsByDoctor(
             @PathVariable Long userId) {
-        try {
-            List<DoctorTreatmentResponse> responses = doctorTreatmentService.getDoctorTreatmentsByDoctor(userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "의사별 진료 목록 조회 성공",
-                    "data", responses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사별 진료 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<DoctorTreatmentResponse> responses = doctorTreatmentService.getDoctorTreatmentsByDoctor(userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "의사별 진료 목록 조회 성공",
+                "data", responses
+        ));
     }
 
     @GetMapping("/patient/{patientNo}")
     public ResponseEntity<Map<String, Object>> getDoctorTreatmentsByPatient(
             @PathVariable Long patientNo) {
-        try {
-            List<DoctorTreatmentResponse> responses = doctorTreatmentService.getDoctorTreatmentsByPatient(patientNo);
-            return ResponseEntity.ok(Map.of(
-                    "message", "환자별 진료 목록 조회 성공",
-                    "data", responses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "환자별 진료 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<DoctorTreatmentResponse> responses = doctorTreatmentService.getDoctorTreatmentsByPatient(patientNo);
+        return ResponseEntity.ok(Map.of(
+                "message", "환자별 진료 목록 조회 성공",
+                "data", responses
+        ));
     }
 
     @GetMapping("/doctor/{userId}/period")
@@ -95,76 +67,46 @@ public class DoctorTreatmentController {
             @PathVariable Long userId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime start,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime end) {
-        try {
-            List<DoctorTreatmentResponse> responses = doctorTreatmentService
-                    .getDoctorTreatmentsByPeriod(userId, start, end);
-            return ResponseEntity.ok(Map.of(
-                    "message", "의사별 기간별 진료 목록 조회 성공",
-                    "data", responses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사별 기간별 진료 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<DoctorTreatmentResponse> responses = doctorTreatmentService
+                .getDoctorTreatmentsByPeriod(userId, start, end);
+        return ResponseEntity.ok(Map.of(
+                "message", "의사별 기간별 진료 목록 조회 성공",
+                "data", responses
+        ));
     }
 
     @PutMapping("/{doctorTreatmentId}")
     public ResponseEntity<Map<String, Object>> updateDoctorTreatment(
             @PathVariable Long doctorTreatmentId,
             @RequestBody DoctorTreatmentUpdateRequest request) {
-        try {
-            DoctorTreatmentResponse response = doctorTreatmentService
-                    .updateDoctorTreatment(doctorTreatmentId, request);
-            return ResponseEntity.ok(Map.of(
-                    "message", "의사 진료 정보 수정 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사 진료 정보 수정 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DoctorTreatmentResponse response = doctorTreatmentService
+                .updateDoctorTreatment(doctorTreatmentId, request);
+        return ResponseEntity.ok(Map.of(
+                "message", "의사 진료 정보 수정 성공",
+                "data", response
+        ));
     }
-
 
     @DeleteMapping("/{doctorTreatmentId}")
     public ResponseEntity<Map<String, Object>> deleteDoctorTreatment(
             @PathVariable Long doctorTreatmentId) {
-        try {
-            doctorTreatmentService.deleteDoctorTreatment(doctorTreatmentId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "의사 진료 정보 삭제 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사 진료 정보 삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        doctorTreatmentService.deleteDoctorTreatment(doctorTreatmentId);
+        return ResponseEntity.ok(Map.of(
+                "message", "의사 진료 정보 삭제 성공"
+        ));
     }
-
 
     @GetMapping("/doctor/{userId}/statistics")
     public ResponseEntity<Map<String, Object>> getDoctorTreatmentStatistics(
             @PathVariable Long userId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime start,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm") LocalDateTime end) {
-        try {
-            DoctorTreatmentStatisticsResponse response = doctorTreatmentService
-                    .getDoctorTreatmentStatistics(userId, start, end);
-            return ResponseEntity.ok(Map.of(
-                    "message", "의사별 진료 통계 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "의사별 진료 통계 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DoctorTreatmentStatisticsResponse response = doctorTreatmentService
+                .getDoctorTreatmentStatistics(userId, start, end);
+        return ResponseEntity.ok(Map.of(
+                "message", "의사별 진료 통계 조회 성공",
+                "data", response
+        ));
     }
 }
 

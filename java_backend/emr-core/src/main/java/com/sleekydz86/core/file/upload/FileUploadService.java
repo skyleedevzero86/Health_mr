@@ -56,9 +56,6 @@ public class FileUploadService {
         if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
             throw new IllegalArgumentException("잘못된 파일명입니다.");
         }
-
-        // 특수문자 제거
-        // filename = filename.replaceAll("[^a-zA-Z0-9._-]", "");
     }
 }
 

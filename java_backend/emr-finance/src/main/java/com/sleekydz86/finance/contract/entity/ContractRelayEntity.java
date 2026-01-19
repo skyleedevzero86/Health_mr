@@ -92,7 +92,7 @@ public class ContractRelayEntity extends BaseEntity {
 
     public boolean isValidPeriod() {
         if (relayStartDate == null || relayEndDate == null) {
-            return true; // 기간이 설정되지 않으면 항상 유효
+            return true;
         }
         LocalDate now = LocalDate.now();
         return !now.isBefore(relayStartDate) && !now.isAfter(relayEndDate);

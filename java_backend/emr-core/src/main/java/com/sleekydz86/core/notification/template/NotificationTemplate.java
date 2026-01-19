@@ -43,7 +43,6 @@ public class NotificationTemplate {
         return result;
     }
 
-    // Getters
     public String getTemplateId() {
         return templateId;
     }
