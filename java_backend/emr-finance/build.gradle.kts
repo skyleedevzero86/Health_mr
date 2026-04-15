@@ -23,4 +23,5 @@ dependencies {
     implementation(project(":emr-clinical"))
     implementation("org.modelmapper:modelmapper:3.1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+    implementation("com.clickhouse:clickhouse-jdbc:0.8.6")
 }

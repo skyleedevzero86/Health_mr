@@ -1,11 +1,16 @@
 package com.sleekydz86.finance.payment.controller;
 
+import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.common.annotation.AuthUser;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
 import com.sleekydz86.finance.payment.dto.*;
 import com.sleekydz86.finance.payment.entity.PaymentEntity;
 import com.sleekydz86.finance.payment.repository.PaymentRepository;
+import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHouseDailyPaymentStatisticsResponse;
+import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentStatusStatisticsResponse;
+import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentSummaryResponse;
+import com.sleekydz86.finance.payment.statistics.clickhouse.service.ClickHousePaymentStatisticsService;
 import com.sleekydz86.finance.payment.service.PaymentCalculationService;
 import com.sleekydz86.finance.payment.service.PaymentService;
 import com.sleekydz86.finance.payment.service.PaymentStatisticsService;
@@ -25,6 +30,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +42,7 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final PaymentCalculationService paymentCalculationService;
     private final PaymentStatisticsService paymentStatisticsService;
+    private final ClickHousePaymentStatisticsService clickHousePaymentStatisticsService;
     private final ExcelExportService excelExportService;
     private final PaymentRepository paymentRepository;
 
@@ -227,7 +234,104 @@ public class PaymentController {
                 "message", "미납 통계 조회 성공",
                 "data", statistics));
     }
+    @GetMapping("/statistics/clickhouse/summary")
+    @AuthRole({ "STAFF", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public ResponseEntity<Map<String, Object>> getClickHouseSummary(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        ClickHousePaymentSummaryResponse response =
+                clickHousePaymentStatisticsService.getSummary(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "ClickHouse 결제 요약 통계 조회 성공",
+                "data", response));
+    }
 
+    @GetMapping("/statistics/clickhouse/daily")
+    @AuthRole({ "STAFF", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public ResponseEntity<Map<String, Object>> getClickHouseDailyStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<ClickHouseDailyPaymentStatisticsResponse> response =
+                clickHousePaymentStatisticsService.getDailyStatistics(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "ClickHouse 일별 결제 통계 조회 성공",
+                "data", response));
+    }
+
+    @GetMapping("/statistics/clickhouse/status")
+    @AuthRole({ "STAFF", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public ResponseEntity<Map<String, Object>> getClickHouseStatusStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<ClickHousePaymentStatusStatisticsResponse> response =
+                clickHousePaymentStatisticsService.getStatusStatistics(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "ClickHouse 결제 상태별 통계 조회 성공",
+                "data", response));
+    }
+
+    @GetMapping("/statistics/clickhouse/export/daily")
+    @AuthRole({ "STAFF", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public void exportClickHouseDailyStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpServletResponse response) throws IOException {
+        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
+        List<ClickHouseDailyPaymentStatisticsResponse> statistics =
+                clickHousePaymentStatisticsService.getDailyStatistics(startDate, endDate);
+
+        List<String> headers = List.of("일자", "결제건수", "총결제금액", "미수금액");
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (ClickHouseDailyPaymentStatisticsResponse statistic : statistics) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("일자", statistic.getMetricDate());
+            row.put("결제건수", statistic.getPaymentCount());
+            row.put("총결제금액", statistic.getTotalAmount());
+            row.put("미수금액", statistic.getUnpaidAmount());
+            data.add(row);
+        }
+
+        excelExportService.exportToExcel(
+                headers,
+                data,
+                buildClickHouseFilename("결제_ClickHouse_일별통계", resolvedStartDate, resolvedEndDate),
+                response);
+    }
+
+    @GetMapping("/statistics/clickhouse/export/status")
+    @AuthRole({ "STAFF", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public void exportClickHouseStatusStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpServletResponse response) throws IOException {
+        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
+        List<ClickHousePaymentStatusStatisticsResponse> statistics =
+                clickHousePaymentStatisticsService.getStatusStatistics(startDate, endDate);
+
+        List<String> headers = List.of("결제상태", "결제건수", "총결제금액", "미수금액");
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (ClickHousePaymentStatusStatisticsResponse statistic : statistics) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("결제상태", statistic.getPaymentStatus());
+            row.put("결제건수", statistic.getPaymentCount());
+            row.put("총결제금액", statistic.getTotalAmount());
+            row.put("미수금액", statistic.getUnpaidAmount());
+            data.add(row);
+        }
+
+        excelExportService.exportToExcel(
+                headers,
+                data,
+                buildClickHouseFilename("결제_ClickHouse_상태별통계", resolvedStartDate, resolvedEndDate),
+                response);
+    }
 
     @GetMapping("/export")
     @AuthRole({ "STAFF", "ADMIN" })
@@ -280,5 +384,9 @@ public class PaymentController {
         String filename = "결제목록_" + java.time.LocalDate.now() + ".xlsx";
 
         excelExportService.exportToExcel(headers, data, filename, response);
+    }
+
+    private String buildClickHouseFilename(String prefix, LocalDate startDate, LocalDate endDate) {
+        return prefix + "_" + startDate + "_" + endDate + ".xlsx";
     }
 }

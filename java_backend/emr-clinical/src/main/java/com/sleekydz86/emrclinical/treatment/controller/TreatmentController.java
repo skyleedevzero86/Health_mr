@@ -9,6 +9,10 @@ import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.treatment.service.TreatmentService;
 import com.sleekydz86.emrclinical.treatment.statistics.TreatmentStatisticsResponse;
 import com.sleekydz86.emrclinical.treatment.statistics.TreatmentStatisticsService;
+import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseDailyTreatmentStatisticsResponse;
+import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseTreatmentDepartmentStatisticsResponse;
+import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseTreatmentSummaryResponse;
+import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.service.ClickHouseTreatmentStatisticsService;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
 import com.sleekydz86.emrclinical.types.TreatmentType;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,12 +22,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +42,7 @@ public class TreatmentController {
 
     private final TreatmentService treatmentService;
     private final TreatmentStatisticsService treatmentStatisticsService;
+    private final ClickHouseTreatmentStatisticsService clickHouseTreatmentStatisticsService;
     private final ExcelExportService excelExportService;
 
     @PostMapping
@@ -216,6 +224,105 @@ public class TreatmentController {
         return ResponseEntity.ok(statistics);
     }
 
+    @GetMapping("/statistics/clickhouse/summary")
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public ResponseEntity<Map<String, Object>> getClickHouseSummary(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        ClickHouseTreatmentSummaryResponse response =
+                clickHouseTreatmentStatisticsService.getSummary(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "ClickHouse 진료 요약 통계 조회 성공",
+                "data", response));
+    }
+
+    @GetMapping("/statistics/clickhouse/daily")
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public ResponseEntity<Map<String, Object>> getClickHouseDailyStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<ClickHouseDailyTreatmentStatisticsResponse> response =
+                clickHouseTreatmentStatisticsService.getDailyStatistics(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "ClickHouse 일별 진료 통계 조회 성공",
+                "data", response));
+    }
+
+    @GetMapping("/statistics/clickhouse/departments")
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public ResponseEntity<Map<String, Object>> getClickHouseDepartmentStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        List<ClickHouseTreatmentDepartmentStatisticsResponse> response =
+                clickHouseTreatmentStatisticsService.getDepartmentStatistics(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "ClickHouse 진료과별 통계 조회 성공",
+                "data", response));
+    }
+
+    @GetMapping("/statistics/clickhouse/export/daily")
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public void exportClickHouseDailyStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpServletResponse response) throws IOException {
+        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        List<ClickHouseDailyTreatmentStatisticsResponse> statistics =
+                clickHouseTreatmentStatisticsService.getDailyStatistics(startDate, endDate);
+
+        List<String> headers = List.of("일자", "환자수", "진료건수", "총진료비");
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (ClickHouseDailyTreatmentStatisticsResponse statistic : statistics) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("일자", statistic.getMetricDate());
+            row.put("환자수", statistic.getPatientCount());
+            row.put("진료건수", statistic.getTreatmentCount());
+            row.put("총진료비", statistic.getTotalMedicalFee());
+            data.add(row);
+        }
+
+        excelExportService.exportToExcel(
+                headers,
+                data,
+                buildClickHouseFilename("진료_ClickHouse_일별통계", resolvedStartDate, resolvedEndDate),
+                response);
+    }
+
+    @GetMapping("/statistics/clickhouse/export/departments")
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.READ)
+    public void exportClickHouseDepartmentStatistics(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            HttpServletResponse response) throws IOException {
+        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        List<ClickHouseTreatmentDepartmentStatisticsResponse> statistics =
+                clickHouseTreatmentStatisticsService.getDepartmentStatistics(startDate, endDate);
+
+        List<String> headers = List.of("진료과", "환자수", "진료건수", "총진료비");
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (ClickHouseTreatmentDepartmentStatisticsResponse statistic : statistics) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("진료과", statistic.getDepartmentName());
+            row.put("환자수", statistic.getPatientCount());
+            row.put("진료건수", statistic.getTreatmentCount());
+            row.put("총진료비", statistic.getTotalMedicalFee());
+            data.add(row);
+        }
+
+        excelExportService.exportToExcel(
+                headers,
+                data,
+                buildClickHouseFilename("진료_ClickHouse_진료과별통계", resolvedStartDate, resolvedEndDate),
+                response);
+    }
+
     @GetMapping("/export")
     @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
     public void exportTreatmentsToExcel(
@@ -255,5 +362,9 @@ public class TreatmentController {
         }).collect(Collectors.toList());
 
         excelExportService.exportToExcel(headers, data, "treatments.xlsx", response);
+    }
+
+    private String buildClickHouseFilename(String prefix, LocalDate startDate, LocalDate endDate) {
+        return prefix + "_" + startDate + "_" + endDate + ".xlsx";
     }
 }

@@ -21,4 +21,5 @@ dependencies {
     implementation(project(":emr-core"))
     implementation(project(":emr-domain"))
     implementation("org.modelmapper:modelmapper:3.1.1")
+    implementation("com.clickhouse:clickhouse-jdbc:0.8.6")
 }

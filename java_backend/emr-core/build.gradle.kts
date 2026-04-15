@@ -42,7 +42,7 @@ dependencies {
     annotationProcessor("jakarta.annotation:jakarta.annotation-api")
     annotationProcessor("jakarta.persistence:jakarta.persistence-api")
 
-    api("mysql:mysql-connector-j")
+    api("com.mysql:mysql-connector-j")
     api("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
