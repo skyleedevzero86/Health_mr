@@ -58,3 +58,5 @@ out/
 !readme.md
 front/pnpm-lock.yaml
 front/node_modules
+pipeline-python/clickhouse/data/
+pipeline-python/clickhouse/logs/
