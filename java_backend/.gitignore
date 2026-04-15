@@ -61,4 +61,5 @@ front/node_modules
 pipeline-python/clickhouse/data/
 pipeline-python/clickhouse/logs/
 pipeline-python/scripts/
+docs/docker-compose.yml
 pipeline-python/.env.example
