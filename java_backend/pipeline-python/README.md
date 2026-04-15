@@ -68,7 +68,6 @@
 
 ```text
 pipeline-python/
-  .env.example
   requirements.txt
   README.md
   common/
@@ -82,9 +81,6 @@ pipeline-python/
     extract_treatment_daily.py
     load_clickhouse.py
     retry_failed_jobs.py
-  scripts/
-    run_daily_pipeline.ps1
-    run_retry_pipeline.ps1
   sql/
     clickhouse/
       analytics_payment_daily.sql
