@@ -8,6 +8,7 @@ import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymen
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentSummaryResponse;
 import com.sleekydz86.finance.payment.statistics.clickhouse.repository.ClickHousePaymentStatisticsRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
+@Profile("clickhouse")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ClickHousePaymentStatisticsService {

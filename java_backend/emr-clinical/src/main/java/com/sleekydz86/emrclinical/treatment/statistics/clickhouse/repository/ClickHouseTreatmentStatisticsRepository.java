@@ -4,6 +4,7 @@ import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouse
 import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseTreatmentDepartmentStatisticsResponse;
 import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseTreatmentSummaryResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
+@Profile("clickhouse")
 public class ClickHouseTreatmentStatisticsRepository {
 
     private static final String TREATMENT_SUMMARY_SQL = """

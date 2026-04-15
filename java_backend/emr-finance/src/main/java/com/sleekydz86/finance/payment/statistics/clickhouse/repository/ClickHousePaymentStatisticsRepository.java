@@ -4,6 +4,7 @@ import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHouseDailyP
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentStatusStatisticsResponse;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentSummaryResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
+@Profile("clickhouse")
 public class ClickHousePaymentStatisticsRepository {
 
     private static final String PAYMENT_SUMMARY_SQL = """

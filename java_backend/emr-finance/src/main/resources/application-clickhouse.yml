@@ -1,0 +1,12 @@
+payment:
+  clickhouse-statistics:
+    datasource:
+      driver-class-name: com.clickhouse.jdbc.ClickHouseDriver
+      url: ${CLICKHOUSE_URL:jdbc:clickhouse://localhost:8123/emr_analytics}
+      username: ${CLICKHOUSE_USER:root_lky}
+      password: ${CLICKHOUSE_PASSWORD:root1234}
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 5000
+    default-range-days: 7
+    max-range-days: 366
