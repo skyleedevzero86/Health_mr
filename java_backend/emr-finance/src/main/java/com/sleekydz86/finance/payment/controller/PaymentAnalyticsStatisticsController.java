@@ -4,13 +4,12 @@ import com.sleekydz86.core.audit.service.AuditService;
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.common.annotation.AuthUser;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
+import com.sleekydz86.finance.payment.statistics.analytics.service.PaymentAnalyticsStatisticsService;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHouseDailyPaymentStatisticsResponse;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentStatusStatisticsResponse;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentSummaryResponse;
-import com.sleekydz86.finance.payment.statistics.clickhouse.service.ClickHousePaymentStatisticsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,13 +24,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Profile("clickhouse")
 @RestController
-@RequestMapping("/api/payment/statistics/clickhouse")
+@RequestMapping({ "/api/payment/analytics", "/api/payment/statistics/clickhouse" })
 @RequiredArgsConstructor
-public class PaymentClickHouseStatisticsController {
+public class PaymentAnalyticsStatisticsController {
 
-    private final ClickHousePaymentStatisticsService clickHousePaymentStatisticsService;
+    private static final String SOURCE_TABLE = "analytics_payment_daily";
+    private static final String MESSAGE_SUMMARY = "\uACB0\uC81C \uC694\uC57D \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
+    private static final String MESSAGE_DAILY = "\uC77C\uBCC4 \uACB0\uC81C \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
+    private static final String MESSAGE_STATUS = "\uACB0\uC81C \uC0C1\uD0DC\uBCC4 \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
+    private static final String HEADER_DATE = "\uC77C\uC790";
+    private static final String HEADER_PAYMENT_COUNT = "\uACB0\uC81C\uAC74\uC218";
+    private static final String HEADER_TOTAL_AMOUNT = "\uCD1D\uACB0\uC81C\uAE08\uC561";
+    private static final String HEADER_UNPAID_AMOUNT = "\uBBF8\uC218\uAE08\uC561";
+    private static final String HEADER_PAYMENT_STATUS = "\uACB0\uC81C\uC0C1\uD0DC";
+
+    private final PaymentAnalyticsStatisticsService paymentAnalyticsStatisticsService;
     private final ExcelExportService excelExportService;
     private final AuditService auditService;
 
@@ -41,22 +49,22 @@ public class PaymentClickHouseStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
-        ClickHousePaymentSummaryResponse response = clickHousePaymentStatisticsService.getSummary(startDate, endDate);
+        LocalDate resolvedStartDate = paymentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = paymentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
+        ClickHousePaymentSummaryResponse response = paymentAnalyticsStatisticsService.getSummary(startDate, endDate);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                paymentAnalyticsStatisticsService.getAuditActionType(),
+                paymentAnalyticsStatisticsService.getSourceDatabase(),
                 "PAYMENT_SUMMARY",
-                buildRequestAudit("analytics_payment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildSummaryAudit(response),
                 null,
                 null);
 
         return ResponseEntity.ok(Map.of(
-                "message", "ClickHouse 결제 요약 통계를 조회했습니다.",
+                "message", MESSAGE_SUMMARY,
                 "data", response));
     }
 
@@ -66,23 +74,23 @@ public class PaymentClickHouseStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = paymentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = paymentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHouseDailyPaymentStatisticsResponse> response =
-                clickHousePaymentStatisticsService.getDailyStatistics(startDate, endDate);
+                paymentAnalyticsStatisticsService.getDailyStatistics(startDate, endDate);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                paymentAnalyticsStatisticsService.getAuditActionType(),
+                paymentAnalyticsStatisticsService.getSourceDatabase(),
                 "PAYMENT_DAILY",
-                buildRequestAudit("analytics_payment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildListAudit(response.size()),
                 null,
                 null);
 
         return ResponseEntity.ok(Map.of(
-                "message", "ClickHouse 일별 결제 통계를 조회했습니다.",
+                "message", MESSAGE_DAILY,
                 "data", response));
     }
 
@@ -92,23 +100,23 @@ public class PaymentClickHouseStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = paymentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = paymentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHousePaymentStatusStatisticsResponse> response =
-                clickHousePaymentStatisticsService.getStatusStatistics(startDate, endDate);
+                paymentAnalyticsStatisticsService.getStatusStatistics(startDate, endDate);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                paymentAnalyticsStatisticsService.getAuditActionType(),
+                paymentAnalyticsStatisticsService.getSourceDatabase(),
                 "PAYMENT_STATUS",
-                buildRequestAudit("analytics_payment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildListAudit(response.size()),
                 null,
                 null);
 
         return ResponseEntity.ok(Map.of(
-                "message", "ClickHouse 결제 상태별 통계를 조회했습니다.",
+                "message", MESSAGE_STATUS,
                 "data", response));
     }
 
@@ -119,31 +127,31 @@ public class PaymentClickHouseStatisticsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             HttpServletResponse response) throws IOException {
-        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = paymentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = paymentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHouseDailyPaymentStatisticsResponse> statistics =
-                clickHousePaymentStatisticsService.getDailyStatistics(startDate, endDate);
+                paymentAnalyticsStatisticsService.getDailyStatistics(startDate, endDate);
 
-        List<String> headers = List.of("일자", "결제건수", "총결제금액", "미수금액");
+        List<String> headers = List.of(HEADER_DATE, HEADER_PAYMENT_COUNT, HEADER_TOTAL_AMOUNT, HEADER_UNPAID_AMOUNT);
         List<Map<String, Object>> data = new ArrayList<>();
         for (ClickHouseDailyPaymentStatisticsResponse statistic : statistics) {
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put("일자", statistic.getMetricDate());
-            row.put("결제건수", statistic.getPaymentCount());
-            row.put("총결제금액", statistic.getTotalAmount());
-            row.put("미수금액", statistic.getUnpaidAmount());
+            row.put(HEADER_DATE, statistic.getMetricDate());
+            row.put(HEADER_PAYMENT_COUNT, statistic.getPaymentCount());
+            row.put(HEADER_TOTAL_AMOUNT, statistic.getTotalAmount());
+            row.put(HEADER_UNPAID_AMOUNT, statistic.getUnpaidAmount());
             data.add(row);
         }
 
-        String fileName = buildFilename("payment_clickhouse_daily", resolvedStartDate, resolvedEndDate);
+        String fileName = buildFilename("payment_analytics_daily", resolvedStartDate, resolvedEndDate);
         excelExportService.exportToExcel(headers, data, fileName, response);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                paymentAnalyticsStatisticsService.getAuditActionType(),
+                paymentAnalyticsStatisticsService.getSourceDatabase(),
                 "PAYMENT_DAILY_EXPORT",
-                buildRequestAudit("analytics_payment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildExportAudit(fileName, statistics.size()),
                 null,
                 null);
@@ -156,40 +164,40 @@ public class PaymentClickHouseStatisticsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             HttpServletResponse response) throws IOException {
-        LocalDate resolvedStartDate = clickHousePaymentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHousePaymentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = paymentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = paymentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHousePaymentStatusStatisticsResponse> statistics =
-                clickHousePaymentStatisticsService.getStatusStatistics(startDate, endDate);
+                paymentAnalyticsStatisticsService.getStatusStatistics(startDate, endDate);
 
-        List<String> headers = List.of("결제상태", "결제건수", "총결제금액", "미수금액");
+        List<String> headers = List.of(HEADER_PAYMENT_STATUS, HEADER_PAYMENT_COUNT, HEADER_TOTAL_AMOUNT, HEADER_UNPAID_AMOUNT);
         List<Map<String, Object>> data = new ArrayList<>();
         for (ClickHousePaymentStatusStatisticsResponse statistic : statistics) {
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put("결제상태", statistic.getPaymentStatus());
-            row.put("결제건수", statistic.getPaymentCount());
-            row.put("총결제금액", statistic.getTotalAmount());
-            row.put("미수금액", statistic.getUnpaidAmount());
+            row.put(HEADER_PAYMENT_STATUS, statistic.getPaymentStatus());
+            row.put(HEADER_PAYMENT_COUNT, statistic.getPaymentCount());
+            row.put(HEADER_TOTAL_AMOUNT, statistic.getTotalAmount());
+            row.put(HEADER_UNPAID_AMOUNT, statistic.getUnpaidAmount());
             data.add(row);
         }
 
-        String fileName = buildFilename("payment_clickhouse_status", resolvedStartDate, resolvedEndDate);
+        String fileName = buildFilename("payment_analytics_status", resolvedStartDate, resolvedEndDate);
         excelExportService.exportToExcel(headers, data, fileName, response);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                paymentAnalyticsStatisticsService.getAuditActionType(),
+                paymentAnalyticsStatisticsService.getSourceDatabase(),
                 "PAYMENT_STATUS_EXPORT",
-                buildRequestAudit("analytics_payment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildExportAudit(fileName, statistics.size()),
                 null,
                 null);
     }
 
-    private Map<String, Object> buildRequestAudit(String sourceTable, LocalDate startDate, LocalDate endDate) {
+    private Map<String, Object> buildRequestAudit(LocalDate startDate, LocalDate endDate) {
         Map<String, Object> request = new LinkedHashMap<>();
-        request.put("sourceDatabase", "CLICKHOUSE");
-        request.put("sourceTable", sourceTable);
+        request.put("sourceDatabase", paymentAnalyticsStatisticsService.getSourceDatabase());
+        request.put("sourceTable", SOURCE_TABLE);
         request.put("startDate", startDate);
         request.put("endDate", endDate);
         return request;

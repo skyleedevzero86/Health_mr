@@ -62,4 +62,6 @@ pipeline-python/clickhouse/data/
 pipeline-python/clickhouse/logs/
 pipeline-python/scripts/
 docs/docker-compose.yml
+*.yml
 pipeline-python/.env.example
+docs/

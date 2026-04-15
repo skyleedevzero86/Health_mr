@@ -4,13 +4,12 @@ import com.sleekydz86.core.audit.service.AuditService;
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.common.annotation.AuthUser;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
+import com.sleekydz86.emrclinical.treatment.statistics.analytics.service.TreatmentAnalyticsStatisticsService;
 import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseDailyTreatmentStatisticsResponse;
 import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseTreatmentDepartmentStatisticsResponse;
 import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.dto.ClickHouseTreatmentSummaryResponse;
-import com.sleekydz86.emrclinical.treatment.statistics.clickhouse.service.ClickHouseTreatmentStatisticsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Profile;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,13 +24,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Profile("clickhouse")
 @RestController
-@RequestMapping("/api/treatment/statistics/clickhouse")
+@RequestMapping({ "/api/treatment/analytics", "/api/treatment/statistics/clickhouse" })
 @RequiredArgsConstructor
-public class TreatmentClickHouseStatisticsController {
+public class TreatmentAnalyticsStatisticsController {
 
-    private final ClickHouseTreatmentStatisticsService clickHouseTreatmentStatisticsService;
+    private static final String SOURCE_TABLE = "analytics_treatment_daily";
+    private static final String MESSAGE_SUMMARY = "\uC9C4\uB8CC \uC694\uC57D \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
+    private static final String MESSAGE_DAILY = "\uC77C\uBCC4 \uC9C4\uB8CC \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
+    private static final String MESSAGE_DEPARTMENT = "\uC9C4\uB8CC\uACFC\uBCC4 \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
+    private static final String HEADER_DATE = "\uC77C\uC790";
+    private static final String HEADER_PATIENT_COUNT = "\uD658\uC790\uC218";
+    private static final String HEADER_TREATMENT_COUNT = "\uC9C4\uB8CC\uAC74\uC218";
+    private static final String HEADER_TOTAL_MEDICAL_FEE = "\uCD1D\uC9C4\uB8CC\uBE44";
+    private static final String HEADER_DEPARTMENT = "\uC9C4\uB8CC\uACFC";
+
+    private final TreatmentAnalyticsStatisticsService treatmentAnalyticsStatisticsService;
     private final ExcelExportService excelExportService;
     private final AuditService auditService;
 
@@ -41,23 +49,23 @@ public class TreatmentClickHouseStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = treatmentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = treatmentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         ClickHouseTreatmentSummaryResponse response =
-                clickHouseTreatmentStatisticsService.getSummary(startDate, endDate);
+                treatmentAnalyticsStatisticsService.getSummary(startDate, endDate);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                treatmentAnalyticsStatisticsService.getAuditActionType(),
+                treatmentAnalyticsStatisticsService.getSourceDatabase(),
                 "TREATMENT_SUMMARY",
-                buildRequestAudit("analytics_treatment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildSummaryAudit(response),
                 null,
                 null);
 
         return ResponseEntity.ok(Map.of(
-                "message", "ClickHouse 진료 요약 통계를 조회했습니다.",
+                "message", MESSAGE_SUMMARY,
                 "data", response));
     }
 
@@ -67,23 +75,23 @@ public class TreatmentClickHouseStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = treatmentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = treatmentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHouseDailyTreatmentStatisticsResponse> response =
-                clickHouseTreatmentStatisticsService.getDailyStatistics(startDate, endDate);
+                treatmentAnalyticsStatisticsService.getDailyStatistics(startDate, endDate);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                treatmentAnalyticsStatisticsService.getAuditActionType(),
+                treatmentAnalyticsStatisticsService.getSourceDatabase(),
                 "TREATMENT_DAILY",
-                buildRequestAudit("analytics_treatment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildListAudit(response.size()),
                 null,
                 null);
 
         return ResponseEntity.ok(Map.of(
-                "message", "ClickHouse 일별 진료 통계를 조회했습니다.",
+                "message", MESSAGE_DAILY,
                 "data", response));
     }
 
@@ -93,23 +101,23 @@ public class TreatmentClickHouseStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = treatmentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = treatmentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHouseTreatmentDepartmentStatisticsResponse> response =
-                clickHouseTreatmentStatisticsService.getDepartmentStatistics(startDate, endDate);
+                treatmentAnalyticsStatisticsService.getDepartmentStatistics(startDate, endDate);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                treatmentAnalyticsStatisticsService.getAuditActionType(),
+                treatmentAnalyticsStatisticsService.getSourceDatabase(),
                 "TREATMENT_DEPARTMENTS",
-                buildRequestAudit("analytics_treatment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildListAudit(response.size()),
                 null,
                 null);
 
         return ResponseEntity.ok(Map.of(
-                "message", "ClickHouse 진료과별 통계를 조회했습니다.",
+                "message", MESSAGE_DEPARTMENT,
                 "data", response));
     }
 
@@ -120,31 +128,31 @@ public class TreatmentClickHouseStatisticsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             HttpServletResponse response) throws IOException {
-        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = treatmentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = treatmentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHouseDailyTreatmentStatisticsResponse> statistics =
-                clickHouseTreatmentStatisticsService.getDailyStatistics(startDate, endDate);
+                treatmentAnalyticsStatisticsService.getDailyStatistics(startDate, endDate);
 
-        List<String> headers = List.of("일자", "환자수", "진료건수", "총진료비");
+        List<String> headers = List.of(HEADER_DATE, HEADER_PATIENT_COUNT, HEADER_TREATMENT_COUNT, HEADER_TOTAL_MEDICAL_FEE);
         List<Map<String, Object>> data = new ArrayList<>();
         for (ClickHouseDailyTreatmentStatisticsResponse statistic : statistics) {
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put("일자", statistic.getMetricDate());
-            row.put("환자수", statistic.getPatientCount());
-            row.put("진료건수", statistic.getTreatmentCount());
-            row.put("총진료비", statistic.getTotalMedicalFee());
+            row.put(HEADER_DATE, statistic.getMetricDate());
+            row.put(HEADER_PATIENT_COUNT, statistic.getPatientCount());
+            row.put(HEADER_TREATMENT_COUNT, statistic.getTreatmentCount());
+            row.put(HEADER_TOTAL_MEDICAL_FEE, statistic.getTotalMedicalFee());
             data.add(row);
         }
 
-        String fileName = buildFilename("treatment_clickhouse_daily", resolvedStartDate, resolvedEndDate);
+        String fileName = buildFilename("treatment_analytics_daily", resolvedStartDate, resolvedEndDate);
         excelExportService.exportToExcel(headers, data, fileName, response);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                treatmentAnalyticsStatisticsService.getAuditActionType(),
+                treatmentAnalyticsStatisticsService.getSourceDatabase(),
                 "TREATMENT_DAILY_EXPORT",
-                buildRequestAudit("analytics_treatment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildExportAudit(fileName, statistics.size()),
                 null,
                 null);
@@ -157,40 +165,40 @@ public class TreatmentClickHouseStatisticsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             HttpServletResponse response) throws IOException {
-        LocalDate resolvedStartDate = clickHouseTreatmentStatisticsService.resolveStartDate(startDate, endDate);
-        LocalDate resolvedEndDate = clickHouseTreatmentStatisticsService.resolveEndDate(startDate, endDate);
+        LocalDate resolvedStartDate = treatmentAnalyticsStatisticsService.resolveStartDate(startDate, endDate);
+        LocalDate resolvedEndDate = treatmentAnalyticsStatisticsService.resolveEndDate(startDate, endDate);
         List<ClickHouseTreatmentDepartmentStatisticsResponse> statistics =
-                clickHouseTreatmentStatisticsService.getDepartmentStatistics(startDate, endDate);
+                treatmentAnalyticsStatisticsService.getDepartmentStatistics(startDate, endDate);
 
-        List<String> headers = List.of("진료과", "환자수", "진료건수", "총진료비");
+        List<String> headers = List.of(HEADER_DEPARTMENT, HEADER_PATIENT_COUNT, HEADER_TREATMENT_COUNT, HEADER_TOTAL_MEDICAL_FEE);
         List<Map<String, Object>> data = new ArrayList<>();
         for (ClickHouseTreatmentDepartmentStatisticsResponse statistic : statistics) {
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put("진료과", statistic.getDepartmentName());
-            row.put("환자수", statistic.getPatientCount());
-            row.put("진료건수", statistic.getTreatmentCount());
-            row.put("총진료비", statistic.getTotalMedicalFee());
+            row.put(HEADER_DEPARTMENT, statistic.getDepartmentName());
+            row.put(HEADER_PATIENT_COUNT, statistic.getPatientCount());
+            row.put(HEADER_TREATMENT_COUNT, statistic.getTreatmentCount());
+            row.put(HEADER_TOTAL_MEDICAL_FEE, statistic.getTotalMedicalFee());
             data.add(row);
         }
 
-        String fileName = buildFilename("treatment_clickhouse_departments", resolvedStartDate, resolvedEndDate);
+        String fileName = buildFilename("treatment_analytics_departments", resolvedStartDate, resolvedEndDate);
         excelExportService.exportToExcel(headers, data, fileName, response);
 
         auditService.logAudit(
                 userId,
-                "CLICKHOUSE_USAGE",
-                "CLICKHOUSE",
+                treatmentAnalyticsStatisticsService.getAuditActionType(),
+                treatmentAnalyticsStatisticsService.getSourceDatabase(),
                 "TREATMENT_DEPARTMENT_EXPORT",
-                buildRequestAudit("analytics_treatment_daily", resolvedStartDate, resolvedEndDate),
+                buildRequestAudit(resolvedStartDate, resolvedEndDate),
                 buildExportAudit(fileName, statistics.size()),
                 null,
                 null);
     }
 
-    private Map<String, Object> buildRequestAudit(String sourceTable, LocalDate startDate, LocalDate endDate) {
+    private Map<String, Object> buildRequestAudit(LocalDate startDate, LocalDate endDate) {
         Map<String, Object> request = new LinkedHashMap<>();
-        request.put("sourceDatabase", "CLICKHOUSE");
-        request.put("sourceTable", sourceTable);
+        request.put("sourceDatabase", treatmentAnalyticsStatisticsService.getSourceDatabase());
+        request.put("sourceTable", SOURCE_TABLE);
         request.put("startDate", startDate);
         request.put("endDate", endDate);
         return request;

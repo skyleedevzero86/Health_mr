@@ -1,15 +1,15 @@
-package com.sleekydz86.finance.payment.statistics.clickhouse.service;
+package com.sleekydz86.finance.payment.statistics.mysql.service;
 
 import com.sleekydz86.core.common.exception.ErrorCode;
 import com.sleekydz86.core.common.exception.custom.BaseException;
-import com.sleekydz86.finance.config.PaymentClickHouseStatisticsProperties;
 import com.sleekydz86.finance.payment.statistics.analytics.service.PaymentAnalyticsStatisticsService;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHouseDailyPaymentStatisticsResponse;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentStatusStatisticsResponse;
 import com.sleekydz86.finance.payment.statistics.clickhouse.dto.ClickHousePaymentSummaryResponse;
-import com.sleekydz86.finance.payment.statistics.clickhouse.repository.ClickHousePaymentStatisticsRepository;
+import com.sleekydz86.finance.payment.statistics.mysql.repository.MySqlPaymentStatisticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,47 +18,65 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
-@Profile("clickhouse")
+@Profile("!clickhouse")
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class ClickHousePaymentStatisticsService implements PaymentAnalyticsStatisticsService {
+public class MySqlPaymentStatisticsService implements PaymentAnalyticsStatisticsService {
 
+    private static final int DEFAULT_RANGE_DAYS = 7;
+    private static final int MAX_RANGE_DAYS = 90;
+    private static final String PROD_SCRIPT_PATH = "db/mysql/prod/analytics_payment_daily.sql";
     private static final String INVALID_RANGE_MESSAGE =
             "\uC2DC\uC791\uC77C\uC740 \uC885\uB8CC\uC77C\uBCF4\uB2E4 \uB2A6\uC744 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.";
     private static final String RANGE_LIMIT_PREFIX =
             "\uC870\uD68C \uAE30\uAC04\uC740 \uCD5C\uB300 ";
     private static final String RANGE_LIMIT_SUFFIX =
             "\uC77C\uAE4C\uC9C0 \uAC00\uB2A5\uD569\uB2C8\uB2E4.";
+    private static final String MISSING_VIEW_PREFIX =
+            "\uC6B4\uC601 \uD1B5\uACC4\uC6A9 MySQL \uBDF0\uAC00 \uC5C6\uC2B5\uB2C8\uB2E4. `";
+    private static final String MISSING_VIEW_SUFFIX =
+            "` \uC2A4\uD06C\uB9BD\uD2B8\uB97C \uBA3C\uC800 \uC801\uC6A9\uD574\uC8FC\uC138\uC694.";
 
-    private final ClickHousePaymentStatisticsRepository clickHousePaymentStatisticsRepository;
-    private final PaymentClickHouseStatisticsProperties clickHouseStatisticsProperties;
+    private final MySqlPaymentStatisticsRepository mySqlPaymentStatisticsRepository;
 
     @Override
     public String getSourceDatabase() {
-        return "CLICKHOUSE";
+        return "MYSQL";
     }
 
     @Override
     public String getAuditActionType() {
-        return "CLICKHOUSE_USAGE";
+        return "MYSQL_ANALYTICS_USAGE";
     }
 
     @Override
     public ClickHousePaymentSummaryResponse getSummary(LocalDate startDate, LocalDate endDate) {
         DateRange dateRange = resolveDateRange(startDate, endDate);
-        return clickHousePaymentStatisticsRepository.getSummary(dateRange.startDate(), dateRange.endDate());
+        try {
+            return mySqlPaymentStatisticsRepository.getSummary(dateRange.startDate(), dateRange.endDate());
+        } catch (DataAccessException exception) {
+            throw createMissingViewException(PROD_SCRIPT_PATH, exception);
+        }
     }
 
     @Override
     public List<ClickHouseDailyPaymentStatisticsResponse> getDailyStatistics(LocalDate startDate, LocalDate endDate) {
         DateRange dateRange = resolveDateRange(startDate, endDate);
-        return clickHousePaymentStatisticsRepository.getDailyStatistics(dateRange.startDate(), dateRange.endDate());
+        try {
+            return mySqlPaymentStatisticsRepository.getDailyStatistics(dateRange.startDate(), dateRange.endDate());
+        } catch (DataAccessException exception) {
+            throw createMissingViewException(PROD_SCRIPT_PATH, exception);
+        }
     }
 
     @Override
     public List<ClickHousePaymentStatusStatisticsResponse> getStatusStatistics(LocalDate startDate, LocalDate endDate) {
         DateRange dateRange = resolveDateRange(startDate, endDate);
-        return clickHousePaymentStatisticsRepository.getStatusStatistics(dateRange.startDate(), dateRange.endDate());
+        try {
+            return mySqlPaymentStatisticsRepository.getStatusStatistics(dateRange.startDate(), dateRange.endDate());
+        } catch (DataAccessException exception) {
+            throw createMissingViewException(PROD_SCRIPT_PATH, exception);
+        }
     }
 
     @Override
@@ -75,20 +93,27 @@ public class ClickHousePaymentStatisticsService implements PaymentAnalyticsStati
         LocalDate resolvedEndDate = endDate != null ? endDate : LocalDate.now();
         LocalDate resolvedStartDate = startDate != null
                 ? startDate
-                : resolvedEndDate.minusDays(Math.max(clickHouseStatisticsProperties.getDefaultRangeDays(), 1) - 1L);
+                : resolvedEndDate.minusDays(DEFAULT_RANGE_DAYS - 1L);
 
         if (resolvedStartDate.isAfter(resolvedEndDate)) {
             throw new BaseException(ErrorCode.BAD_REQUEST, INVALID_RANGE_MESSAGE);
         }
 
         long totalDays = ChronoUnit.DAYS.between(resolvedStartDate, resolvedEndDate) + 1;
-        if (totalDays > clickHouseStatisticsProperties.getMaxRangeDays()) {
+        if (totalDays > MAX_RANGE_DAYS) {
             throw new BaseException(
                     ErrorCode.BAD_REQUEST,
-                    RANGE_LIMIT_PREFIX + clickHouseStatisticsProperties.getMaxRangeDays() + RANGE_LIMIT_SUFFIX);
+                    RANGE_LIMIT_PREFIX + MAX_RANGE_DAYS + RANGE_LIMIT_SUFFIX);
         }
 
         return new DateRange(resolvedStartDate, resolvedEndDate);
+    }
+
+    private BaseException createMissingViewException(String scriptPath, Exception cause) {
+        return new BaseException(
+                ErrorCode.INTERNAL_SERVER_ERROR,
+                MISSING_VIEW_PREFIX + scriptPath + MISSING_VIEW_SUFFIX,
+                cause);
     }
 
     private record DateRange(LocalDate startDate, LocalDate endDate) {
