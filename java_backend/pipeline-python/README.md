@@ -1,52 +1,70 @@
-# Python ETL Sidecar for EMR Analytics
+# EMR 분석용 Python ETL 파이프라인
 
-## Purpose
+## 이 프로젝트의 역할
 
-This directory adds a small Python sidecar to the current Spring-based EMR backend.
+`pipeline-python`은 기존 Spring 기반 EMR 백엔드 옆에서 동작하는 **경량 ETL 사이드카**입니다.
 
-The goal is not to rebuild the system around Python. The goal is to show:
+핵심 역할은 다음과 같습니다.
 
-- Python-based ETL
-- cron-friendly batch execution
-- MySQL to ClickHouse analytics flow
-- retry and job history concepts
-- a portfolio story that matches the target job posting
+- 운영 DB(MySQL)에서 분석용 데이터를 일 단위로 추출
+- 분석 DB(ClickHouse)에 집계 데이터를 적재
+- 실패 이력과 실행 이력을 남겨 재처리 가능한 배치 구조 제공
 
-## Why This Is Not Overengineering
+즉, 서비스 API는 Spring이 담당하고, 분석 적재 배치는 Python이 담당하는 **역할 분리 구조**입니다.
 
-This sidecar is intentionally small.
+---
 
-- It does not add Airflow.
-- It does not add Kafka.
-- It does not add streaming or CDC.
-- It does not replace Spring batch or Spring business APIs.
-- It only covers daily analytics extraction and loading.
+## 어떤 기능을 제공하나?
 
-The scope stays within a portfolio-friendly boundary:
+### 1) 일별 데이터 추출 (Extract)
 
-- 2 daily extraction jobs
-- 2 analytics tables
-- 1 retry flow
-- 1 job execution history model
+- `jobs/extract_treatment_daily.py`
+  - 진료 데이터를 일별/부서별 지표로 추출
+- `jobs/extract_payment_daily.py`
+  - 결제 데이터를 일별/상태별 지표로 추출
+- 추출 결과는 JSON 파일로 `data/exports` 하위에 저장
 
-That is enough to prove `Python + cron + analytics pipeline` without turning the project into an infrastructure showcase.
+### 2) ClickHouse 적재 (Load)
 
-## Recommended Role Split
+- `jobs/load_clickhouse.py`
+  - 추출 JSON을 분석 테이블로 적재
+  - 대상 데이터셋(`treatment_daily`, `payment_daily`) 선택 가능
+  - 적재 성공/실패 건수 집계
 
-- Spring Boot
-  - business APIs
-  - authentication and authorization
-  - masking and audit log
-  - admin APIs for job history and dashboards
-- Python sidecar
-  - extract daily aggregates from MySQL
-  - transform into analytics-ready payloads
-  - load into ClickHouse
-  - record failures for retry
-- ClickHouse
-  - large read-heavy analytics queries
+### 3) 실행 이력 관리
 
-## Directory Layout
+- `etl_job_execution` 테이블에 실행 메타데이터 기록
+  - 상태(SUCCESS/FAILED)
+  - 원천 건수/적재 건수/오류 건수
+  - 시작/종료 시각, 소요 시간
+
+### 4) 오류 이력 관리
+
+- `etl_job_error` 테이블에 오류 상세 기록
+  - 오류 유형, 소스 키, 오류 메시지, 발생 시각
+
+### 5) 실패 작업 재시도
+
+- `jobs/retry_failed_jobs.py`
+  - 실패한 적재 작업 조회
+  - 재실행 모드(`--execute`)로 실제 재처리
+  - 운영자가 장애 복구 루프를 간단히 돌릴 수 있음
+
+---
+
+## 왜 이 구조인가?
+
+이 프로젝트는 의도적으로 범위를 작게 유지합니다.
+
+- Airflow/Kafka/CDC 같은 대형 인프라 없이도
+- `Python + 스케줄러(cron/작업 스케줄러) + ClickHouse`만으로
+- 실무에서 많이 쓰는 분석 배치 패턴(추출-적재-이력-재시도)을 구현
+
+목표는 “복잡한 플랫폼 구축”이 아니라, **운영 가능한 ETL 라이프사이클을 명확히 증명**하는 것입니다.
+
+---
+
+## 디렉터리 구조
 
 ```text
 pipeline-python/
@@ -54,11 +72,11 @@ pipeline-python/
   requirements.txt
   README.md
   common/
-    config.py
-    db_clickhouse.py
-    db_mysql.py
-    logger.py
-    metrics.py
+    config.py          # 환경변수/설정 로드
+    db_clickhouse.py   # ClickHouse 연결/적재 유틸
+    db_mysql.py        # MySQL 조회 유틸
+    logger.py          # 로거 설정
+    metrics.py         # 실행 메트릭 모델
   jobs/
     extract_payment_daily.py
     extract_treatment_daily.py
@@ -75,16 +93,27 @@ pipeline-python/
       etl_job_execution.sql
 ```
 
-## Quick Start
+---
 
-1. Create a local virtual environment.
-2. Install dependencies.
-3. Copy `.env.example` to `.env`.
-4. Fill in MySQL and ClickHouse connection values.
-5. Create the ClickHouse tables under `sql/clickhouse`.
-6. Run the extraction and loading scripts.
+## 실행 흐름(일 배치 기준)
 
-Windows example:
+1. 진료/결제 데이터 추출
+2. JSON 산출물 생성
+3. ClickHouse 분석 테이블 적재
+4. 실행/오류 이력 저장
+5. 실패 건 재시도 배치 실행
+
+권장 스케줄 예시:
+
+- 02:00 진료 추출
+- 02:10 진료 적재
+- 02:20 결제 추출
+- 02:30 결제 적재
+- 03:00 실패 재시도
+
+---
+
+## 빠른 시작 (Windows)
 
 ```powershell
 cd D:\intel\AISamples\Health_mr\java_backend\pipeline-python
@@ -96,30 +125,11 @@ python .\jobs\extract_treatment_daily.py --target-date 2026-04-14
 python .\jobs\load_clickhouse.py --dataset treatment_daily --target-date 2026-04-14
 ```
 
-## Important Notes
+---
 
-- The SQL in the job scripts is a template. Adjust table names to match your real MySQL schema.
-- This repo is JPA-centered, so physical table names can differ from entity names.
-- For portfolio usage, the important part is the architecture and job lifecycle, not whether the very first draft query is perfect.
+## 운영 시 참고 사항
 
-## Suggested Cron Schedule
-
-For production explanation:
-
-- `02:00` extract treatment analytics
-- `02:10` load treatment analytics
-- `02:20` extract payment analytics
-- `02:30` load payment analytics
-- `03:00` retry failed jobs
-
-Linux cron example:
-
-```cron
-0 2 * * * /usr/bin/python /opt/emr/pipeline-python/jobs/extract_treatment_daily.py
-10 2 * * * /usr/bin/python /opt/emr/pipeline-python/jobs/load_clickhouse.py --dataset treatment_daily
-20 2 * * * /usr/bin/python /opt/emr/pipeline-python/jobs/extract_payment_daily.py
-30 2 * * * /usr/bin/python /opt/emr/pipeline-python/jobs/load_clickhouse.py --dataset payment_daily
-0 3 * * * /usr/bin/python /opt/emr/pipeline-python/jobs/retry_failed_jobs.py --execute
-```
-
-For your local Windows environment, use the PowerShell scripts under `scripts/`.
+- 추출 SQL은 템플릿이므로 실제 MySQL 물리 테이블/컬럼명에 맞춰 조정해야 합니다.
+- JPA 엔티티명과 실제 테이블명이 다를 수 있어 스키마 확인이 필요합니다.
+- 분석 지표는 “정의 일관성(예: 집계 기준 시각/상태값)”이 중요합니다.
+- 장애 대응을 위해 `etl_job_execution`, `etl_job_error` 모니터링을 권장합니다.
