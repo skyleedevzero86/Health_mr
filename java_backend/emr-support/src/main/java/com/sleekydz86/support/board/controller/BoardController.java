@@ -39,18 +39,11 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> createBoard(
             @AuthUser Long userId,
             @Valid @RequestBody BoardCreateRequest request) {
-        try {
-            BoardResponse response = boardService.createBoard(userId, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "게시판 작성 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "게시판 작성 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        BoardResponse response = boardService.createBoard(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "게시판 작성 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/{boardId}")
@@ -58,18 +51,11 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> getBoard(
             @AuthUser Long userId,
             @PathVariable Long boardId) {
-        try {
-            BoardDetailResponse response = boardService.getBoard(boardId, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "게시판 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "게시판 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        BoardDetailResponse response = boardService.getBoard(boardId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "게시판 조회 성공",
+                "data", response
+        ));
     }
 
     @GetMapping
@@ -79,18 +65,11 @@ public class BoardController {
             @RequestParam(required = false) BoardType boardType,
             @RequestParam(required = false) Long departmentId,
             @PageableDefault(size = 20) Pageable pageable) {
-        try {
-            BoardListResponse response = boardService.getBoards(boardType, departmentId, pageable, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "게시판 목록 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "게시판 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        BoardListResponse response = boardService.getBoards(boardType, departmentId, pageable, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "게시판 목록 조회 성공",
+                "data", response
+        ));
     }
 
     @PutMapping("/{boardId}")
@@ -99,18 +78,11 @@ public class BoardController {
             @AuthUser Long userId,
             @PathVariable Long boardId,
             @Valid @RequestBody BoardUpdateRequest request) {
-        try {
-            BoardResponse response = boardService.updateBoard(boardId, userId, request);
-            return ResponseEntity.ok(Map.of(
-                    "message", "게시판 수정 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "게시판 수정 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        BoardResponse response = boardService.updateBoard(boardId, userId, request);
+        return ResponseEntity.ok(Map.of(
+                "message", "게시판 수정 성공",
+                "data", response
+        ));
     }
 
     @DeleteMapping("/{boardId}")
@@ -118,17 +90,10 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> deleteBoard(
             @AuthUser Long userId,
             @PathVariable Long boardId) {
-        try {
-            boardService.deleteBoard(boardId, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "게시판 삭제 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "게시판 삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        boardService.deleteBoard(boardId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "게시판 삭제 성공"
+        ));
     }
 
     @PostMapping("/{boardId}/like")
@@ -136,17 +101,10 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> toggleLike(
             @AuthUser Long userId,
             @PathVariable Long boardId) {
-        try {
-            boardService.toggleLike(boardId, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "좋아요 처리 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "좋아요 처리 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        boardService.toggleLike(boardId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "좋아요 처리 성공"
+        ));
     }
 
     @GetMapping("/{boardId}/viewers")
@@ -154,35 +112,21 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> getBoardViewers(
             @AuthUser Long userId,
             @PathVariable Long boardId) {
-        try {
-            List<BoardViewerResponse> responses = boardService.getBoardViewers(boardId, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "조회자 목록 조회 성공",
-                    "data", responses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "조회자 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<BoardViewerResponse> responses = boardService.getBoardViewers(boardId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "조회자 목록 조회 성공",
+                "data", responses
+        ));
     }
 
     @GetMapping("/notices/alert")
     @AuthRole
     public ResponseEntity<Map<String, Object>> getAlertNotices() {
-        try {
-            List<BoardResponse> responses = boardService.getAlertNotices();
-            return ResponseEntity.ok(Map.of(
-                    "message", "알림공지 조회 성공",
-                    "data", responses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "알림공지 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<BoardResponse> responses = boardService.getAlertNotices();
+        return ResponseEntity.ok(Map.of(
+                "message", "알림공지 조회 성공",
+                "data", responses
+        ));
     }
 
     @PostMapping("/{boardId}/files")
@@ -190,40 +134,29 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> uploadFile(
             @AuthUser Long userId,
             @PathVariable Long boardId,
-            @RequestParam("file") MultipartFile file) {
-        try {
-            BoardFileResponse response = boardService.uploadFile(boardId, userId, file);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "파일 업로드 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "파일 업로드 실패",
-                    "error", e.getMessage()
-            ));
-        }
+            @RequestParam("file") MultipartFile file) throws IOException {
+        BoardFileResponse response = boardService.uploadFile(boardId, userId, file);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "파일 업로드 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/files/{fileId}/download")
     @AuthRole
     public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) {
-        try {
-            com.sleekydz86.support.board.entity.BoardFileEntity boardFile = 
-                    boardService.getBoardFile(fileId);
-            byte[] fileData = boardService.downloadFile(fileId);
-            
-            ByteArrayResource resource = new ByteArrayResource(fileData);
-            
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, 
-                            "attachment; filename=\"" + boardFile.getOriginalFilename() + "\"")
-                    .contentType(MediaType.parseMediaType(boardFile.getContentType() != null ? 
-                            boardFile.getContentType() : "application/octet-stream"))
-                    .body(resource);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        com.sleekydz86.support.board.entity.BoardFileEntity boardFile = 
+                boardService.getBoardFile(fileId);
+        byte[] fileData = boardService.downloadFile(fileId);
+        
+        ByteArrayResource resource = new ByteArrayResource(fileData);
+        
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, 
+                        "attachment; filename=\"" + boardFile.getOriginalFilename() + "\"")
+                .contentType(MediaType.parseMediaType(boardFile.getContentType() != null ? 
+                        boardFile.getContentType() : "application/octet-stream"))
+                .body(resource);
     }
 
     @DeleteMapping("/files/{fileId}")
@@ -231,17 +164,10 @@ public class BoardController {
     public ResponseEntity<Map<String, Object>> deleteFile(
             @AuthUser Long userId,
             @PathVariable Long fileId) {
-        try {
-            boardService.deleteFile(fileId, userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "파일 삭제 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "파일 삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        boardService.deleteFile(fileId, userId);
+        return ResponseEntity.ok(Map.of(
+                "message", "파일 삭제 성공"
+        ));
     }
 }
 

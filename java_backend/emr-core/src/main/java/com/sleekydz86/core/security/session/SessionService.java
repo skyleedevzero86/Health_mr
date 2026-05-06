@@ -34,7 +34,6 @@ public class SessionService {
         if (!sessionInfo.getIpAddress().equals(ipAddress)) {
             log.warn("IP 주소 변경 감지: userId={}, 기존 IP={}, 새로운 IP={}",
                     userId, sessionInfo.getIpAddress(), ipAddress);
-            // 세션 무효화 또는 알림 발송 만들 예정
         }
 
         sessionInfo.updateLastAccessTime();
@@ -46,20 +45,15 @@ public class SessionService {
         log.debug("세션 삭제: userId={}", userId);
     }
 
-  
     public boolean checkConcurrentLogin(Long userId) {
-        // 설정에 따라 동시 로그인 제한 여부 확인 만들예정
-        
         return true;
     }
 
     public List<String> getActiveSessions(Long userId) {
-        // 실제 세션 ID 목록 반환 기능 예정
         return List.of();
     }
 
     public void terminateSession(Long userId, String sessionId) {
-        // 특정 세션 종료 기능예정
         removeSession(userId);
     }
 

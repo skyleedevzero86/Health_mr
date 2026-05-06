@@ -44,8 +44,6 @@ public class EncryptedStringConverter implements AttributeConverter<String, Stri
         try {
             return getEncryptionService().decrypt(dbData);
         } catch (Exception e) {
-            // 복호화 실패 시 원본 반환 처리예정
-            // 이미 암호화되지 않은 데이터 확인하기
             return dbData;
         }
     }

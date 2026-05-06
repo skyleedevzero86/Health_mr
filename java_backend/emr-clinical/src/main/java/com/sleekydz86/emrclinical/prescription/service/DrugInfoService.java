@@ -28,7 +28,7 @@ public class DrugInfoService {
     private boolean cacheEnabled;
 
     @Value("${drug-info.api.cache.ttl:86400}")
-    private long cacheTtl; // 초 단위
+    private long cacheTtl;
 
     @Value("${drug-info.api.cache.prefix:drug:info:}")
     private String cachePrefix;

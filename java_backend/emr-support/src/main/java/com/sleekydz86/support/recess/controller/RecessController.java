@@ -20,74 +20,39 @@ public class RecessController {
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> register(@RequestBody RecessRequest req) {
-        try {
-            RecessResponse dto = recessService.registerRecess(req);
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "휴진 등록 성공",
-                    "data", dto
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴진 등록 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        RecessResponse dto = recessService.registerRecess(req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "휴진 등록 성공",
+                "data", dto
+        ));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable Long id,
             @RequestBody RecessRequest req) {
-        try {
-            RecessResponse dto = recessService.updateRecess(id, req);
-            return ResponseEntity.ok(Map.of(
-                    "message", "휴진 수정 성공",
-                    "data", dto
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴진 수정 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        RecessResponse dto = recessService.updateRecess(id, req);
+        return ResponseEntity.ok(Map.of(
+                "message", "휴진 수정 성공",
+                "data", dto
+        ));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
-        try {
-            recessService.deleteRecess(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of(
-                    "message", "휴진 삭제 성공"
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴진 삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        recessService.deleteRecess(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of(
+                "message", "휴진 삭제 성공"
+        ));
     }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> list(@RequestParam RoleType role) {
-        try {
-            List<RecessResponse> list = recessService.listByRole(role);
-
-            if (list.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of(
-                        "message", "조회된 휴진이 없습니다."
-                ));
-            }
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "휴진 목록 조회 성공",
-                    "data", list
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "휴진 목록 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<RecessResponse> list = recessService.listByRole(role);
+        return ResponseEntity.ok(Map.of(
+                "message", "휴진 목록 조회 성공",
+                "data", list
+        ));
     }
 }
 

@@ -96,10 +96,6 @@ public class DepartmentService implements BaseService<DepartmentEntity, Long> {
     @Transactional
     public void deleteDepartment(Long id) {
         DepartmentEntity department = getDepartmentById(id);
-
-        // 사용 중인 부서인지 확인 하는 기능 만들기
-        // UserRepository를 주입받아 확인하기
-
         departmentRepository.delete(department);
     }
 }

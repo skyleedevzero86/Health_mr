@@ -3,8 +3,11 @@ package com.sleekydz86.emrclinical.treatment.controller;
 import com.sleekydz86.core.audit.annotation.AuditLog;
 import com.sleekydz86.core.common.annotation.AuthRole;
 import com.sleekydz86.core.file.excel.export.ExcelExportService;
-import com.sleekydz86.domain.user.type.RoleType;
-import com.sleekydz86.emrclinical.treatment.dto.*;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentCompleteRequest;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentCreateRequest;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentDetailResponse;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentResponse;
+import com.sleekydz86.emrclinical.treatment.dto.TreatmentUpdateRequest;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.treatment.service.TreatmentService;
 import com.sleekydz86.emrclinical.treatment.statistics.TreatmentStatisticsResponse;
@@ -20,13 +23,20 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/treatment")
@@ -43,8 +53,7 @@ public class TreatmentController {
     public ResponseEntity<TreatmentResponse> createTreatment(
             @Valid @RequestBody TreatmentCreateRequest request) {
         TreatmentEntity treatment = treatmentService.createTreatment(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(TreatmentResponse.from(treatment));
+        return ResponseEntity.status(HttpStatus.CREATED).body(TreatmentResponse.from(treatment));
     }
 
     @GetMapping("/{treatmentId}")
@@ -67,7 +76,6 @@ public class TreatmentController {
             @RequestParam(required = false) LocalDate endDate) {
 
         Page<TreatmentEntity> treatments;
-
         if (patientNo != null) {
             treatments = treatmentService.getTreatmentsByPatientNo(patientNo, pageable);
         } else if (doctorId != null) {
@@ -80,8 +88,7 @@ public class TreatmentController {
             treatments = treatmentService.getAllTreatments(pageable);
         }
 
-        Page<TreatmentResponse> response = treatments.map(TreatmentResponse::from);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.map(TreatmentResponse::from));
     }
 
     @GetMapping("/patient/{patientNo}")
@@ -90,8 +97,7 @@ public class TreatmentController {
             @PathVariable Long patientNo,
             @PageableDefault(size = 20, sort = "treatmentDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<TreatmentEntity> treatments = treatmentService.getTreatmentsByPatientNo(patientNo, pageable);
-        Page<TreatmentResponse> response = treatments.map(TreatmentResponse::from);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.map(TreatmentResponse::from));
     }
 
     @GetMapping("/doctor/{doctorId}")
@@ -100,8 +106,7 @@ public class TreatmentController {
             @PathVariable Long doctorId,
             @PageableDefault(size = 20, sort = "treatmentDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<TreatmentEntity> treatments = treatmentService.getTreatmentsByDoctor(doctorId, pageable);
-        Page<TreatmentResponse> response = treatments.map(TreatmentResponse::from);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.map(TreatmentResponse::from));
     }
 
     @GetMapping("/type/{type}")
@@ -110,8 +115,7 @@ public class TreatmentController {
             @PathVariable TreatmentType type,
             @PageableDefault(size = 20, sort = "treatmentDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<TreatmentEntity> treatments = treatmentService.getTreatmentsByType(type, pageable);
-        Page<TreatmentResponse> response = treatments.map(TreatmentResponse::from);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.map(TreatmentResponse::from));
     }
 
     @GetMapping("/status/{status}")
@@ -120,8 +124,7 @@ public class TreatmentController {
             @PathVariable TreatmentStatus status,
             @PageableDefault(size = 20, sort = "treatmentDate", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<TreatmentEntity> treatments = treatmentService.getTreatmentsByStatus(status, pageable);
-        Page<TreatmentResponse> response = treatments.map(TreatmentResponse::from);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.map(TreatmentResponse::from));
     }
 
     @GetMapping("/date-range")
@@ -130,20 +133,14 @@ public class TreatmentController {
             @RequestParam LocalDate start,
             @RequestParam LocalDate end) {
         List<TreatmentEntity> treatments = treatmentService.getTreatmentsByDateRange(start, end);
-        List<TreatmentResponse> response = treatments.stream()
-                .map(TreatmentResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.stream().map(TreatmentResponse::from).toList());
     }
 
     @GetMapping("/today")
     @AuthRole({ "DOCTOR", "ADMIN" })
     public ResponseEntity<List<TreatmentResponse>> getTodayTreatments() {
         List<TreatmentEntity> treatments = treatmentService.getTodayTreatments();
-        List<TreatmentResponse> response = treatments.stream()
-                .map(TreatmentResponse::from)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(treatments.stream().map(TreatmentResponse::from).toList());
     }
 
     @GetMapping("/checkin/{checkInId}")
@@ -190,10 +187,8 @@ public class TreatmentController {
 
     @GetMapping("/statistics/daily")
     @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
-    public ResponseEntity<TreatmentStatisticsResponse> getDailyStatistics(
-            @RequestParam LocalDate date) {
-        TreatmentStatisticsResponse statistics = treatmentStatisticsService.getDailyStatistics(date);
-        return ResponseEntity.ok(statistics);
+    public ResponseEntity<TreatmentStatisticsResponse> getDailyStatistics(@RequestParam LocalDate date) {
+        return ResponseEntity.ok(treatmentStatisticsService.getDailyStatistics(date));
     }
 
     @GetMapping("/statistics/period")
@@ -201,8 +196,7 @@ public class TreatmentController {
     public ResponseEntity<TreatmentStatisticsResponse> getPeriodStatistics(
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
-        TreatmentStatisticsResponse statistics = treatmentStatisticsService.getPeriodStatistics(startDate, endDate);
-        return ResponseEntity.ok(statistics);
+        return ResponseEntity.ok(treatmentStatisticsService.getPeriodStatistics(startDate, endDate));
     }
 
     @GetMapping("/statistics/doctor/{doctorId}")
@@ -211,9 +205,7 @@ public class TreatmentController {
             @PathVariable Long doctorId,
             @RequestParam LocalDate startDate,
             @RequestParam LocalDate endDate) {
-        TreatmentStatisticsResponse statistics = treatmentStatisticsService.getDoctorStatistics(doctorId, startDate,
-                endDate);
-        return ResponseEntity.ok(statistics);
+        return ResponseEntity.ok(treatmentStatisticsService.getDoctorStatistics(doctorId, startDate, endDate));
     }
 
     @GetMapping("/export")
@@ -228,31 +220,47 @@ public class TreatmentController {
         List<TreatmentEntity> treatments;
         if (patientNo != null) {
             treatments = treatmentService
-                    .getTreatmentsByPatientNo(patientNo, org.springframework.data.domain.Pageable.unpaged())
+                    .getTreatmentsByPatientNo(patientNo, Pageable.unpaged())
                     .getContent();
         } else if (doctorId != null) {
             treatments = treatmentService
-                    .getTreatmentsByDoctor(doctorId, org.springframework.data.domain.Pageable.unpaged()).getContent();
+                    .getTreatmentsByDoctor(doctorId, Pageable.unpaged())
+                    .getContent();
         } else if (startDate != null && endDate != null) {
             treatments = treatmentService.getTreatmentsByDateRange(startDate, endDate);
         } else {
-            treatments = treatmentService.getAllTreatments(org.springframework.data.domain.Pageable.unpaged())
-                    .getContent();
+            treatments = treatmentService.getAllTreatments(Pageable.unpaged()).getContent();
         }
 
-        List<String> headers = List.of("진료 ID", "환자 번호", "환자 이름", "진료 의사", "진료 일시", "진료 상태", "진료 유형", "진료과");
-        List<Map<String, Object>> data = treatments.stream().map(t -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("진료 ID", t.getTreatmentId());
-            map.put("환자 번호", t.getCheckInEntity() != null ? t.getCheckInEntity().getPatientEntity().getPatientNoValue() : "");
-            map.put("환자 이름", t.getCheckInEntity() != null ? t.getCheckInEntity().getPatientEntity().getPatientName() : "");
-            map.put("진료 의사", t.getTreatmentDoc().getName());
-            map.put("진료 일시", t.getTreatmentDate());
-            map.put("진료 상태", t.getTreatmentStatus().name());
-            map.put("진료 유형", t.getTreatmentType().name());
-            map.put("진료과", t.getDepartmentEntity() != null ? t.getDepartmentEntity().getName() : "");
-            return map;
-        }).collect(Collectors.toList());
+        List<String> headers = List.of(
+                "진료ID",
+                "환자번호",
+                "환자명",
+                "진료의사",
+                "진료일시",
+                "진료상태",
+                "진료유형",
+                "진료과"
+        );
+
+        List<Map<String, Object>> data = treatments.stream()
+                .map(treatment -> {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("진료ID", treatment.getTreatmentId());
+                    row.put("환자번호", treatment.getCheckInEntity() != null
+                            ? treatment.getCheckInEntity().getPatientEntity().getPatientNoValue()
+                            : "");
+                    row.put("환자명", treatment.getCheckInEntity() != null
+                            ? treatment.getCheckInEntity().getPatientEntity().getPatientName()
+                            : "");
+                    row.put("진료의사", treatment.getTreatmentDoc() != null ? treatment.getTreatmentDoc().getName() : "");
+                    row.put("진료일시", treatment.getTreatmentDate());
+                    row.put("진료상태", treatment.getTreatmentStatus() != null ? treatment.getTreatmentStatus().name() : "");
+                    row.put("진료유형", treatment.getTreatmentType() != null ? treatment.getTreatmentType().name() : "");
+                    row.put("진료과", treatment.getDepartmentEntity() != null ? treatment.getDepartmentEntity().getName() : "");
+                    return row;
+                })
+                .toList();
 
         excelExportService.exportToExcel(headers, data, "treatments.xlsx", response);
     }

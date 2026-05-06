@@ -32,97 +32,62 @@ public class DrugInfoApiController {
             @RequestParam(defaultValue = "1") Integer pageNo,
             @RequestParam(defaultValue = "10") Integer numOfRows) {
 
-        try {
-            DrugInfoSearchRequest request = DrugInfoSearchRequest.builder()
-                    .itemName(itemName)
-                    .itemSeq(itemSeq)
-                    .entpName(entpName)
-                    .pageNo(pageNo)
-                    .numOfRows(numOfRows)
-                    .build();
+        DrugInfoSearchRequest request = DrugInfoSearchRequest.builder()
+                .itemName(itemName)
+                .itemSeq(itemSeq)
+                .entpName(entpName)
+                .pageNo(pageNo)
+                .numOfRows(numOfRows)
+                .build();
 
-            List<DrugInfoItemResponse> items = drugInfoService.searchDrugInfo(request);
+        List<DrugInfoItemResponse> items = drugInfoService.searchDrugInfo(request);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "검색 성공");
-            response.put("data", items);
-            response.put("count", items.size());
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "검색 성공");
+        response.put("data", items);
+        response.put("count", items.size());
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "검색 실패");
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/item-seq/{itemSeq}")
     @AuthRole({ "DOCTOR", "ADMIN", "STAFF" })
     @AuditLog(action = AuditLog.ActionType.READ)
     public ResponseEntity<Map<String, Object>> getDrugInfoByItemSeq(@PathVariable String itemSeq) {
-        try {
-            DrugInfoItemResponse drugInfo = drugInfoService.getDrugInfoByItemSeq(itemSeq);
+        DrugInfoItemResponse drugInfo = drugInfoService.getDrugInfoByItemSeq(itemSeq);
 
-            if (drugInfo == null) {
-                Map<String, Object> notFoundResponse = new HashMap<>();
-                notFoundResponse.put("message", "의약품 정보를 찾을 수 없습니다.");
-                notFoundResponse.put("itemSeq", itemSeq);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFoundResponse);
-            }
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "조회 성공");
+        response.put("data", drugInfo);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "조회 성공");
-            response.put("data", drugInfo);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "조회 실패");
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/item-name/{itemName}")
     @AuthRole({ "DOCTOR", "ADMIN", "STAFF" })
     @AuditLog(action = AuditLog.ActionType.READ)
     public ResponseEntity<Map<String, Object>> searchDrugInfoByItemName(@PathVariable String itemName) {
-        try {
-            List<DrugInfoItemResponse> items = drugInfoService.searchDrugInfoByItemName(itemName);
+        List<DrugInfoItemResponse> items = drugInfoService.searchDrugInfoByItemName(itemName);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "검색 성공");
-            response.put("data", items);
-            response.put("count", items.size());
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "검색 성공");
+        response.put("data", items);
+        response.put("count", items.size());
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "검색 실패");
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/validate/{drugCode}")
     @AuthRole({ "DOCTOR", "ADMIN", "STAFF" })
     public ResponseEntity<Map<String, Object>> validateDrugCode(@PathVariable String drugCode) {
-        try {
-            boolean isValid = drugInfoService.validateDrugCode(drugCode);
+        boolean isValid = drugInfoService.validateDrugCode(drugCode);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("drugCode", drugCode);
-            response.put("isValid", isValid);
-            response.put("message", isValid ? "유효한 약물 코드입니다." : "유효하지 않은 약물 코드입니다.");
+        Map<String, Object> response = new HashMap<>();
+        response.put("drugCode", drugCode);
+        response.put("isValid", isValid);
+        response.put("message", isValid ? "유효한 약물 코드입니다." : "유효하지 않은 약물 코드입니다.");
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "검증 실패");
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/check-interactions")
@@ -130,21 +95,14 @@ public class DrugInfoApiController {
     @AuditLog(action = AuditLog.ActionType.READ)
     public ResponseEntity<Map<String, Object>> checkDrugInteractions(
             @Valid @RequestBody List<String> drugCodes) {
-        try {
-            List<String> interactionWarnings = drugInfoService.checkDrugInteractions(drugCodes);
+        List<String> interactionWarnings = drugInfoService.checkDrugInteractions(drugCodes);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "상호작용 검사 완료");
-            response.put("drugCodes", drugCodes);
-            response.put("interactionWarnings", interactionWarnings);
-            response.put("hasInteractions", !interactionWarnings.isEmpty());
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "상호작용 검사 완료");
+        response.put("drugCodes", drugCodes);
+        response.put("interactionWarnings", interactionWarnings);
+        response.put("hasInteractions", !interactionWarnings.isEmpty());
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "상호작용 검사 실패");
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        return ResponseEntity.ok(response);
     }
 }

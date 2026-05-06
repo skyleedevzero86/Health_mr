@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
@@ -19,7 +20,7 @@ public class AuditService {
     private final AuditRepository auditRepository;
     private final ObjectMapper objectMapper;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logAudit(Long userId, String actionType, String entityType, String entityId,
                          Object beforeData, Object afterData, String ipAddress, String userAgent) {
         try {
@@ -56,7 +57,7 @@ public class AuditService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void logSimpleAudit(Long userId, String actionType, String entityType, String entityId,
                                String ipAddress, String userAgent) {
         logAudit(userId, actionType, entityType, entityId, null, null, ipAddress, userAgent);

@@ -27,9 +27,6 @@ public class PrescriptionResponse {
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
 
-    /**
-     * Entity → DTO 변환
-     */
     public static PrescriptionResponse from(PrescriptionEntity entity) {
         return PrescriptionResponse.builder()
                 .prescriptionId(entity.getPrescriptionId())

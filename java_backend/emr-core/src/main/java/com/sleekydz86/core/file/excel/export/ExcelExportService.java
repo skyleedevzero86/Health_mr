@@ -18,7 +18,6 @@ import java.util.Map;
 public class ExcelExportService {
 
     public void exportToExcel(List<String> headers, List<Map<String, Object>> data, String filename, HttpServletResponse response) throws IOException {
-        // 대용량 데이터 처리를 위한 SXSSFWorkbook 사용
         SXSSFWorkbook workbook = new SXSSFWorkbook(100);
 
         try {

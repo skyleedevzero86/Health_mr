@@ -48,7 +48,7 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
 
     private static final String CACHE_PREFIX_MEDICAL_FEE = "medicalfee:";
     private static final String CACHE_PREFIX_MEDICAL_FEE_TREATMENT = "medicalfee:treatment:";
-    private static final long CACHE_TTL_DAYS = 1; // 1일
+    private static final long CACHE_TTL_DAYS = 1;
 
     @Transactional
     @AuditLog(action = AuditLog.ActionType.CREATE)
@@ -206,9 +206,6 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
     public void deleteMedicalFee(Long medicalFeeId) {
         MedicalFeeEntity medicalFee = validateExists(medicalFeeRepository, medicalFeeId,
                 "진료비를 찾을 수 없습니다. ID: " + medicalFeeId);
-
-        // 결제 완료된 진료비는 삭제 불가 검증
-        // 실제로는 PaymentService를 통해 검증해야 하는기능 구현예증
 
         medicalFeeRepository.delete(medicalFee);
 

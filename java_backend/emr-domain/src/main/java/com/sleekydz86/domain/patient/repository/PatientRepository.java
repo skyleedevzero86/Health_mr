@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface PatientRepository extends JpaRepository<PatientEntity, Long> {
+public interface PatientRepository extends JpaRepository<PatientEntity, Long>, PatientRepositoryCustom {
 
     @Query("SELECT p FROM Patient p WHERE p.patientNo.value = :patientNo")
     Optional<PatientEntity> findByPatientNo(@Param("patientNo") Long patientNo);
@@ -41,16 +41,6 @@ public interface PatientRepository extends JpaRepository<PatientEntity, Long> {
     boolean existsByPatientTel(@Param("tel") String tel);
 
     List<PatientEntity> findAllByOrderByPatientLastVisitDesc();
-
-    @Query("SELECT p FROM Patient p WHERE " +
-            "(:name IS NULL OR p.patientName LIKE %:name%) AND " +
-            "(:tel IS NULL OR p.patientTel.value LIKE %:tel%) AND " +
-            "(:email IS NULL OR p.patientEmail.value LIKE %:email%)")
-    List<PatientEntity> searchPatients(
-            @Param("name") String name,
-            @Param("tel") String tel,
-            @Param("email") String email
-    );
 
     @Query("SELECT p FROM Patient p WHERE p.patientLastVisit >= :since")
     List<PatientEntity> findRecentPatients(@Param("since") LocalDate since);

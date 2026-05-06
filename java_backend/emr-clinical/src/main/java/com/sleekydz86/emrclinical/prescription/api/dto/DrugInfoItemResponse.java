@@ -13,42 +13,42 @@ import lombok.NoArgsConstructor;
 public class DrugInfoItemResponse {
     
     @JsonProperty("entpName")
-    private String entpName;              // 업체명
+    private String entpName;
     
     @JsonProperty("itemSeq")
-    private String itemSeq;               // 품목기준코드
+    private String itemSeq;
     
     @JsonProperty("itemName")
-    private String itemName;              // 제품명
+    private String itemName;
     
     @JsonProperty("efcyQesitm")
-    private String efcyQesitm;            // 효능
+    private String efcyQesitm;
     
     @JsonProperty("useMethodQesitm")
-    private String useMethodQesitm;       // 사용법
+    private String useMethodQesitm;
     
     @JsonProperty("atpnWarnQesitm")
-    private String atpnWarnQesitm;         // 주의사항 경고
+    private String atpnWarnQesitm;
     
     @JsonProperty("atpnQesitm")
-    private String atpnQesitm;             // 주의사항
+    private String atpnQesitm;
     
     @JsonProperty("intrcQesitm")
-    private String intrcQesitm;            // 상호작용
+    private String intrcQesitm;
     
     @JsonProperty("seQesitm")
-    private String seQesitm;               // 부작용
+    private String seQesitm;
     
     @JsonProperty("depositMethodQesitm")
-    private String depositMethodQesitm;    // 보관법
+    private String depositMethodQesitm;
     
     @JsonProperty("openDe")
-    private String openDe;                 // 공개일자
+    private String openDe;
     
     @JsonProperty("updateDe")
-    private String updateDe;                // 수정일자
+    private String updateDe;
     
     @JsonProperty("itemImage")
-    private String itemImage;              // 낱알 이미지 URL
+    private String itemImage;
 }
 

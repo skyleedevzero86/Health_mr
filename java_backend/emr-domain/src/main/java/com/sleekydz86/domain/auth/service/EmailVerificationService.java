@@ -28,14 +28,11 @@ public class EmailVerificationService {
 
     @Transactional
     public void sendVerificationCode(String email) {
-        // 인증 코드 생성
         String code = generateVerificationCode();
 
-        // Redis에 저장 (10분 만료)
         String key = VERIFICATION_CODE_PREFIX + email;
         redisTemplate.opsForValue().set(key, code, codeExpiry, TimeUnit.MILLISECONDS);
 
-        // 이메일 발송
         String subject = "이메일 인증 코드";
         String message = "인증 코드: " + code;
         notificationService.send(email, subject, message);

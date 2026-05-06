@@ -18,6 +18,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -214,6 +215,120 @@ public class NonCoveredMedicalFeeSyncService {
                                     medicalTypeId, originalAmount, error);
                         }
                 );
+    }
+
+    @Async
+    @Transactional
+    public void syncAllMedicalTypeFees() {
+        log.info("모든 진료 유형의 비급여 금액 동기화 시작");
+        
+        try {
+            List<MedicalTypeEntity> medicalTypes = medicalTypeRepository.findAll();
+            int totalCount = medicalTypes.size();
+            int successCount = 0;
+            int failCount = 0;
+
+            for (MedicalTypeEntity medicalType : medicalTypes) {
+                try {
+                    String npayCd = medicalType.getMedicalTypeCode();
+                    if (npayCd == null || npayCd.isBlank()) {
+                        continue;
+                    }
+
+                    getNonCoveredFeeAmountForCurrentInstitution(npayCd)
+                            .blockOptional()
+                            .ifPresent(amount -> {
+                                if (amount > 0) {
+                                    Long currentAmount = medicalType.getMedicalTypeFeeValue();
+                                    if (currentAmount == null || !currentAmount.equals(amount)) {
+                                        medicalType.updateFee(Money.of(amount));
+                                        medicalTypeRepository.save(medicalType);
+                                        successCount++;
+                                        log.debug("진료 유형 금액 동기화: Code={}, Amount={}", npayCd, amount);
+                                    }
+                                }
+                            });
+                } catch (Exception e) {
+                    failCount++;
+                    log.error("진료 유형 금액 동기화 실패: Code={}", medicalType.getMedicalTypeCode(), e);
+                }
+            }
+
+            log.info("모든 진료 유형의 비급여 금액 동기화 완료: Total={}, Success={}, Fail={}", 
+                    totalCount, successCount, failCount);
+        } catch (Exception e) {
+            log.error("모든 진료 유형의 비급여 금액 동기화 실패", e);
+            throw e;
+        }
+    }
+
+    @Async
+    @Transactional
+    public void syncMedicalTypeFeeByCode(String npayCd) {
+        log.info("특정 비급여 코드의 금액 동기화 시작: NpayCd={}", npayCd);
+        
+        try {
+            MedicalTypeEntity medicalType = medicalTypeRepository.findByMedicalTypeCode(npayCd)
+                    .orElse(null);
+
+            if (medicalType == null) {
+                log.warn("진료 유형을 찾을 수 없음: NpayCd={}", npayCd);
+                return;
+            }
+
+            Long originalAmount = medicalType.getMedicalTypeFeeValue();
+            Long newAmount = getNonCoveredFeeAmountForCurrentInstitution(npayCd).block();
+
+            if (newAmount != null && newAmount > 0 && !newAmount.equals(originalAmount)) {
+                medicalType.updateFee(Money.of(newAmount));
+                medicalTypeRepository.save(medicalType);
+                log.info("비급여 코드 금액 동기화 완료: NpayCd={}, Original={}, New={}", 
+                        npayCd, originalAmount, newAmount);
+            } else {
+                log.debug("비급여 코드 금액 동기화 불필요: NpayCd={}, Amount={}", npayCd, newAmount);
+            }
+        } catch (Exception e) {
+            log.error("비급여 코드 금액 동기화 실패: NpayCd={}", npayCd, e);
+            throw e;
+        }
+    }
+
+    public Mono<Long> getAveragePrice(String npayCd, String region) {
+        return apiClient.getNonPaymentItemSidoCdList(1, 100)
+                .map(response -> {
+                    if (response.getItems().isEmpty()) {
+                        return 0L;
+                    }
+
+                    return response.getItems().stream()
+                            .filter(item -> npayCd.equals(item.getNpayCd()))
+                            .findFirst()
+                            .map(item -> {
+                                Long avgPrice = switch (region != null ? region : "") {
+                                    case "서울" -> item.getPrcAvgSl();
+                                    case "부산" -> item.getPrcAvgPs();
+                                    case "인천" -> item.getPrcAvgIch();
+                                    case "대구" -> item.getPrcAvgTg();
+                                    case "광주" -> item.getPrcAvgKw();
+                                    case "대전" -> item.getPrcAvgDj();
+                                    case "울산" -> item.getPrcAvgUsn();
+                                    case "경기" -> item.getPrcAvgKyg();
+                                    case "강원" -> item.getPrcAvgKaw();
+                                    case "충북" -> item.getPrcAvgCcbk();
+                                    case "충남" -> item.getPrcAvgCcn();
+                                    case "전북" -> item.getPrcAvgClb();
+                                    case "전남" -> item.getPrcAvgCln();
+                                    case "경북" -> item.getPrcAvgKsb();
+                                    case "경남" -> item.getPrcAvgKsn();
+                                    case "제주" -> item.getPrcAvgChj();
+                                    case "세종" -> item.getPrcAvgSejong();
+                                    default -> item.getPrcAvgAll();
+                                };
+                                return avgPrice != null ? avgPrice : 0L;
+                            })
+                            .orElse(0L);
+                })
+                .onErrorReturn(0L);
     }
 }
 

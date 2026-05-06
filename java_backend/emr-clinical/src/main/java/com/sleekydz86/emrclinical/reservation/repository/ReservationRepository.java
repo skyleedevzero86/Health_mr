@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface ReservationRepository extends BaseRepository<ReservationEntity, Long> {
+public interface ReservationRepository extends BaseRepository<ReservationEntity, Long>, ReservationRepositoryCustom {
 
     List<ReservationEntity> findByPatientEntity_PatientNo(Long patientNo);
 
@@ -35,11 +35,6 @@ public interface ReservationRepository extends BaseRepository<ReservationEntity,
     Page<ReservationEntity> findAll(Pageable pageable);
     List<ReservationEntity> findAllByOrderByReservationDateAsc();
 
-    @Query("SELECT r FROM Reservation r WHERE DATE(r.reservationDate) = :date")
-    List<ReservationEntity> findTodayReservations(@Param("date") LocalDate date);
-
-    @Query("SELECT COUNT(r) FROM Reservation r WHERE r.reservationDate BETWEEN :start AND :end")
-    Long countByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
     @Deprecated
     List<ReservationEntity> findByReservationYn(String reservationYn);

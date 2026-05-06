@@ -14,12 +14,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Long> {
+public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Long>, TreatmentRepositoryCustom {
 
     List<TreatmentEntity> findByPatientEntity_PatientNo(Long patientNo);
 
-    @Query("SELECT t FROM Treatments t WHERE t.checkInEntity.patientEntity.patientNo = :patientNo")
-    Page<TreatmentEntity> findByPatientNo(@Param("patientNo") Long patientNo, Pageable pageable);
+    Page<TreatmentEntity> findByPatientNo(Long patientNo, Pageable pageable);
 
     List<TreatmentEntity> findByTreatmentDoc_Id(Long doctorId);
 
@@ -43,13 +42,7 @@ public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Lon
 
     List<TreatmentEntity> findAllByOrderByTreatmentDateDesc();
 
-    @Query("SELECT t FROM Treatments t WHERE DATE(t.treatmentDate) = :date")
-    List<TreatmentEntity> findTodayTreatments(@Param("date") LocalDate date);
 
-    @Query("SELECT COUNT(t) FROM Treatments t WHERE t.treatmentDate BETWEEN :start AND :end")
-    Long countByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    @Query("SELECT COUNT(t) FROM Treatments t WHERE t.treatmentDoc.id = :doctorId AND t.treatmentDate BETWEEN :start AND :end")
-    Long countByDoctorAndDateRange(@Param("doctorId") Long doctorId, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
 

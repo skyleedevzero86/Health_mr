@@ -10,9 +10,6 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-/**
- * 결제 상세 응답 DTO
- */
 @Getter
 @Setter
 @NoArgsConstructor

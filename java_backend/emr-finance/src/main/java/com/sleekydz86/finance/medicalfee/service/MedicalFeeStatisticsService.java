@@ -2,6 +2,7 @@ package com.sleekydz86.finance.medicalfee.service;
 
 import com.sleekydz86.finance.medicalfee.dto.DailyMedicalFeeStatistics;
 import com.sleekydz86.finance.medicalfee.dto.PeriodMedicalFeeStatistics;
+import com.sleekydz86.finance.medicalfee.dto.ProcedureCodeStatisticsByYearResponse;
 import com.sleekydz86.finance.medicalfee.entity.MedicalFeeEntity;
 import com.sleekydz86.finance.medicalfee.repository.MedicalFeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class MedicalFeeStatisticsService {
 
         private final MedicalFeeRepository medicalFeeRepository;
+        private final MedicalProcedureCodeStatisticsService procedureCodeStatisticsService;
 
         public DailyMedicalFeeStatistics getDailyStatistics(LocalDate date) {
                 LocalDateTime start = date.atStartOfDay();
@@ -110,5 +112,40 @@ public class MedicalFeeStatisticsService {
                                 .typeStatistics(typeStatistics)
                                 .departmentStatistics(departmentStatistics)
                                 .build();
+        }
+
+        public Map<String, Object> getStatisticsByProcedureCode(String procedureCode, String year) {
+                List<MedicalFeeEntity> medicalFees = medicalFeeRepository.findAll().stream()
+                                .filter(mf -> {
+                                        if (mf.getMedicalTypeEntity() == null) {
+                                                return false;
+                                        }
+                                        String code = mf.getMedicalTypeEntity().getMedicalTypeCode();
+                                        return procedureCode.equals(code);
+                                })
+                                .collect(Collectors.toList());
+
+                long totalAmount = medicalFees.stream()
+                                .mapToLong(mf -> {
+                                        Long amount = mf.getMedicalFeeAmountValue() != null
+                                                        ? mf.getMedicalFeeAmountValue()
+                                                        : 0L;
+                                        Integer quantity = mf.getQuantity() != null ? mf.getQuantity() : 1;
+                                        return amount * quantity;
+                                })
+                                .sum();
+
+                ProcedureCodeStatisticsByYearResponse publicStatistics = 
+                        procedureCodeStatisticsService.getStatisticsByYear(procedureCode, year);
+
+                return Map.of(
+                                "procedureCode", procedureCode,
+                                "year", year,
+                                "internalStatistics", Map.of(
+                                                "totalAmount", totalAmount,
+                                                "treatmentCount", medicalFees.size()
+                                ),
+                                "publicStatistics", publicStatistics
+                );
         }
 }

@@ -24,125 +24,67 @@ public class DisabilityController {
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerDisability(
             @RequestBody DisabilityRegisterRequest request) {
-        try {
-            DisabilityEntity responseData = disabilityService.registerDisability(request);
-            
-            String patientName = responseData.getPatientEntity() != null 
-                    ? responseData.getPatientEntity().getPatientName() 
-                    : "Unknown";
+        DisabilityEntity responseData = disabilityService.registerDisability(request);
+        
+        String patientName = responseData.getPatientEntity() != null 
+                ? responseData.getPatientEntity().getPatientName() 
+                : "Unknown";
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                    "message", "등록 성공",
-                    "patientName", patientName,
-                    "data", responseData
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "등록 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "message", "등록 성공",
+                "patientName", patientName,
+                "data", responseData
+        ));
     }
 
     @GetMapping("/read/{patientNo}")
     public ResponseEntity<Map<String, Object>> viewDisability(@PathVariable Long patientNo) {
-        try {
-            DisabilityResponse disabilityResponse = disabilityService.readDisabilityByPatientNo(patientNo);
-
-            if (disabilityResponse == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                        "message", "장애인 정보를 찾을 수 없습니다."
-                ));
-            }
-
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                    "message", "조회 성공",
-                    "data", disabilityResponse
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DisabilityResponse disabilityResponse = disabilityService.readDisabilityByPatientNo(patientNo);
+        return ResponseEntity.ok(Map.of(
+                "message", "조회 성공",
+                "data", disabilityResponse
+        ));
     }
 
     @GetMapping("/read/all")
     public ResponseEntity<Map<String, Object>> getAllDisabilityInfo() {
-        try {
-            List<DisabilityResponse> disabilityResponses = disabilityService.readAllDisabilities();
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                    "message", "전체 조회 성공",
-                    "data", disabilityResponses
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "전체 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        List<DisabilityResponse> disabilityResponses = disabilityService.readAllDisabilities();
+        return ResponseEntity.ok(Map.of(
+                "message", "전체 조회 성공",
+                "data", disabilityResponses
+        ));
     }
 
     @PostMapping("/update/{patientNo}")
     public ResponseEntity<Map<String, Object>> updateDisability(
             @PathVariable Long patientNo,
             @RequestBody DisabilityUpdateRequest request) {
-        try {
-            DisabilityEntity updatedData = disabilityService.updateDisability(patientNo, request);
-
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                    "message", "수정 성공",
-                    "data", updatedData
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "수정 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DisabilityEntity updatedData = disabilityService.updateDisability(patientNo, request);
+        return ResponseEntity.ok(Map.of(
+                "message", "수정 성공",
+                "data", updatedData
+        ));
     }
 
     @PostMapping("/delete/{patientNo}")
     public ResponseEntity<Map<String, Object>> deleteDisability(@PathVariable Long patientNo) {
-        try {
-            DisabilityResponse deletedDisability = disabilityService.deleteDisability(patientNo);
-
-            return ResponseEntity.status(HttpStatus.OK).body(Map.of(
-                    "message", "삭제 성공",
-                    "deletedDisability", deletedDisability
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message", "삭제 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        DisabilityResponse deletedDisability = disabilityService.deleteDisability(patientNo);
+        return ResponseEntity.ok(Map.of(
+                "message", "삭제 성공",
+                "deletedDisability", deletedDisability
+        ));
     }
 
     @GetMapping("/{patientNo}/recommendations")
     @AuthRole(roles = {"STAFF", "ADMIN", "DOCTOR"})
     public ResponseEntity<Map<String, Object>> getDisabilityWithRecommendations(
             @PathVariable Long patientNo) {
-        try {
-            DisabilityWithCareInstitutionResponse response =
-                disabilityService.getDisabilityWithRecommendations(patientNo);
-
-            if (response == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
-                    "message", "장애인 정보를 찾을 수 없습니다."
-                ));
-            }
-
-            return ResponseEntity.ok(Map.of(
-                "message", "조회 성공",
-                "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                "message", "조회 실패",
-                "error", e.getMessage()
-            ));
-        }
+        DisabilityWithCareInstitutionResponse response =
+            disabilityService.getDisabilityWithRecommendations(patientNo);
+        return ResponseEntity.ok(Map.of(
+            "message", "조회 성공",
+            "data", response
+        ));
     }
 }
 

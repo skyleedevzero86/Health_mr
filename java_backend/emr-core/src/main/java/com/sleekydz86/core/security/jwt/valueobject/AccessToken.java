@@ -12,13 +12,13 @@ import java.util.Date;
 @EqualsAndHashCode
 public class AccessToken {
 
-    public static final long EXPIRE_TIME_MS = 1000 * 60 * 15; // 15분
+    public static final long EXPIRE_TIME_MS = 1000 * 60 * 15;
     private static final String BEARER_PREFIX = "Bearer ";
 
     private String value;
     private Long userId;
     private String role;
-    private String inttCd; // 기관 코드
+    private String inttCd;
     private Instant issuedAt;
     private Instant expiresAt;
 

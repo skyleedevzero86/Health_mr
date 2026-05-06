@@ -22,18 +22,11 @@ public class MessageStatisticsController {
     @AuthRole
     public ResponseEntity<Map<String, Object>> getDailyStatistics(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
-        try {
-            MessageStatisticsResponse response = messageStatisticsService.getDailyStatistics(date);
-            return ResponseEntity.ok(Map.of(
-                    "message", "일별 통계 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "일별 통계 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        MessageStatisticsResponse response = messageStatisticsService.getDailyStatistics(date);
+        return ResponseEntity.ok(Map.of(
+                "message", "일별 통계 조회 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/weekly")
@@ -41,18 +34,11 @@ public class MessageStatisticsController {
     public ResponseEntity<Map<String, Object>> getWeeklyStatistics(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        try {
-            MessageStatisticsResponse response = messageStatisticsService.getWeeklyStatistics(startDate, endDate);
-            return ResponseEntity.ok(Map.of(
-                    "message", "주별 통계 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "주별 통계 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        MessageStatisticsResponse response = messageStatisticsService.getWeeklyStatistics(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "주별 통계 조회 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/monthly")
@@ -60,18 +46,11 @@ public class MessageStatisticsController {
     public ResponseEntity<Map<String, Object>> getMonthlyStatistics(
             @RequestParam int year,
             @RequestParam int month) {
-        try {
-            MessageStatisticsResponse response = messageStatisticsService.getMonthlyStatistics(year, month);
-            return ResponseEntity.ok(Map.of(
-                    "message", "월별 통계 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "월별 통계 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        MessageStatisticsResponse response = messageStatisticsService.getMonthlyStatistics(year, month);
+        return ResponseEntity.ok(Map.of(
+                "message", "월별 통계 조회 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/user")
@@ -80,18 +59,11 @@ public class MessageStatisticsController {
             @AuthUser Long userId,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        try {
-            MessageStatisticsResponse response = messageStatisticsService.getUserStatistics(userId, startDate, endDate);
-            return ResponseEntity.ok(Map.of(
-                    "message", "사용자별 통계 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "사용자별 통계 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        MessageStatisticsResponse response = messageStatisticsService.getUserStatistics(userId, startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "사용자별 통계 조회 성공",
+                "data", response
+        ));
     }
 
     @GetMapping("/admin")
@@ -99,18 +71,11 @@ public class MessageStatisticsController {
     public ResponseEntity<Map<String, Object>> getAdminStatistics(
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        try {
-            MessageStatisticsResponse response = messageStatisticsService.getAdminStatistics(startDate, endDate);
-            return ResponseEntity.ok(Map.of(
-                    "message", "관리자 통계 조회 성공",
-                    "data", response
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "관리자 통계 조회 실패",
-                    "error", e.getMessage()
-            ));
-        }
+        MessageStatisticsResponse response = messageStatisticsService.getAdminStatistics(startDate, endDate);
+        return ResponseEntity.ok(Map.of(
+                "message", "관리자 통계 조회 성공",
+                "data", response
+        ));
     }
 }
 

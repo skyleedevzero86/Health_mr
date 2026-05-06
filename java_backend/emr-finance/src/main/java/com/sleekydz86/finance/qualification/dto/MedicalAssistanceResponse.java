@@ -12,7 +12,7 @@ import lombok.Setter;
 public class MedicalAssistanceResponse {
 
     private Boolean eligible;
-    private String type; // 1종, 2종
+    private String type;
     private String assistanceNumber;
 }
 
