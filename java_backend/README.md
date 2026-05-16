@@ -103,7 +103,7 @@ docker compose up -d
 | Support API       | http://localhost:8083  | `emr-support`                           |
 | ClickHouse        | http://localhost:8123  | 분석 DB HTTP                            |
 | ClickHouse Native | localhost:19000        | TCP 클라이언트 포트, 컨테이너 내부 9000 |
-| Prometheus        | http://localhost:9090  | 메트릭 수집                             |
+| Prometheus        | http://localhost:19090 | 메트릭 수집, 호스트 포트 19090           |
 | Grafana           | http://localhost:13000 | `admin / admin`                         |
 | Loki              | http://localhost:3100  | 로그 저장소                             |
 
