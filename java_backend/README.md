@@ -68,7 +68,7 @@ graph LR
 ```text
 backend/
 ├── app/
-│   ├── 클린아키텍처.drawio
+│   ├── architecture.drawio
 │   ├── docker-compose.yml                 # 로컬 통합 실행기
 │   └── observability/
 │       ├── prometheus.yml
@@ -91,7 +91,7 @@ backend/
 ### 1. 모듈 단독 실행 Gradle
 
 ```powershell
-cd D:\intel\AISamples\Health_mr\java_backend
+cd D:\Health_mr\
 .\gradlew.bat :emr-clinical:bootRun
 .\gradlew.bat :emr-finance:bootRun
 .\gradlew.bat :emr-support:bootRun
@@ -123,12 +123,12 @@ GET /fhir/MedicationRequest?subject=Patient/123
 
 검색 결과는 `Bundle(type=searchset)`, 오류는 `OperationOutcome`으로 반환합니다. 내부 JPA 엔티티와 FHIR 리소스는 명시적 매퍼로 분리하며, FHIR 리소스를 별도 DB 엔티티로 저장하지 않습니다.
 
-현재 범위에서는 쓰기, 이력, 조건부 요청, 고급 chained search, 커스텀 IG, terminology server 및 HAPI JPA Server를 지원하지 않습니다. 자세한 내용은 [`emr-fhir/README.md`](emr-fhir/README.md)를 참고하세요.
+현재 범위에서는 쓰기, 이력, 조건부 요청, 고급 chained search, 커스텀 IG, terminology server 및 HAPI JPA Server를 지원하지 않습니다.
 
 ### 3. 통합 로컬 실행 Docker Compose
 
 ```powershell
-cd D:\intel\AISamples\Health_mr\java_backend\app
+cd D:\Health_mr\app
 docker compose up -d
 ```
 
@@ -141,7 +141,7 @@ docker compose up -d
 | Support API       | http://localhost:8083  | `emr-support`                           |
 | ClickHouse        | http://localhost:8123  | 분석 DB HTTP                            |
 | ClickHouse Native | localhost:19000        | TCP 클라이언트 포트, 컨테이너 내부 9000 |
-| Prometheus        | http://localhost:19090 | 메트릭 수집, 호스트 포트 19090           |
+| Prometheus        | http://localhost:19090 | 메트릭 수집, 호스트 포트 19090          |
 | Grafana           | http://localhost:13000 | `admin / admin`                         |
 | Loki              | http://localhost:3100  | 로그 저장소                             |
 
@@ -165,7 +165,7 @@ Jenkins Pipeline 기준 예시:
 
 ## 개발 노트
 
-- 아키텍처 시각화: `app/클린아키텍처.drawio`
+- 아키텍처 시각화: `app/architecture.drawio`
 - 관측 설정: `app/observability/*`
 - 추가 설계/트레이드오프 문서는 별도 포트폴리오 문서에 정리
 
