@@ -1,6 +1,6 @@
 # Health MR Java
 
-의료/EMR 멀티모듈 백엔드 `emr-core`, `emr-domain`, `emr-clinical`, `emr-finance`, `emr-support` 와 Python 파이프라인 `pipeline-python` 을 함께 운영하기 위한 개발 실행 기반입니다.
+의료/EMR 멀티모듈 백엔드 `emr-core`, `emr-domain`, `emr-clinical`, `emr-finance`, `emr-support`, `emr-fhir`와 Python 파이프라인 `pipeline-python`을 함께 운영하기 위한 개발 실행 기반입니다.
 
 Healthcare_mr 포트폴리오 | 작성: 궁금하면500원
 
@@ -11,6 +11,7 @@ Healthcare_mr 포트폴리오 | 작성: 궁금하면500원
 - 공통 인프라/보안은 `emr-core`로 집중
 - 기본 도메인 인증 환자 사용자 기관 은 `emr-domain` 으로 분리
 - 업무 실행 모듈은 `emr-clinical`, `emr-finance`, `emr-support`
+- 외부 FHIR R4 연계는 읽기 전용 어댑터인 `emr-fhir`로 분리
 - 통계/분석 성격 데이터는 ClickHouse 연계, 운영 데이터는 MySQL/PostgreSQL 중심
 
 ## 핵심 요구사항
@@ -32,6 +33,7 @@ Healthcare_mr 포트폴리오 | 작성: 궁금하면500원
 | 메트릭            | Prometheus + Grafana       | 표준 관측 조합                          |
 | 로그              | Loki + Promtail            | 경량 로그 파이프라인                    |
 | CI/CD             | GitHub Actions 권장        | 모듈별 자동 빌드 테스트 파이프라인 용이 |
+| 의료정보 연계     | HAPI FHIR R4               | 표준 FHIR 리소스 직렬화 및 파싱         |
 
 ## 모듈 의존 구조
 
@@ -42,6 +44,7 @@ graph LR
     CLINICAL["emr-clinical"]
     FINANCE["emr-finance"]
     SUPPORT["emr-support"]
+    FHIR["emr-fhir"]
 
     DOMAIN --> CORE
     CLINICAL --> CORE
@@ -52,14 +55,20 @@ graph LR
     SUPPORT --> CORE
     SUPPORT --> DOMAIN
     SUPPORT --> CLINICAL
+    FHIR --> CORE
+    FHIR --> DOMAIN
+    FHIR --> CLINICAL
+    FHIR --> SUPPORT
 ```
+
+`emr-fhir`는 기존 모듈을 읽는 최외곽 연계 어댑터입니다. 기존 모듈은 `emr-fhir`에 의존하지 않으며, HAPI FHIR 타입도 기존 엔티티나 내부 DTO에 노출하지 않습니다.
 
 ## 디렉토리 구조
 
 ```text
 backend/
 ├── app/
-│   ├── architecture.drawio
+│   ├── 클린아키텍처.drawio
 │   ├── docker-compose.yml                 # 로컬 통합 실행기
 │   └── observability/
 │       ├── prometheus.yml
@@ -71,6 +80,7 @@ backend/
 ├── emr-clinical/                           # 예약/처방/치료/통계/AI
 ├── emr-finance/                            # 계약/진료비/결제/자격조회
 ├── emr-support/                            # 근태/게시판/검사/장비/건강검진
+├── emr-fhir/                               # 기존 EMR 데이터를 FHIR R4로 제공하는 읽기 전용 어댑터
 ├── pipeline-python/                        # Python 분석 파이프라인
 ├── build.gradle.kts
 └── settings.gradle.kts
@@ -81,16 +91,44 @@ backend/
 ### 1. 모듈 단독 실행 Gradle
 
 ```powershell
-cd D:\intel\AISamples\Health_mr\backend
+cd D:\intel\AISamples\Health_mr\java_backend
 .\gradlew.bat :emr-clinical:bootRun
 .\gradlew.bat :emr-finance:bootRun
 .\gradlew.bat :emr-support:bootRun
+.\gradlew.bat :emr-fhir:bootRun
 ```
 
-### 2. 통합 로컬 실행 Docker Compose
+### 2. FHIR R4 API
+
+`emr-fhir`는 범용 FHIR 서버가 아니라 기존 EMR 데이터를 표준 FHIR R4 표현으로 제공하는 연계 어댑터입니다.
+
+지원 리소스:
+
+- `Patient`
+- `Practitioner`
+- `Encounter`
+- `Observation`
+- `Condition`
+- `MedicationRequest`
+
+대표 요청:
+
+```http
+GET /fhir/Patient/123
+GET /fhir/Patient?name=홍길동
+GET /fhir/Observation?subject=Patient/123&code=1558-6
+GET /fhir/Condition?subject=Patient/123
+GET /fhir/MedicationRequest?subject=Patient/123
+```
+
+검색 결과는 `Bundle(type=searchset)`, 오류는 `OperationOutcome`으로 반환합니다. 내부 JPA 엔티티와 FHIR 리소스는 명시적 매퍼로 분리하며, FHIR 리소스를 별도 DB 엔티티로 저장하지 않습니다.
+
+현재 범위에서는 쓰기, 이력, 조건부 요청, 고급 chained search, 커스텀 IG, terminology server 및 HAPI JPA Server를 지원하지 않습니다. 자세한 내용은 [`emr-fhir/README.md`](emr-fhir/README.md)를 참고하세요.
+
+### 3. 통합 로컬 실행 Docker Compose
 
 ```powershell
-cd D:\intel\AISamples\Health_mr\backend\app
+cd D:\intel\AISamples\Health_mr\java_backend\app
 docker compose up -d
 ```
 
@@ -120,17 +158,17 @@ docker compose up -d
 Jenkins Pipeline 기준 예시:
 
 - Lint / Static Check
-- Module Build and Test `emr-core`, `emr-domain`, `emr-clinical`, `emr-finance`, `emr-support`
+- Module Build and Test `emr-core`, `emr-domain`, `emr-clinical`, `emr-finance`, `emr-support`, `emr-fhir`
 - Docker Image Build
 - Manifest/Compose Validation
 - 배포 환경별 분리
 
 ## 개발 노트
 
-- 아키텍처 시각화: `app/architecture.drawio`
+- 아키텍처 시각화: `app/클린아키텍처.drawio`
 - 관측 설정: `app/observability/*`
 - 추가 설계/트레이드오프 문서는 별도 포트폴리오 문서에 정리
 
 ## 한 줄 요약
 
-이 저장소는 EMR 업무를 공통 core, 기본 domain, 진료 clinical, 재무 finance, 운영지원 support 로 분리하고 로컬에서 관측 스택까지 한 번에 실행 가능한 멀티모듈 백엔드입니다.
+이 저장소는 EMR 업무를 공통 core, 기본 domain, 진료 clinical, 재무 finance, 운영지원 support로 분리하고, 기존 데이터를 FHIR R4로 제공하는 외곽 연계 어댑터와 분석 파이프라인을 함께 구성한 멀티모듈 백엔드입니다.
