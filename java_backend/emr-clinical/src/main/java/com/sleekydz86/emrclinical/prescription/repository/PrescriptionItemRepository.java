@@ -10,4 +10,6 @@ import java.util.List;
 public interface PrescriptionItemRepository extends BaseRepository<PrescriptionItemEntity, Long> {
 
     List<PrescriptionItemEntity> findByPrescriptionEntity_PrescriptionId(Long prescriptionId);
+
+    List<PrescriptionItemEntity> findByPrescriptionEntity_PatientEntity_PatientNo(Long patientNo);
 }

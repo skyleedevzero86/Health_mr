@@ -4,10 +4,6 @@ import com.sleekydz86.domain.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-/**
- * KCD(한국표준질병분류) 코드 엔티티.
- * 의료기관에서 진단 시 사용하는 표준 질병 분류 코드를 관리합니다.
- */
 @Entity
 @Table(name = "kcd_code", indexes = {
         @Index(name = "idx_kcd_code", columnList = "code"),

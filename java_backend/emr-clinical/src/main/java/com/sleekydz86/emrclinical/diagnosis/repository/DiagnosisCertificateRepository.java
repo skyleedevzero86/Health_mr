@@ -4,6 +4,8 @@ import com.sleekydz86.emrclinical.diagnosis.entity.DiagnosisCertificateEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,6 +18,9 @@ public interface DiagnosisCertificateRepository extends JpaRepository<DiagnosisC
     Page<DiagnosisCertificateEntity> findByPatient_Id(Long patientId, Pageable pageable);
 
     Page<DiagnosisCertificateEntity> findByDoctor_Id(Long doctorId, Pageable pageable);
+
+    @Query("SELECT d FROM DiagnosisCertificateEntity d WHERE d.patient.patientNo.value = :patientNo")
+    List<DiagnosisCertificateEntity> findByPatientNo(@Param("patientNo") Long patientNo);
 
     List<DiagnosisCertificateEntity> findByDiagnosisDateBetween(LocalDate start, LocalDate end);
 

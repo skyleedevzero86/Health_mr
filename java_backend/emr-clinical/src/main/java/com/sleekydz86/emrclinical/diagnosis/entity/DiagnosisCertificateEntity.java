@@ -9,10 +9,6 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * 진단서 발급 엔티티.
- * 환자의 진단 내용과 발급 이력을 관리합니다.
- */
 @Entity
 @Table(name = "diagnosis_certificate")
 @Getter
