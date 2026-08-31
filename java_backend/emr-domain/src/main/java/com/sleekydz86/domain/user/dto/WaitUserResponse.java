@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Builder
 public record WaitUserResponse(
         Long id,
+        String employeeNo,
         String loginId,
         String name,
         String email,
@@ -19,6 +20,7 @@ public record WaitUserResponse(
     public static WaitUserResponse from(UserEntity entity) {
         return WaitUserResponse.builder()
                 .id(entity.getId())
+                .employeeNo(entity.getEmployeeNo())
                 .loginId(entity.getLoginIdValue())
                 .name(entity.getName())
                 .email(entity.getEmailValue())

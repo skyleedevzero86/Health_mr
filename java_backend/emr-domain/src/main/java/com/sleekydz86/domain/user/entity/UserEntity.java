@@ -9,6 +9,7 @@ import com.sleekydz86.domain.common.valueobject.Password;
 import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.user.type.Gender;
+import com.sleekydz86.domain.user.type.AccountStatus;
 import com.sleekydz86.domain.user.type.RoleType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -22,6 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 
 @Entity(name = "User")
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "uk_user_institution_employee", columnNames = {"intt_cd", "employee_no"})
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends BaseEntity {
@@ -35,6 +39,13 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @NotNull
     private RoleType role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status", length = 20)
+    private AccountStatus accountStatus;
+
+    @Column(name = "employee_no", length = 30)
+    private String employeeNo;
 
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "login_id", unique = true, nullable = false, length = 50))
@@ -75,6 +86,8 @@ public class UserEntity extends BaseEntity {
     private UserEntity(
             Long id,
             RoleType role,
+            AccountStatus accountStatus,
+            String employeeNo,
             LoginId loginId,
             Password password,
             DepartmentEntity department,
@@ -89,6 +102,10 @@ public class UserEntity extends BaseEntity {
     ) {
         this.id = id;
         this.role = role != null ? role : RoleType.WAIT;
+        this.accountStatus = accountStatus != null
+                ? accountStatus
+                : (this.role == RoleType.WAIT ? AccountStatus.WAITING_APPROVAL : AccountStatus.ACTIVE);
+        this.employeeNo = employeeNo != null ? employeeNo.trim() : null;
         this.loginId = loginId;
         this.password = password;
         this.department = department;
@@ -132,6 +149,57 @@ public class UserEntity extends BaseEntity {
         }
     }
 
+    public void approve(RoleType approvedRole, EventPublisher eventPublisher) {
+        if (approvedRole == null || approvedRole == RoleType.WAIT) {
+            throw new IllegalArgumentException("승인 시 실제 역할을 지정해야 합니다.");
+        }
+        changeRole(approvedRole, eventPublisher);
+        this.accountStatus = AccountStatus.ACTIVE;
+    }
+
+    public void activate() {
+        if (this.accountStatus == AccountStatus.RETIRED) {
+            throw new IllegalStateException("퇴직 계정은 활성화할 수 없습니다.");
+        }
+        if (this.role == RoleType.WAIT) {
+            throw new IllegalStateException("승인 대기 계정은 먼저 역할 승인이 필요합니다.");
+        }
+        this.accountStatus = AccountStatus.ACTIVE;
+    }
+
+    public void suspend() {
+        if (this.accountStatus == AccountStatus.RETIRED) {
+            throw new IllegalStateException("이미 퇴직 처리된 계정입니다.");
+        }
+        this.accountStatus = AccountStatus.SUSPENDED;
+    }
+
+    public void retire() {
+        this.accountStatus = AccountStatus.RETIRED;
+    }
+
+    public void requestRehire(String newEmployeeNo, String newInstitutionCode,
+                              DepartmentEntity newDepartment, LocalDateTime newHireDate) {
+        if (this.accountStatus != AccountStatus.RETIRED) {
+            throw new IllegalStateException("퇴직 계정만 재입사 처리할 수 있습니다.");
+        }
+        if (newEmployeeNo == null || newEmployeeNo.isBlank()) {
+            throw new IllegalArgumentException("새 사원번호는 필수입니다.");
+        }
+        if (newInstitutionCode == null || newInstitutionCode.isBlank()) {
+            throw new IllegalArgumentException("기관 코드는 필수입니다.");
+        }
+        if (newDepartment == null || newHireDate == null) {
+            throw new IllegalArgumentException("부서와 재입사일은 필수입니다.");
+        }
+        this.employeeNo = newEmployeeNo.trim();
+        this.inttCd = newInstitutionCode.trim();
+        this.department = newDepartment;
+        this.hireDate = newHireDate;
+        this.role = RoleType.WAIT;
+        this.accountStatus = AccountStatus.WAITING_APPROVAL;
+    }
+
     public void changeRole(RoleType newRole) {
         if (newRole == null) {
             throw new IllegalArgumentException("역할은 필수입니다.");
@@ -170,11 +238,26 @@ public class UserEntity extends BaseEntity {
     }
 
     public boolean isWaitingApproval() {
-        return this.role == RoleType.WAIT;
+        return this.accountStatus == AccountStatus.WAITING_APPROVAL;
     }
 
     public boolean isApproved() {
-        return this.role != RoleType.WAIT;
+        return this.accountStatus == AccountStatus.ACTIVE;
+    }
+
+    public boolean canLogin() {
+        return this.accountStatus == AccountStatus.ACTIVE;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @PostLoad
+    private void normalizeAccountStatus() {
+        if (this.accountStatus == null) {
+            this.accountStatus = this.role == RoleType.WAIT
+                    ? AccountStatus.WAITING_APPROVAL
+                    : AccountStatus.ACTIVE;
+        }
     }
 
     public boolean isAdmin() {

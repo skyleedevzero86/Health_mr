@@ -18,6 +18,7 @@ import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
 import com.sleekydz86.domain.user.entity.UserEntity;
+import com.sleekydz86.domain.user.type.AccountStatus;
 import com.sleekydz86.domain.user.entity.UserInstitution;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
@@ -51,13 +52,17 @@ public class AuthService {
             throw new DuplicateException("이미 사용 중인 계정입니다.");
         }
 
+        String institutionCode = request.getInttCd().trim();
+        String employeeNo = request.getEmployeeNo().trim();
+        if (userRepository.existsByInttCdAndEmployeeNo(institutionCode, employeeNo)) {
+            throw new DuplicateException("해당 기관에 이미 등록된 사원번호입니다.");
+        }
+
         DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
                 .orElseThrow(() -> new NotFoundException("부서가 존재하지 않습니다."));
 
-        if (request.getInttCd() != null && !request.getInttCd().isBlank()) {
-            if (!institutionService.existsActiveByCode(request.getInttCd())) {
-                throw new NotFoundException("존재하지 않거나 비활성화된 기관입니다.");
-            }
+        if (!institutionService.existsActiveByCode(institutionCode)) {
+            throw new NotFoundException("존재하지 않거나 비활성화된 기관입니다.");
         }
 
         LoginId loginId = LoginId.of(request.getLoginId());
@@ -67,6 +72,8 @@ public class AuthService {
 
         UserEntity user = UserEntity.builder()
                 .role(com.sleekydz86.domain.user.type.RoleType.WAIT)
+                .accountStatus(AccountStatus.WAITING_APPROVAL)
+                .employeeNo(employeeNo)
                 .loginId(loginId)
                 .password(password)
                 .department(department)
@@ -77,7 +84,7 @@ public class AuthService {
                 .telNum(telNum)
                 .birth(request.getBirth() != null ? request.getBirth().atStartOfDay() : null)
                 .hireDate(request.getHireDate() != null ? request.getHireDate().atStartOfDay() : null)
-                .inttCd(request.getInttCd())
+                .inttCd(institutionCode)
                 .build();
 
         UserEntity savedUser = userRepository.save(user);
@@ -99,6 +106,16 @@ public class AuthService {
         if (!user.verifyPassword(request.getPassword(), passwordEncoder)) {
             accountLockService.recordFailedAttempt(request.getLoginId());
             throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
+        }
+
+        if (!user.canLogin()) {
+            String message = switch (user.getAccountStatus()) {
+                case WAITING_APPROVAL -> "관리자 승인 대기 중인 계정입니다.";
+                case SUSPENDED -> "사용이 중지된 계정입니다. 관리자에게 문의하세요.";
+                case RETIRED -> "퇴직 처리된 계정입니다.";
+                case ACTIVE -> "로그인할 수 없는 계정입니다.";
+            };
+            throw new UnauthorizedException(message);
         }
 
         accountLockService.clearFailedAttempts(request.getLoginId());

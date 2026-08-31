@@ -10,6 +10,9 @@ public class PractitionerFhirMapper {
         Practitioner target = new Practitioner();
         target.setId(String.valueOf(source.getId()));
         target.addIdentifier().setSystem("urn:oid:kr-emr:practitioner-id").setValue(String.valueOf(source.getId()));
+        if (source.getEmployeeNo() != null) {
+            target.addIdentifier().setSystem("urn:oid:kr-emr:employee-number").setValue(source.getEmployeeNo());
+        }
         target.addName().setText(source.getName());
         target.setActive(source.isApproved());
         if (source.getGender() != null) target.setGender(Enumerations.AdministrativeGender.fromCode(source.getGender().name().toLowerCase()));

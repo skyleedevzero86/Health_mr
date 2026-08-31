@@ -2,6 +2,7 @@ package com.sleekydz86.domain.user.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
+import com.sleekydz86.domain.auth.service.RefreshTokenService;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.Password;
@@ -13,12 +14,14 @@ import com.sleekydz86.domain.institution.repository.InstitutionRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
 import com.sleekydz86.domain.user.dto.UserCreateRequest;
 import com.sleekydz86.domain.user.dto.UserUpdateRequest;
+import com.sleekydz86.domain.user.dto.UserRehireRequest;
 import com.sleekydz86.domain.user.dto.WaitApprovedRequest;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.entity.UserInstitution;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
 import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.domain.user.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,6 +43,7 @@ public class UserService implements BaseService<UserEntity, Long> {
     private final InstitutionService institutionService;
     private final PasswordEncoder passwordEncoder;
     private final EventPublisher eventPublisher;
+    private final RefreshTokenService refreshTokenService;
 
     public UserEntity getUserById(Long userId) {
         return validateExists(userRepository, userId, "사용자를 찾을 수 없습니다. ID: " + userId);
@@ -67,7 +71,7 @@ public class UserService implements BaseService<UserEntity, Long> {
     }
 
     public List<UserEntity> getUsersToBeApproved() {
-        return userRepository.findAllByRole(RoleType.WAIT);
+        return userRepository.findAllByAccountStatus(AccountStatus.WAITING_APPROVAL);
     }
 
     @Transactional
@@ -75,6 +79,11 @@ public class UserService implements BaseService<UserEntity, Long> {
 
         validateNotDuplicate(userRepository.existsByLoginId(request.getLoginId()),
                 "이미 사용 중인 계정입니다.");
+        String employeeNo = request.getEmployeeNo().trim();
+        boolean duplicateEmployeeNo = request.getInttCd() == null || request.getInttCd().isBlank()
+                ? userRepository.existsByEmployeeNo(employeeNo)
+                : userRepository.existsByInttCdAndEmployeeNo(request.getInttCd().trim(), employeeNo);
+        validateNotDuplicate(duplicateEmployeeNo, "이미 등록된 사원번호입니다.");
         if (request.getEmail() != null) {
             validateNotDuplicate(userRepository.existsByEmail(request.getEmail()),
                     "이미 사용 중인 이메일입니다.");
@@ -167,11 +176,50 @@ public class UserService implements BaseService<UserEntity, Long> {
     @Transactional
     public void activateUser(Long userId) {
         UserEntity user = getUserById(userId);
+        user.activate();
+        userRepository.save(user);
     }
 
     @Transactional
     public void deactivateUser(Long userId) {
         UserEntity user = getUserById(userId);
+        user.suspend();
+        userRepository.save(user);
+        refreshTokenService.deleteRefreshToken(userId);
+    }
+
+    @Transactional
+    public void retireUser(Long userId) {
+        UserEntity user = getUserById(userId);
+        user.retire();
+        userRepository.save(user);
+        refreshTokenService.deleteRefreshToken(userId);
+    }
+
+    @Transactional
+    public UserEntity requestRehire(Long userId, UserRehireRequest request) {
+        UserEntity user = getUserById(userId);
+        if (user.getAccountStatus() != AccountStatus.RETIRED) {
+            throw new IllegalStateException("퇴직 계정만 재입사 처리할 수 있습니다.");
+        }
+
+        String institutionCode = request.getInttCd().trim();
+        String employeeNo = request.getEmployeeNo().trim();
+        if (!institutionService.existsActiveByCode(institutionCode)) {
+            throw new NotFoundException("존재하지 않거나 비활성화된 기관입니다.");
+        }
+        DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new NotFoundException("부서가 존재하지 않습니다."));
+
+        boolean usedByAnotherUser = userRepository.findByInttCdAndEmployeeNo(institutionCode, employeeNo)
+                .filter(existing -> !existing.getId().equals(userId))
+                .isPresent();
+        validateNotDuplicate(usedByAnotherUser, "해당 기관에 이미 등록된 사원번호입니다.");
+
+        userInstitutionRepository.deleteByUserId(userId);
+        refreshTokenService.deleteRefreshToken(userId);
+        user.requestRehire(employeeNo, institutionCode, department, request.getHireDate().atStartOfDay());
+        return userRepository.save(user);
     }
 
     @Transactional
@@ -185,7 +233,10 @@ public class UserService implements BaseService<UserEntity, Long> {
     public void approveUserWithInstitutions(WaitApprovedRequest request) {
         UserEntity user = getUserById(request.getUserId());
 
-        user.changeRole(request.getRole(), eventPublisher);
+        if (!user.isWaitingApproval()) {
+            throw new IllegalStateException("승인 대기 상태의 사용자만 승인할 수 있습니다.");
+        }
+        user.approve(request.getRole(), eventPublisher);
 
         if (request.getInstitutionCodes() != null && !request.getInstitutionCodes().isEmpty()
                 && !request.getRole().equals(RoleType.ADMIN)) {

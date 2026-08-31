@@ -4,6 +4,7 @@ import com.sleekydz86.core.security.masking.annotation.Sensitive;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.type.Gender;
 import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.domain.user.type.AccountStatus;
 import lombok.Builder;
 import java.time.LocalDateTime;
 
@@ -11,7 +12,9 @@ import java.time.LocalDateTime;
 @Builder
 public record UserResponse(
         Long id,
+        String employeeNo,
         RoleType role,
+        AccountStatus accountStatus,
         String loginId,
         String name,
         Gender gender,
@@ -29,7 +32,9 @@ public record UserResponse(
     public static UserResponse from(UserEntity entity) {
         return UserResponse.builder()
                 .id(entity.getId())
+                .employeeNo(entity.getEmployeeNo())
                 .role(entity.getRole())
+                .accountStatus(entity.getAccountStatus())
                 .loginId(entity.getLoginIdValue())
                 .name(entity.getName())
                 .gender(entity.getGender())

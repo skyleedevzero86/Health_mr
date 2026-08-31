@@ -91,6 +91,21 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/{userId}/retire")
+    @AuthRole(roles = {"ADMIN"})
+    public ResponseEntity<Void> retireUser(@PathVariable Long userId) {
+        userService.retireUser(userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{userId}/rehire")
+    @AuthRole(roles = {"ADMIN"})
+    public ResponseEntity<UserResponse> requestRehire(
+            @PathVariable Long userId,
+            @Valid @RequestBody UserRehireRequest request) {
+        return ResponseEntity.ok(UserResponse.from(userService.requestRehire(userId, request)));
+    }
+
     @GetMapping("/department/{departmentId}")
     public ResponseEntity<List<UserResponse>> getUsersByDepartment(@PathVariable Long departmentId) {
         List<UserEntity> users = userService.getUsersByDepartment(departmentId);
