@@ -17,9 +17,11 @@ import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
+import com.sleekydz86.domain.user.entity.EmploymentHistoryEntity;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.type.AccountStatus;
 import com.sleekydz86.domain.user.entity.UserInstitution;
+import com.sleekydz86.domain.user.repository.EmploymentHistoryRepository;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +47,7 @@ public class AuthService {
     private final EmailVerificationService emailVerificationService;
     private final TokenBlacklistService tokenBlacklistService;
     private final EventPublisher eventPublisher;
+    private final EmploymentHistoryRepository employmentHistoryRepository;
 
     @Transactional
     public void register(RegisterRequest request) {
@@ -88,6 +91,21 @@ public class AuthService {
                 .build();
 
         UserEntity savedUser = userRepository.save(user);
+
+        if (savedUser.getEmployeeNo() != null && !savedUser.getEmployeeNo().isBlank()) {
+            EmploymentHistoryEntity initialHistory = EmploymentHistoryEntity.builder()
+                    .user(savedUser)
+                    .tenureSequence(1)
+                    .employeeNo(savedUser.getEmployeeNo())
+                    .inttCd(savedUser.getInttCd())
+                    .department(department)
+                    .role(savedUser.getRole())
+                    .employmentStatus(savedUser.getAccountStatus())
+                    .hireDate(savedUser.getHireDate())
+                    .memo("신규 입사 (1회차)")
+                    .build();
+            employmentHistoryRepository.save(initialHistory);
+        }
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.UserRegisteredEvent(
                 savedUser.getId(),

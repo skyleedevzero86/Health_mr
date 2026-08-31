@@ -8,6 +8,7 @@ import com.sleekydz86.domain.auth.dto.LoginRequest;
 import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
 import com.sleekydz86.domain.user.entity.UserEntity;
+import com.sleekydz86.domain.user.repository.EmploymentHistoryRepository;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
 import com.sleekydz86.domain.user.type.AccountStatus;
@@ -36,6 +37,7 @@ class AuthServiceAccountStatusTest {
     @Mock EmailVerificationService emailVerificationService;
     @Mock TokenBlacklistService tokenBlacklistService;
     @Mock EventPublisher eventPublisher;
+    @Mock EmploymentHistoryRepository employmentHistoryRepository;
     @InjectMocks AuthService authService;
 
     @Test

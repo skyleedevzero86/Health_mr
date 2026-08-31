@@ -49,12 +49,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
 
                 if (jwtUtil.validateToken(token)) {
+                    AccessToken accessToken = jwtUtil.parseAccessToken(token);
+                    Long userId = accessToken.getUserId();
+
+                    if (userId != null && tokenBlacklistService.isUserTokenRevoked(userId, accessToken.getIssuedAt())) {
+                        throw new CustomAuthenticationException("계정 상태 변경 또는 퇴직으로 인해 폐기된 토큰입니다.");
+                    }
+
                     var authentication = jwtUtil.getAuthentication(token);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                    AccessToken accessToken = jwtUtil.parseAccessToken(token);
                     String primaryInttCd = accessToken.getInttCd();
-                    Long userId = accessToken.getUserId();
 
                     boolean isAdmin = authentication.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)
