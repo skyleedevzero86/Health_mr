@@ -21,6 +21,16 @@ Healthcare_mr 포트폴리오 | 작성: 궁금하면500원
 - 외부 공공 API/파일 import 배치 처리
 - 로컬 개발에서 관측 스택 Prometheus Grafana Loki Promtail 포함 실행 가능
 
+## 직원 계정과 권한
+
+- 사원번호는 권한 코드가 아니라 기관 내 직원을 확인하기 위한 식별자로 사용
+- 일반 가입 계정은 `WAITING_APPROVAL` 상태와 `WAIT` 역할로 생성
+- 관리자가 소속 기관과 실제 역할을 승인하면 계정 상태가 `ACTIVE`로 전환
+- `WAITING_APPROVAL`, `SUSPENDED`, `RETIRED` 계정은 새 로그인 차단
+- 계정 중지 또는 퇴직 시 저장된 refresh token 제거
+- 재입사 시 기존 사용자 ID와 감사 이력은 유지하고 새 사원번호·기관·부서를 입력한 뒤 다시 승인 대기 처리
+- 역할은 `ADMIN`, `DOCTOR`, `NURSE`, `STAFF`로 부여하고 계정 상태와 별도로 관리
+
 ## 기술 스택
 
 | 영역              | 선택                       | 이유 요약                               |

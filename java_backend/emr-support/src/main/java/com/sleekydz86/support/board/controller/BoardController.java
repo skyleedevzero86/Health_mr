@@ -144,7 +144,7 @@ public class BoardController {
 
     @GetMapping("/files/{fileId}/download")
     @AuthRole
-    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) {
+    public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) throws IOException {
         com.sleekydz86.support.board.entity.BoardFileEntity boardFile = 
                 boardService.getBoardFile(fileId);
         byte[] fileData = boardService.downloadFile(fileId);

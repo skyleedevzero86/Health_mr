@@ -29,10 +29,14 @@ public class MedicationRequestFhirMapper {
         dosage.setTiming(new Timing().setRepeat(new Timing.TimingRepeatComponent()
                 .setFrequency(source.getFrequency()).setPeriod(1).setPeriodUnit(Timing.UnitsOfTime.D)));
         dosage.addDoseAndRate().setDose(new StringType(source.getDose()));
+        Duration supplyDuration = new Duration();
+        supplyDuration.setValue(source.getDays());
+        supplyDuration.setUnit("days");
+        supplyDuration.setSystem("http://unitsofmeasure.org");
+        supplyDuration.setCode("d");
         target.getDispenseRequest()
                 .setQuantity(new Quantity(source.getTotalQuantity()).setUnit(source.getUnit()))
-                .setExpectedSupplyDuration(new Duration().setValue(source.getDays()).setUnit("days")
-                        .setSystem("http://unitsofmeasure.org").setCode("d"));
+                .setExpectedSupplyDuration(supplyDuration);
         return target;
     }
 }

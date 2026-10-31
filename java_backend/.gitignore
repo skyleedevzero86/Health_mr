@@ -76,3 +76,6 @@ docs/
 .env.example
 /app/README.md
 /pipeline-python/README.md
+###
+/health-mr-frontend/
+/statistics/

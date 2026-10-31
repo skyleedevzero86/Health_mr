@@ -48,7 +48,7 @@ public class TreatmentDepartmentStatisticsImportScheduler {
                 List<Path> matchingFiles = paths
                         .filter(Files::isRegularFile)
                         .filter(path -> pattern.matcher(path.getFileName().toString()).matches())
-                        .sorted(Comparator.comparing(path -> {
+                        .sorted(Comparator.comparing((Path path) -> {
                             try {
                                 return Files.getLastModifiedTime(path).toInstant();
                             } catch (IOException e) {

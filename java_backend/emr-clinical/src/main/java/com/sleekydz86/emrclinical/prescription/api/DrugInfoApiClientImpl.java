@@ -63,13 +63,13 @@ public class DrugInfoApiClientImpl implements DrugInfoApiClient {
                         return uriBuilder.build();
                     })
                     .retrieve()
-                    .onStatus(HttpStatus::is4xxClientError, response -> {
+                    .onStatus(status -> status.is4xxClientError(), response -> {
                         log.error("Drug Info API 4xx Error: {}", response.statusCode());
                         return response.bodyToMono(String.class)
                                 .flatMap(body -> Mono.error(new DrugInfoApiException(
                                         "의약품 정보 API 요청 실패: " + response.statusCode() + " - " + body)));
                     })
-                    .onStatus(HttpStatus::is5xxServerError, response -> {
+                    .onStatus(status -> status.is5xxServerError(), response -> {
                         log.error("Drug Info API 5xx Error: {}", response.statusCode());
                         return response.bodyToMono(String.class)
                                 .flatMap(body -> Mono.error(new DrugInfoApiException(

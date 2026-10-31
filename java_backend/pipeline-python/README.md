@@ -50,6 +50,20 @@
   - 재실행 모드(`--execute`)로 실제 재처리
   - 운영자가 장애 복구 루프를 간단히 돌릴 수 있음
 
+### 6) 데이터 정합성 검증
+
+- `jobs/validate_data.py`
+  - MySQL 원본과 ClickHouse 분석 데이터 간 건수/합계 일치 여부 검증
+  - 불일치 발견 시 경고 로그 + 종료 코드 1 반환
+  - 일별 배치 적재 후 자동 실행 권장
+
+### 7) 월간 리포트 자동 생성
+
+- `jobs/generate_monthly_report.py`
+  - ClickHouse 월간 집계 → Markdown 리포트 생성
+  - 월간 요약, 진료과별 순위, 일별 추이 포함
+  - `data/reports/` 디렉토리에 저장
+
 ---
 
 ## 왜 이 구조인가?
@@ -71,16 +85,18 @@ pipeline-python/
   requirements.txt
   README.md
   common/
-    config.py          # 환경변수/설정 로드
-    db_clickhouse.py   # ClickHouse 연결/적재 유틸
-    db_mysql.py        # MySQL 조회 유틸
-    logger.py          # 로거 설정
-    metrics.py         # 실행 메트릭 모델
+    config.py              # 환경변수/설정 로드
+    db_clickhouse.py       # ClickHouse 연결/적재 유틸
+    db_mysql.py            # MySQL 조회 유틸
+    logger.py              # 로거 설정
+    metrics.py             # 실행 메트릭 모델
   jobs/
     extract_payment_daily.py
     extract_treatment_daily.py
     load_clickhouse.py
     retry_failed_jobs.py
+    validate_data.py       # MySQL↔ClickHouse 정합성 검증
+    generate_monthly_report.py  # 월간 Markdown 리포트 자동 생성
   sql/
     clickhouse/
       analytics_payment_daily.sql
@@ -105,7 +121,9 @@ pipeline-python/
 - 02:10 진료 적재
 - 02:20 결제 추출
 - 02:30 결제 적재
+- 02:45 데이터 정합성 검증
 - 03:00 실패 재시도
+- 04:00 (매월 1일) 월간 리포트 생성
 
 ---
 
