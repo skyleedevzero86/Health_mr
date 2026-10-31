@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -29,9 +29,8 @@ class EmrFinanceApplicationTests {
     @SpringBootApplication(scanBasePackages = "com.sleekydz86")
     static class TestApp {
         @Bean
-        @SuppressWarnings("rawtypes")
-        RedisTemplate redisTemplate() {
-            return Mockito.mock(RedisTemplate.class);
+        RedisConnectionFactory redisConnectionFactory() {
+            return Mockito.mock(RedisConnectionFactory.class);
         }
 
         @Bean
