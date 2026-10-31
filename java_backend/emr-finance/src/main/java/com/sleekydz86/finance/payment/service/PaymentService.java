@@ -112,45 +112,35 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
 
     public PaymentResponse getPaymentById(Long paymentId) {
         String cacheKey = CACHE_PREFIX_PAYMENT + paymentId;
-
-        PaymentResponse cached = (PaymentResponse) redisTemplate.opsForValue().get(cacheKey);
+        PaymentResponse cached = readCachedPayment(cacheKey);
         if (cached != null) {
-            log.debug("결제 정보 캐시 히트: PaymentId={}", paymentId);
             return cached;
         }
 
-        PaymentEntity payment = validateExists(paymentRepository, paymentId,
-                "결제를 찾을 수 없습니다. ID: " + paymentId);
+        PaymentEntity payment = paymentRepository.findDetailById(paymentId)
+                .orElseThrow(() -> new NotFoundException("결제를 찾을 수 없습니다. ID: " + paymentId));
         PaymentResponse response = PaymentResponse.from(payment);
-
-        redisTemplate.opsForValue().set(cacheKey, response, CACHE_TTL_HOURS, TimeUnit.HOURS);
-        log.debug("결제 정보 캐시 저장: PaymentId={}", paymentId);
-
+        writeCachedPayment(cacheKey, response);
         return response;
     }
 
     public PaymentDetailResponse getPaymentDetailById(Long paymentId) {
-        PaymentEntity payment = validateExists(paymentRepository, paymentId,
-                "결제를 찾을 수 없습니다. ID: " + paymentId);
+        PaymentEntity payment = paymentRepository.findDetailById(paymentId)
+                .orElseThrow(() -> new NotFoundException("결제를 찾을 수 없습니다. ID: " + paymentId));
         return PaymentDetailResponse.from(payment);
     }
 
     public PaymentResponse getPaymentByTreatmentId(Long treatmentId) {
         String cacheKey = CACHE_PREFIX_PAYMENT_TREATMENT + treatmentId;
-
-        PaymentResponse cached = (PaymentResponse) redisTemplate.opsForValue().get(cacheKey);
+        PaymentResponse cached = readCachedPayment(cacheKey);
         if (cached != null) {
-            log.debug("진료별 결제 정보 캐시 히트: TreatmentId={}", treatmentId);
             return cached;
         }
 
         PaymentEntity payment = paymentRepository.findByTreatmentEntity_TreatmentId(treatmentId)
                 .orElseThrow(() -> new NotFoundException("해당 진료의 결제 정보를 찾을 수 없습니다. TreatmentId: " + treatmentId));
         PaymentResponse response = PaymentResponse.from(payment);
-
-        redisTemplate.opsForValue().set(cacheKey, response, CACHE_TTL_HOURS, TimeUnit.HOURS);
-        log.debug("진료별 결제 정보 캐시 저장: TreatmentId={}", treatmentId);
-
+        writeCachedPayment(cacheKey, response);
         return response;
     }
 
@@ -254,8 +244,8 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
             throwExceptionOnDuplicate = false
     )
     public PaymentResponse completePayment(Long paymentId, PaymentCompleteRequest request) {
-        PaymentEntity payment = validateExists(paymentRepository, paymentId,
-                "결제를 찾을 수 없습니다. ID: " + paymentId);
+        PaymentEntity payment = paymentRepository.findDetailById(paymentId)
+                .orElseThrow(() -> new NotFoundException("결제를 찾을 수 없습니다. ID: " + paymentId));
 
         payment.complete(request.getPaymentMethod(), request.getApprovalNumber(), request.getCardCompany());
 
@@ -322,6 +312,24 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
         TreatmentEntity treatment = treatmentService.getTreatmentById(treatmentId);
         PatientEntity patient = patientService.getPatientByNo(patientNo);
         return paymentCalculationService.calculatePaymentAmount(treatment, patient);
+    }
+
+    private PaymentResponse readCachedPayment(String cacheKey) {
+        try {
+            Object cached = redisTemplate.opsForValue().get(cacheKey);
+            if (cached instanceof PaymentResponse paymentResponse) {
+                return paymentResponse;
+            }
+        } catch (RuntimeException ignored) {
+        }
+        return null;
+    }
+
+    private void writeCachedPayment(String cacheKey, PaymentResponse response) {
+        try {
+            redisTemplate.opsForValue().set(cacheKey, response, CACHE_TTL_HOURS, TimeUnit.HOURS);
+        } catch (RuntimeException ignored) {
+        }
     }
 
     private void invalidatePaymentCache(PaymentEntity payment) {

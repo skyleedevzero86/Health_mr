@@ -32,6 +32,7 @@ import com.sleekydz86.emrclinical.types.CheckInStatus;
 import com.sleekydz86.emrclinical.types.PrescriptionType;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
 import com.sleekydz86.emrclinical.types.TreatmentType;
+import com.sleekydz86.finance.payment.dto.PaymentCompleteRequest;
 import com.sleekydz86.finance.payment.dto.PaymentRegisterRequest;
 import com.sleekydz86.finance.payment.dto.PaymentResponse;
 import com.sleekydz86.finance.payment.listener.TreatmentCompletedEventListener;
@@ -56,7 +57,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -108,15 +109,16 @@ class VisitFlowIntegrationTest {
     @Test
     @DisplayName("접수에서 수납까지 한 흐름으로 성공한다")
     void checkInThroughPaymentSucceeds() {
+        // given
         stubInfrastructure();
         PatientEntity patient = savePatient("흐름환자");
         UserEntity doctor = saveDoctor("flowdoc");
         DepartmentEntity department = saveDepartment("FLW", "흐름과");
 
+        // when
         CheckInEntity pending = checkInService.createCheckIn(patient.getPatientNoValue(), doctor.getId());
-        assertThat(pending.getCheckInStatus()).isEqualTo(CheckInStatus.PENDING);
+        CheckInStatus pendingStatus = pending.getCheckInStatus();
         CheckInEntity completed = checkInService.completeCheckIn(pending.getCheckInId());
-        assertThat(completed.getCheckInStatus()).isEqualTo(CheckInStatus.COMPLETED);
 
         TreatmentCreateRequest treatmentRequest = new TreatmentCreateRequest();
         treatmentRequest.setTreatmentType(TreatmentType.OUTPATIENT);
@@ -124,18 +126,8 @@ class VisitFlowIntegrationTest {
         treatmentRequest.setCheckInId(completed.getCheckInId());
         treatmentRequest.setDepartmentId(department.getId());
         TreatmentEntity treatment = treatmentService.createTreatment(treatmentRequest);
-
-        assertThat(treatment.getTreatmentId()).isNotNull();
-        assertThat(treatment.getCheckInEntity().getCheckInId()).isEqualTo(completed.getCheckInId());
-        Number storedPatientNo = (Number) entityManager.createNativeQuery(
-                        "select patient_no from treatments where treatment_id = :id")
-                .setParameter("id", treatment.getTreatmentId())
-                .getSingleResult();
-        assertThat(storedPatientNo.longValue()).isEqualTo(patient.getPatientNoValue());
-
         treatmentService.completeTreatment(treatment.getTreatmentId(), new TreatmentCompleteRequest());
         TreatmentEntity completedTreatment = treatmentService.getTreatmentById(treatment.getTreatmentId());
-        assertThat(completedTreatment.getTreatmentStatus()).isEqualTo(TreatmentStatus.COMPLETED);
 
         PrescriptionCreateRequest prescriptionRequest = new PrescriptionCreateRequest();
         prescriptionRequest.setTreatmentId(treatment.getTreatmentId());
@@ -144,32 +136,55 @@ class VisitFlowIntegrationTest {
         prescriptionRequest.setPrescriptionType(PrescriptionType.OUTPATIENT);
         prescriptionRequest.setPrescriptionItems(List.of(item()));
         PrescriptionEntity prescription = prescriptionService.registerPrescription(prescriptionRequest);
-        assertThat(prescription.getPatientEntity().getPatientNoValue()).isEqualTo(patient.getPatientNoValue());
 
         PaymentRegisterRequest paymentRequest = new PaymentRegisterRequest();
         paymentRequest.setTreatmentId(treatment.getTreatmentId());
         paymentRequest.setPaymentMethod(PaymentMethod.CASH);
         PaymentResponse payment = paymentService.registerPayment(paymentRequest);
+        PaymentResponse loadedPayment = paymentService.getPaymentByTreatmentId(treatment.getTreatmentId());
+        PaymentCompleteRequest completeRequest = new PaymentCompleteRequest();
+        completeRequest.setPaymentMethod(PaymentMethod.CASH);
+        PaymentResponse paid = paymentService.completePayment(loadedPayment.getPaymentId(), completeRequest);
 
+        Number storedPatientNo = (Number) entityManager.createNativeQuery(
+                        "select patient_no from treatments where treatment_id = :id")
+                .setParameter("id", treatment.getTreatmentId())
+                .getSingleResult();
+
+        // then
+        assertThat(pendingStatus).isEqualTo(CheckInStatus.PENDING);
+        assertThat(completed.getCheckInStatus()).isEqualTo(CheckInStatus.COMPLETED);
+        assertThat(treatment.getTreatmentId()).isNotNull();
+        assertThat(treatment.getCheckInEntity().getCheckInId()).isEqualTo(completed.getCheckInId());
+        assertThat(storedPatientNo.longValue()).isEqualTo(patient.getPatientNoValue());
+        assertThat(completedTreatment.getTreatmentStatus()).isEqualTo(TreatmentStatus.COMPLETED);
+        assertThat(prescription.getPatientEntity().getPatientNoValue()).isEqualTo(patient.getPatientNoValue());
         assertThat(payment.getPatientNo()).isEqualTo(patient.getPatientNoValue());
         assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
         assertThat(payment.getTreatmentId()).isEqualTo(treatment.getTreatmentId());
+        assertThat(loadedPayment.getPaymentId()).isEqualTo(payment.getPaymentId());
+        assertThat(loadedPayment.getPatientNo()).isEqualTo(patient.getPatientNoValue());
+        assertThat(paid.getPaymentStatus()).isEqualTo(PaymentStatus.PAID);
     }
 
     @Test
     @DisplayName("완료되지 않은 접수로 진료를 만들면 거절된다")
     void treatmentWithoutCompletedCheckInIsRejected() {
+        // given
         stubInfrastructure();
         PatientEntity patient = savePatient("거절환자");
         UserEntity doctor = saveDoctor("rejdoc");
-
         CheckInEntity pending = checkInService.createCheckIn(patient.getPatientNoValue(), doctor.getId());
         TreatmentCreateRequest request = new TreatmentCreateRequest();
         request.setTreatmentType(TreatmentType.OUTPATIENT);
         request.setDoctorId(doctor.getId());
         request.setCheckInId(pending.getCheckInId());
 
-        assertThatThrownBy(() -> treatmentService.createTreatment(request))
+        // when
+        Throwable thrown = catchThrowable(() -> treatmentService.createTreatment(request));
+
+        // then
+        assertThat(thrown)
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("완료된 접수만 진료를 생성할 수 있습니다.");
     }
@@ -177,13 +192,18 @@ class VisitFlowIntegrationTest {
     @Test
     @DisplayName("응급 진료도 접수 없이 만들 수 없다")
     void emergencyTreatmentRequiresCheckIn() {
+        // given
         stubInfrastructure();
         UserEntity doctor = saveDoctor("erdoc");
         TreatmentCreateRequest request = new TreatmentCreateRequest();
         request.setTreatmentType(TreatmentType.EMERGENCY);
         request.setDoctorId(doctor.getId());
 
-        assertThatThrownBy(() -> treatmentService.createTreatment(request))
+        // when
+        Throwable thrown = catchThrowable(() -> treatmentService.createTreatment(request));
+
+        // then
+        assertThat(thrown)
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("접수는 필수입니다.");
     }

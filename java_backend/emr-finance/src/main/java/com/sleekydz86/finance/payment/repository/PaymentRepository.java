@@ -17,7 +17,11 @@ import java.util.Optional;
 @Repository
 public interface PaymentRepository extends BaseRepository<PaymentEntity, Long> {
 
-    Optional<PaymentEntity> findByTreatmentEntity_TreatmentId(Long treatmentId);
+    @Query("SELECT p FROM Payment p LEFT JOIN FETCH p.patientEntity LEFT JOIN FETCH p.treatmentEntity WHERE p.treatmentEntity.treatmentId = :treatmentId")
+    Optional<PaymentEntity> findByTreatmentEntity_TreatmentId(@Param("treatmentId") Long treatmentId);
+
+    @Query("SELECT p FROM Payment p LEFT JOIN FETCH p.patientEntity LEFT JOIN FETCH p.treatmentEntity WHERE p.paymentId = :paymentId")
+    Optional<PaymentEntity> findDetailById(@Param("paymentId") Long paymentId);
 
     @Query("SELECT p FROM Payment p WHERE p.patientEntity.patientNo.value = :patientNo")
     List<PaymentEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);

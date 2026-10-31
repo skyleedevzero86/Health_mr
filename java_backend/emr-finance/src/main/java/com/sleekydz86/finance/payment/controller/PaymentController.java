@@ -161,7 +161,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/complete")
-    @AuthRole({ "STAFF", "ADMIN" })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> completePayment(
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentCompleteRequest request) {
