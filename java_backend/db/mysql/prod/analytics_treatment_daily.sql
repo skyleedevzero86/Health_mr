@@ -12,7 +12,7 @@ LEFT JOIN (
     SELECT
         treatment_id,
         SUM(COALESCE(payment_total_amount, 0)) AS total_medical_fee
-    FROM payment
+    FROM `Payment`
     GROUP BY treatment_id
 ) p
     ON p.treatment_id = t.treatment_id

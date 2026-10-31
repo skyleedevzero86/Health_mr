@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS analytics_payment_daily
 )
 ENGINE = MergeTree
 -- 월 단위 파티션: 운영/백필 시 범위 삭제 및 재적재 단위를 월로 통일
-PARTITION BY toYYYYMM(metric_date)
+PARTITION BY metric_date
 -- 대표 조회 패턴에 맞춘 정렬 키
 ORDER BY (metric_date, payment_status);

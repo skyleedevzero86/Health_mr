@@ -2,7 +2,7 @@ package com.sleekydz86.emrclinical.treatment.inpatient.statistics.service;
 
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("inpatientRegionCodeExtractor")
 public class RegionCodeExtractor {
 
     public String extractRegionCode(String address) {

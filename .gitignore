@@ -22,3 +22,8 @@ lerna-debug.log*
 # temp directory
 .temp
 .tmp
+**/src/test/resources/*.yml
+!**/src/test/resources/application-test.yml
+*.pyc
+*.json
+docker-compose.yml.bak-20261031

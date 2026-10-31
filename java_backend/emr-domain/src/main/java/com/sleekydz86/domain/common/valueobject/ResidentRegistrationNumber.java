@@ -18,7 +18,7 @@ public class ResidentRegistrationNumber {
 
     private static final Pattern RRN_PATTERN = Pattern.compile("^\\d{6}-\\d{7}$");
 
-    @Column(name = "rrn", length = 500, unique = true)
+    @Column(name = "rrn", length = 500)
     @Convert(converter = EncryptedStringConverter.class)
     private String value;
 

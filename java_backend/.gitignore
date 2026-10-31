@@ -76,3 +76,15 @@ docs/
 .env.example
 /app/README.md
 /pipeline-python/README.md
+###
+/health-mr-frontend/
+/statistics/
+**/src/test/resources/*.yml
+!**/src/test/resources/application-test.yml
+.env
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.pyc
+*.json

@@ -17,6 +17,10 @@ import java.time.LocalDate;
 @Getter
 public class RegisterRequest {
 
+    @NotBlank(message = "사원번호는 필수항목입니다.")
+    @Size(max = 30)
+    private String employeeNo;
+
     @NotNull(message = "부서는 필수항목입니다.")
     private Long departmentId;
 
@@ -56,6 +60,7 @@ public class RegisterRequest {
     @NotNull(message = "입사일은 필수항목입니다.")
     private LocalDate hireDate;
 
+    @NotBlank(message = "기관 코드는 필수항목입니다.")
     @Size(max = 10)
     private String inttCd;
 
@@ -67,6 +72,7 @@ public class RegisterRequest {
 
         return UserEntity.builder()
                 .role(RoleType.WAIT)
+                .employeeNo(this.employeeNo)
                 .loginId(loginIdObj)
                 .password(passwordObj)
                 .department(department)

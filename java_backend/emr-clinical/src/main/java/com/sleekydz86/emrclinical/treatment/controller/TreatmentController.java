@@ -48,7 +48,7 @@ public class TreatmentController {
     private final ExcelExportService excelExportService;
 
     @PostMapping
-    @AuthRole({ "DOCTOR", "ADMIN" })
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
     @AuditLog(action = AuditLog.ActionType.CREATE)
     public ResponseEntity<TreatmentResponse> createTreatment(
             @Valid @RequestBody TreatmentCreateRequest request) {
@@ -57,7 +57,7 @@ public class TreatmentController {
     }
 
     @GetMapping("/{treatmentId}")
-    @AuthRole({ "DOCTOR", "ADMIN" })
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
     public ResponseEntity<TreatmentDetailResponse> getTreatmentDetail(@PathVariable Long treatmentId) {
         TreatmentEntity treatment = treatmentService.getTreatmentById(treatmentId);
         return ResponseEntity.ok(TreatmentDetailResponse.from(treatment));
@@ -168,7 +168,8 @@ public class TreatmentController {
     }
 
     @PostMapping("/{treatmentId}/complete")
-    @AuthRole({ "DOCTOR", "ADMIN" })
+    @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.UPDATE)
     public ResponseEntity<Void> completeTreatment(
             @PathVariable Long treatmentId,
             @Valid @RequestBody TreatmentCompleteRequest request) {
@@ -178,6 +179,7 @@ public class TreatmentController {
 
     @PostMapping("/{treatmentId}/cancel")
     @AuthRole({ "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.DELETE)
     public ResponseEntity<Void> cancelTreatment(
             @PathVariable Long treatmentId,
             @RequestParam(required = false) String cancelReason) {

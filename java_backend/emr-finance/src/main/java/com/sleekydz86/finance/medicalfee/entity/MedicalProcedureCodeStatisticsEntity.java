@@ -13,8 +13,8 @@ import java.time.LocalDate;
 @Entity(name = "MedicalProcedureCodeStatistics")
 @Table(name = "medical_procedure_code_statistics", indexes = {
     @Index(name = "idx_procedure_code", columnList = "procedure_code"),
-    @Index(name = "idx_treatment_year", columnList = "treatment_year"),
-    @Index(name = "idx_institution_type", columnList = "institution_type"),
+    @Index(name = "idx_procedure_treatment_year", columnList = "treatment_year"),
+    @Index(name = "idx_procedure_institution_type", columnList = "institution_type"),
     @Index(name = "idx_procedure_code_year", columnList = "procedure_code, treatment_year"),
     @Index(name = "uk_procedure_year_institution", columnList = "procedure_code, treatment_year, institution_type", unique = true)
 })

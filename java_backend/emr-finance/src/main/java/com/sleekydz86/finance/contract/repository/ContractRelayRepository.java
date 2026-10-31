@@ -28,7 +28,7 @@ public interface ContractRelayRepository extends BaseRepository<ContractRelayEnt
 
     List<ContractRelayEntity> findAllByOrderByCreatedDateDesc();
 
-    @Query("SELECT cr FROM ContractRelayEntity cr " +
-            "WHERE cr.patientEntity.patientNo = :patientNo AND cr.isActive = true")
+    @Query("SELECT cr FROM Contract_relay cr " +
+            "WHERE cr.patientEntity.patientNo.value = :patientNo AND cr.isActive = true")
     List<ContractRelayEntity> findActiveContractRelaysByPatientNo(@Param("patientNo") Long patientNo);
 }

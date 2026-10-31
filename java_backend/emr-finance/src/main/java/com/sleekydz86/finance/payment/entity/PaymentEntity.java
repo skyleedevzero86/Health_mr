@@ -25,7 +25,7 @@ public class PaymentEntity extends BaseEntity {
     private Long paymentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "treatment_id", referencedColumnName = "treatment_id", nullable = false)
+    @JoinColumn(name = "treatment_id", referencedColumnName = "treatment_id", nullable = false, unique = true)
     @NotNull(message = "진료 정보는 필수입니다.")
     private TreatmentEntity treatmentEntity;
 
@@ -206,8 +206,8 @@ public class PaymentEntity extends BaseEntity {
         if (amount == null || amount.isZero()) {
             throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
         }
-        if (this.paymentCurrentMoney == null || amount.isGreaterThanOrEqual(this.paymentCurrentMoney)) {
-            throw new IllegalArgumentException("환불 금액이 결제된 금액보다 크거나 같습니다.");
+        if (this.paymentCurrentMoney == null || amount.isGreaterThan(this.paymentCurrentMoney)) {
+            throw new IllegalArgumentException("환불 금액이 결제된 금액보다 큽니다.");
         }
         if (this.paymentStatus != PaymentStatus.PAID && this.paymentStatus != PaymentStatus.PARTIAL) {
             throw new IllegalStateException("결제 완료 또는 부분 결제 상태에서만 환불할 수 있습니다.");

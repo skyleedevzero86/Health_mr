@@ -112,39 +112,39 @@ public class NonCoveredMedicalFeeStatisticsService {
                     LocalDate stdDate = parseDate(item.getStdDate());
                     Map<String, NonPaymentItemStatisticsByRegionResponse.PriceStatistics> regionStats = new HashMap<>();
 
-                    regionStats.put("서울", buildPriceStatistics(item.getPrcMinSl(), item.getPrcMaxSl(), 
+                    regionStats.put("서울", buildRegionPriceStatistics(item.getPrcMinSl(), item.getPrcMaxSl(), 
                             item.getPrcAvgSl(), item.getMiddAvgSl()));
-                    regionStats.put("부산", buildPriceStatistics(item.getPrcMinPs(), item.getPrcMaxPs(), 
+                    regionStats.put("부산", buildRegionPriceStatistics(item.getPrcMinPs(), item.getPrcMaxPs(), 
                             item.getPrcAvgPs(), item.getMiddAvgPs()));
-                    regionStats.put("인천", buildPriceStatistics(item.getPrcMinIch(), item.getPrcMaxIch(), 
+                    regionStats.put("인천", buildRegionPriceStatistics(item.getPrcMinIch(), item.getPrcMaxIch(), 
                             item.getPrcAvgIch(), item.getMiddAvgIch()));
-                    regionStats.put("대구", buildPriceStatistics(item.getPrcMinTg(), item.getPrcMaxTg(), 
+                    regionStats.put("대구", buildRegionPriceStatistics(item.getPrcMinTg(), item.getPrcMaxTg(), 
                             item.getPrcAvgTg(), item.getMiddAvgTg()));
-                    regionStats.put("광주", buildPriceStatistics(item.getPrcMinKw(), item.getPrcMaxKw(), 
+                    regionStats.put("광주", buildRegionPriceStatistics(item.getPrcMinKw(), item.getPrcMaxKw(), 
                             item.getPrcAvgKw(), item.getMiddAvgKw()));
-                    regionStats.put("대전", buildPriceStatistics(item.getPrcMinDj(), item.getPrcMaxDj(), 
+                    regionStats.put("대전", buildRegionPriceStatistics(item.getPrcMinDj(), item.getPrcMaxDj(), 
                             item.getPrcAvgDj(), item.getMiddAvgDj()));
-                    regionStats.put("울산", buildPriceStatistics(item.getPrcMinUsn(), item.getPrcMaxUsn(), 
+                    regionStats.put("울산", buildRegionPriceStatistics(item.getPrcMinUsn(), item.getPrcMaxUsn(), 
                             item.getPrcAvgUsn(), item.getMiddAvgUsn()));
-                    regionStats.put("경기", buildPriceStatistics(item.getPrcMinKyg(), item.getPrcMaxKyg(), 
+                    regionStats.put("경기", buildRegionPriceStatistics(item.getPrcMinKyg(), item.getPrcMaxKyg(), 
                             item.getPrcAvgKyg(), item.getMiddAvgKyg()));
-                    regionStats.put("강원", buildPriceStatistics(item.getPrcMinKaw(), item.getPrcMaxKaw(), 
+                    regionStats.put("강원", buildRegionPriceStatistics(item.getPrcMinKaw(), item.getPrcMaxKaw(), 
                             item.getPrcAvgKaw(), item.getMiddAvgKaw()));
-                    regionStats.put("충북", buildPriceStatistics(item.getPrcMinCcbk(), item.getPrcMaxCcbk(), 
+                    regionStats.put("충북", buildRegionPriceStatistics(item.getPrcMinCcbk(), item.getPrcMaxCcbk(), 
                             item.getPrcAvgCcbk(), item.getMiddAvgCcbk()));
-                    regionStats.put("충남", buildPriceStatistics(item.getPrcMinCcn(), item.getPrcMaxCcn(), 
+                    regionStats.put("충남", buildRegionPriceStatistics(item.getPrcMinCcn(), item.getPrcMaxCcn(), 
                             item.getPrcAvgCcn(), item.getMiddAvgCcn()));
-                    regionStats.put("전북", buildPriceStatistics(item.getPrcMinClb(), item.getPrcMaxClb(), 
+                    regionStats.put("전북", buildRegionPriceStatistics(item.getPrcMinClb(), item.getPrcMaxClb(), 
                             item.getPrcAvgClb(), item.getMiddAvgClb()));
-                    regionStats.put("전남", buildPriceStatistics(item.getPrcMinCln(), item.getPrcMaxCln(), 
+                    regionStats.put("전남", buildRegionPriceStatistics(item.getPrcMinCln(), item.getPrcMaxCln(), 
                             item.getPrcAvgCln(), item.getMiddAvgCln()));
-                    regionStats.put("경북", buildPriceStatistics(item.getPrcMinKsb(), item.getPrcMaxKsb(), 
+                    regionStats.put("경북", buildRegionPriceStatistics(item.getPrcMinKsb(), item.getPrcMaxKsb(), 
                             item.getPrcAvgKsb(), item.getMiddAvgKsb()));
-                    regionStats.put("경남", buildPriceStatistics(item.getPrcMinKsn(), item.getPrcMaxKsn(), 
+                    regionStats.put("경남", buildRegionPriceStatistics(item.getPrcMinKsn(), item.getPrcMaxKsn(), 
                             item.getPrcAvgKsn(), item.getMiddAvgKsn()));
-                    regionStats.put("제주", buildPriceStatistics(item.getPrcMinChj(), item.getPrcMaxChj(), 
+                    regionStats.put("제주", buildRegionPriceStatistics(item.getPrcMinChj(), item.getPrcMaxChj(), 
                             item.getPrcAvgChj(), item.getMiddAvgChj()));
-                    regionStats.put("세종", buildPriceStatistics(item.getPrcMinSejong(), item.getPrcMaxSejong(), 
+                    regionStats.put("세종", buildRegionPriceStatistics(item.getPrcMinSejong(), item.getPrcMaxSejong(), 
                             item.getPrcAvgSejong(), item.getMiddAvgSejong()));
 
                     NonPaymentItemStatisticsByRegionResponse result = 
@@ -218,7 +218,7 @@ public class NonCoveredMedicalFeeStatisticsService {
                 .build();
     }
 
-    private NonPaymentItemStatisticsByRegionResponse.PriceStatistics buildPriceStatistics(
+    private NonPaymentItemStatisticsByRegionResponse.PriceStatistics buildRegionPriceStatistics(
             Long min, Long max, Long avg, Long middle) {
         return NonPaymentItemStatisticsByRegionResponse.PriceStatistics.builder()
                 .minPrice(min)

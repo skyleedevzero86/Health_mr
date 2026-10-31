@@ -55,7 +55,7 @@ public class PaymentValidationService {
     }
 
     public void validateRefundAmount(Long refundAmount, Long paidAmount) {
-        if (refundAmount == null || refundAmount < 0) {
+        if (refundAmount == null || refundAmount <= 0) {
             throw new ValidationException("환불 금액은 0 이상이어야 합니다.");
         }
 

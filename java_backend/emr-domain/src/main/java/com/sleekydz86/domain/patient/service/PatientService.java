@@ -2,10 +2,9 @@ package com.sleekydz86.domain.patient.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
+import com.sleekydz86.core.security.encryption.BlindIndexService;
 import com.sleekydz86.domain.common.service.BaseService;
-import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.PatientNumber;
-import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.patient.dto.PatientRegisterRequest;
 import com.sleekydz86.domain.patient.dto.PatientSearchRequest;
 import com.sleekydz86.domain.patient.dto.PatientUpdateRequest;
@@ -28,6 +27,7 @@ public class PatientService implements BaseService<PatientEntity, Long> {
     private final PatientRepository patientRepository;
     private final PatientNumberGenerator patientNumberGenerator;
     private final EventPublisher eventPublisher;
+    private final BlindIndexService blindIndexService;
 
     public PatientEntity getPatientByNo(Long patientNo) {
         return patientRepository.findByPatientNo(patientNo)
@@ -44,8 +44,8 @@ public class PatientService implements BaseService<PatientEntity, Long> {
     public List<PatientEntity> searchPatients(PatientSearchRequest request) {
         return patientRepository.searchPatients(
                 request.getName(),
-                request.getTel(),
-                request.getEmail()
+                blindIndexService.hmacPhone(request.getTel()),
+                blindIndexService.hmacEmail(request.getEmail())
         );
     }
 
@@ -67,12 +67,15 @@ public class PatientService implements BaseService<PatientEntity, Long> {
     @Transactional
     public PatientEntity registerPatient(PatientRegisterRequest request) {
 
-        validateNotDuplicate(patientRepository.existsByPatientRrn(request.getPatientRrn()),
+        validateNotDuplicate(patientRepository.existsByRrnHmac(blindIndexService.hmacRrn(request.getPatientRrn())),
                 "이미 등록된 주민등록번호입니다.");
-        validateNotDuplicate(patientRepository.existsByPatientEmail(request.getPatientEmail()),
-                "이미 사용 중인 이메일입니다.");
-        validateNotDuplicate(patientRepository.existsByPatientTel(request.getPatientTel()),
-                "이미 사용 중인 전화번호입니다.");
+        if ("Y".equals(request.getPatientForeign())
+                && request.getPatientPassport() != null
+                && !request.getPatientPassport().isBlank()) {
+            validateNotDuplicate(
+                    patientRepository.existsByPassportHmac(blindIndexService.hmacPassport(request.getPatientPassport())),
+                    "이미 등록된 여권번호입니다.");
+        }
 
         Long patientNoValue = patientNumberGenerator.generate();
         PatientNumber patientNo = PatientNumber.of(patientNoValue);
@@ -103,21 +106,11 @@ public class PatientService implements BaseService<PatientEntity, Long> {
         );
 
         if (request.getPatientEmail() != null) {
-            Email newEmail = request.getEmailValueObject();
-            validateNotDuplicate(
-                    patientRepository.existsByPatientEmail(newEmail.getValue()) &&
-                            (patient.getPatientEmail() == null || !patient.getPatientEmail().equals(newEmail)),
-                    "이미 사용 중인 이메일입니다.");
-            patient.changeEmail(newEmail);
+            patient.changeEmail(request.getEmailValueObject());
         }
 
         if (request.getPatientTel() != null) {
-            PhoneNumber newPhoneNumber = request.getTelValueObject();
-            validateNotDuplicate(
-                    patientRepository.existsByPatientTel(newPhoneNumber.getValue()) &&
-                            (patient.getPatientTel() == null || !patient.getPatientTel().equals(newPhoneNumber)),
-                    "이미 사용 중인 전화번호입니다.");
-            patient.changePhoneNumber(newPhoneNumber);
+            patient.changePhoneNumber(request.getTelValueObject());
         }
 
         if (request.getPatientHypassYN() != null) {

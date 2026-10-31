@@ -12,11 +12,11 @@ import java.time.LocalDate;
 
 @Entity(name = "TreatmentDepartmentStatistics")
 @Table(name = "treatment_department_statistics", indexes = {
-        @Index(name = "idx_statistics_year", columnList = "statistics_year"),
-        @Index(name = "idx_department_name", columnList = "department_name"),
-        @Index(name = "idx_region_code", columnList = "region_code"),
-        @Index(name = "idx_year_department", columnList = "statistics_year, department_name"),
-        @Index(name = "idx_year_region", columnList = "statistics_year, region_code"),
+        @Index(name = "idx_dept_statistics_year", columnList = "statistics_year"),
+        @Index(name = "idx_dept_department_name", columnList = "department_name"),
+        @Index(name = "idx_dept_region_code", columnList = "region_code"),
+        @Index(name = "idx_dept_year_department", columnList = "statistics_year, department_name"),
+        @Index(name = "idx_dept_year_region", columnList = "statistics_year, region_code"),
         @Index(name = "uk_year_region_department", columnList = "statistics_year, region_code, department_name", unique = true)
 })
 @Getter

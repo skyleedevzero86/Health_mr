@@ -16,9 +16,11 @@ import java.util.List;
 @Repository
 public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Long>, TreatmentRepositoryCustom {
 
-    List<TreatmentEntity> findByPatientEntity_PatientNo(Long patientNo);
+    @Query("SELECT t FROM Treatments t WHERE t.patientEntity.patientNo.value = :patientNo")
+    List<TreatmentEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);
 
-    Page<TreatmentEntity> findByPatientNo(Long patientNo, Pageable pageable);
+    @Query("SELECT t FROM Treatments t WHERE t.patientEntity.patientNo.value = :patientNo")
+    Page<TreatmentEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo, Pageable pageable);
 
     List<TreatmentEntity> findByTreatmentDoc_Id(Long doctorId);
 
@@ -41,6 +43,12 @@ public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Lon
     Page<TreatmentEntity> findAll(Pageable pageable);
 
     List<TreatmentEntity> findAllByOrderByTreatmentDateDesc();
+
+    @Query("SELECT t FROM Treatments t LEFT JOIN FETCH t.checkInEntity ci LEFT JOIN FETCH ci.patientEntity LEFT JOIN FETCH t.patientEntity LEFT JOIN FETCH t.treatmentDoc LEFT JOIN FETCH t.departmentEntity WHERE t.treatmentId = :treatmentId")
+    java.util.Optional<TreatmentEntity> findDetailById(@Param("treatmentId") Long treatmentId);
+
+    @Query(value = "select patient_no from treatments where treatment_id = :treatmentId", nativeQuery = true)
+    Long findStoredPatientNo(@Param("treatmentId") Long treatmentId);
 
 
 

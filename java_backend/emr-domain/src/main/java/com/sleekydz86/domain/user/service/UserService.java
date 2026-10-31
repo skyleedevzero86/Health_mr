@@ -2,6 +2,8 @@ package com.sleekydz86.domain.user.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
+import com.sleekydz86.core.security.jwt.TokenBlacklistService;
+import com.sleekydz86.domain.auth.service.RefreshTokenService;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.Password;
@@ -11,14 +13,19 @@ import com.sleekydz86.domain.department.repository.DepartmentRepository;
 import com.sleekydz86.domain.institution.entity.InstitutionEntity;
 import com.sleekydz86.domain.institution.repository.InstitutionRepository;
 import com.sleekydz86.domain.institution.service.InstitutionService;
+import com.sleekydz86.domain.user.dto.EmploymentHistoryResponse;
 import com.sleekydz86.domain.user.dto.UserCreateRequest;
 import com.sleekydz86.domain.user.dto.UserUpdateRequest;
+import com.sleekydz86.domain.user.dto.UserRehireRequest;
 import com.sleekydz86.domain.user.dto.WaitApprovedRequest;
+import com.sleekydz86.domain.user.entity.EmploymentHistoryEntity;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.entity.UserInstitution;
+import com.sleekydz86.domain.user.repository.EmploymentHistoryRepository;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
 import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.domain.user.type.AccountStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +33,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -40,6 +48,9 @@ public class UserService implements BaseService<UserEntity, Long> {
     private final InstitutionService institutionService;
     private final PasswordEncoder passwordEncoder;
     private final EventPublisher eventPublisher;
+    private final RefreshTokenService refreshTokenService;
+    private final TokenBlacklistService tokenBlacklistService;
+    private final EmploymentHistoryRepository employmentHistoryRepository;
 
     public UserEntity getUserById(Long userId) {
         return validateExists(userRepository, userId, "사용자를 찾을 수 없습니다. ID: " + userId);
@@ -67,7 +78,7 @@ public class UserService implements BaseService<UserEntity, Long> {
     }
 
     public List<UserEntity> getUsersToBeApproved() {
-        return userRepository.findAllByRole(RoleType.WAIT);
+        return userRepository.findAllByAccountStatus(AccountStatus.WAITING_APPROVAL);
     }
 
     @Transactional
@@ -75,6 +86,11 @@ public class UserService implements BaseService<UserEntity, Long> {
 
         validateNotDuplicate(userRepository.existsByLoginId(request.getLoginId()),
                 "이미 사용 중인 계정입니다.");
+        String employeeNo = request.getEmployeeNo().trim();
+        boolean duplicateEmployeeNo = request.getInttCd() == null || request.getInttCd().isBlank()
+                ? userRepository.existsByEmployeeNo(employeeNo)
+                : userRepository.existsByInttCdAndEmployeeNo(request.getInttCd().trim(), employeeNo);
+        validateNotDuplicate(duplicateEmployeeNo, "이미 등록된 사원번호입니다.");
         if (request.getEmail() != null) {
             validateNotDuplicate(userRepository.existsByEmail(request.getEmail()),
                     "이미 사용 중인 이메일입니다.");
@@ -95,6 +111,21 @@ public class UserService implements BaseService<UserEntity, Long> {
                 .build();
 
         UserEntity savedUser = userRepository.save(user);
+
+        if (savedUser.getEmployeeNo() != null && !savedUser.getEmployeeNo().isBlank()) {
+            EmploymentHistoryEntity initialHistory = EmploymentHistoryEntity.builder()
+                    .user(savedUser)
+                    .tenureSequence(1)
+                    .employeeNo(savedUser.getEmployeeNo())
+                    .inttCd(savedUser.getInttCd())
+                    .department(department)
+                    .role(savedUser.getRole())
+                    .employmentStatus(savedUser.getAccountStatus())
+                    .hireDate(savedUser.getHireDate())
+                    .memo("신규 등록 (1회차)")
+                    .build();
+            employmentHistoryRepository.save(initialHistory);
+        }
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.UserCreatedEvent(
                 savedUser.getId(),
@@ -150,6 +181,7 @@ public class UserService implements BaseService<UserEntity, Long> {
 
         user.changePassword(newPassword, passwordEncoder);
         userRepository.save(user);
+        tokenBlacklistService.revokeUserTokens(userId);
 
         eventPublisher.publish(new com.sleekydz86.core.event.domain.UserPasswordChangedEvent(
                 user.getId(),
@@ -162,16 +194,99 @@ public class UserService implements BaseService<UserEntity, Long> {
         UserEntity user = getUserById(userId);
         user.changePassword(newPassword, passwordEncoder);
         userRepository.save(user);
+        tokenBlacklistService.revokeUserTokens(userId);
     }
 
     @Transactional
     public void activateUser(Long userId) {
         UserEntity user = getUserById(userId);
+        user.activate();
+        userRepository.save(user);
+        employmentHistoryRepository.findTopByUser_IdOrderByTenureSequenceDesc(userId)
+                .ifPresent(history -> {
+                    if (history.getEmploymentStatus() != AccountStatus.RETIRED) {
+                        history.updateStatus(AccountStatus.ACTIVE);
+                        employmentHistoryRepository.save(history);
+                    }
+                });
     }
 
     @Transactional
     public void deactivateUser(Long userId) {
         UserEntity user = getUserById(userId);
+        user.suspend();
+        userRepository.save(user);
+        refreshTokenService.deleteRefreshToken(userId);
+        tokenBlacklistService.revokeUserTokens(userId);
+        employmentHistoryRepository.findTopByUser_IdOrderByTenureSequenceDesc(userId)
+                .ifPresent(history -> {
+                    if (history.getEmploymentStatus() != AccountStatus.RETIRED) {
+                        history.updateStatus(AccountStatus.SUSPENDED);
+                        employmentHistoryRepository.save(history);
+                    }
+                });
+    }
+
+    @Transactional
+    public void retireUser(Long userId) {
+        UserEntity user = getUserById(userId);
+        user.retire();
+        userRepository.save(user);
+
+        employmentHistoryRepository.findTopByUser_IdOrderByTenureSequenceDesc(userId)
+                .ifPresent(history -> {
+                    if (history.getEmploymentStatus() != AccountStatus.RETIRED) {
+                        history.recordRetirement(LocalDateTime.now(), "퇴직 처리");
+                        employmentHistoryRepository.save(history);
+                    }
+                });
+
+        refreshTokenService.deleteRefreshToken(userId);
+        tokenBlacklistService.revokeUserTokens(userId);
+    }
+
+    @Transactional
+    public UserEntity requestRehire(Long userId, UserRehireRequest request) {
+        UserEntity user = getUserById(userId);
+        if (user.getAccountStatus() != AccountStatus.RETIRED) {
+            throw new IllegalStateException("퇴직 계정만 재입사 처리할 수 있습니다.");
+        }
+
+        String institutionCode = request.getInttCd().trim();
+        String employeeNo = request.getEmployeeNo().trim();
+        if (!institutionService.existsActiveByCode(institutionCode)) {
+            throw new NotFoundException("존재하지 않거나 비활성화된 기관입니다.");
+        }
+        DepartmentEntity department = departmentRepository.findById(request.getDepartmentId())
+                .orElseThrow(() -> new NotFoundException("부서가 존재하지 않습니다."));
+
+        boolean usedByAnotherUser = userRepository.findByInttCdAndEmployeeNo(institutionCode, employeeNo)
+                .filter(existing -> !existing.getId().equals(userId))
+                .isPresent();
+        validateNotDuplicate(usedByAnotherUser, "해당 기관에 이미 등록된 사원번호입니다.");
+
+        userInstitutionRepository.deleteByUserId(userId);
+        refreshTokenService.deleteRefreshToken(userId);
+        tokenBlacklistService.revokeUserTokens(userId);
+
+        user.requestRehire(employeeNo, institutionCode, department, request.getHireDate().atStartOfDay());
+        UserEntity savedUser = userRepository.save(user);
+
+        int nextSeq = employmentHistoryRepository.findMaxTenureSequenceByUserId(userId) + 1;
+        EmploymentHistoryEntity newHistory = EmploymentHistoryEntity.builder()
+                .user(savedUser)
+                .tenureSequence(nextSeq)
+                .employeeNo(employeeNo)
+                .inttCd(institutionCode)
+                .department(department)
+                .role(savedUser.getRole())
+                .employmentStatus(savedUser.getAccountStatus())
+                .hireDate(savedUser.getHireDate())
+                .memo("재입사 신청 (" + nextSeq + "회차)")
+                .build();
+        employmentHistoryRepository.save(newHistory);
+
+        return savedUser;
     }
 
     @Transactional
@@ -179,13 +294,22 @@ public class UserService implements BaseService<UserEntity, Long> {
         UserEntity user = getUserById(userId);
         user.changeRole(roleType, eventPublisher);
         userRepository.save(user);
+        employmentHistoryRepository.findTopByUser_IdOrderByTenureSequenceDesc(userId)
+                .ifPresent(history -> {
+                    history.updateRole(roleType);
+                    employmentHistoryRepository.save(history);
+                });
+        tokenBlacklistService.revokeUserTokens(userId);
     }
 
     @Transactional
     public void approveUserWithInstitutions(WaitApprovedRequest request) {
         UserEntity user = getUserById(request.getUserId());
 
-        user.changeRole(request.getRole(), eventPublisher);
+        if (!user.isWaitingApproval()) {
+            throw new IllegalStateException("승인 대기 상태의 사용자만 승인할 수 있습니다.");
+        }
+        user.approve(request.getRole(), eventPublisher);
 
         if (request.getInstitutionCodes() != null && !request.getInstitutionCodes().isEmpty()
                 && !request.getRole().equals(RoleType.ADMIN)) {
@@ -194,9 +318,7 @@ public class UserService implements BaseService<UserEntity, Long> {
                 throw new IllegalArgumentException("병원은 최대 3개까지 지정할 수 있습니다.");
             }
 
-
             userInstitutionRepository.deleteByUserId(user.getId());
-
 
             String primaryCode = request.getPrimaryInstitutionCode();
             boolean hasPrimary = false;
@@ -205,7 +327,6 @@ public class UserService implements BaseService<UserEntity, Long> {
 
                 InstitutionEntity institution = institutionRepository.findActiveByInstitutionCode(institutionCode)
                         .orElseThrow(() -> new NotFoundException("존재하지 않거나 비활성화된 기관입니다: " + institutionCode));
-
 
                 boolean isPrimary = primaryCode != null && primaryCode.equals(institutionCode) && !hasPrimary;
                 if (isPrimary) {
@@ -222,6 +343,20 @@ public class UserService implements BaseService<UserEntity, Long> {
             }
         }
 
+        employmentHistoryRepository.findTopByUser_IdOrderByTenureSequenceDesc(user.getId())
+                .ifPresent(history -> {
+                    history.updateRole(request.getRole());
+                    history.updateStatus(AccountStatus.ACTIVE);
+                    employmentHistoryRepository.save(history);
+                });
+
         userRepository.save(user);
+    }
+
+    public List<EmploymentHistoryResponse> getEmploymentHistories(Long userId) {
+        getUserById(userId);
+        return employmentHistoryRepository.findByUser_IdOrderByTenureSequenceDesc(userId).stream()
+                .map(EmploymentHistoryResponse::from)
+                .toList();
     }
 }

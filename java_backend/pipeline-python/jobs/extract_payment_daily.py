@@ -18,14 +18,25 @@ from common.logger import get_logger
 # Update table and column names according to the real MySQL schema in this repo.
 EXTRACT_SQL = """
 SELECT
-    DATE(p.created_date) AS metric_date,
-    p.status AS payment_status,
-    COUNT(*) AS payment_count,
-    COALESCE(SUM(p.total_amount), 0) AS total_amount,
-    COALESCE(SUM(CASE WHEN p.status = 'UNPAID' THEN p.total_amount ELSE 0 END), 0) AS unpaid_amount
-FROM payment p
-WHERE DATE(p.created_date) = :target_date
-GROUP BY DATE(p.created_date), p.status
+    DATE(COALESCE(p.payment_date, p.createdDate)) AS metric_date,
+    COALESCE(p.payment_status, 'UNKNOWN') AS payment_status,
+    CAST(COUNT(*) AS UNSIGNED) AS payment_count,
+    CAST(COALESCE(SUM(COALESCE(p.payment_total_amount, 0)), 0) AS UNSIGNED) AS total_amount,
+    CAST(
+        COALESCE(
+            SUM(
+                CASE
+                    WHEN p.payment_status IN ('UNPAID', 'PARTIAL') THEN COALESCE(p.payment_remain_money, 0)
+                    ELSE 0
+                END
+            ),
+            0
+        ) AS UNSIGNED
+    ) AS unpaid_amount
+FROM `Payment` p
+WHERE COALESCE(p.payment_date, p.createdDate) IS NOT NULL
+  AND DATE(COALESCE(p.payment_date, p.createdDate)) = :target_date
+GROUP BY DATE(COALESCE(p.payment_date, p.createdDate)), COALESCE(p.payment_status, 'UNKNOWN')
 ORDER BY payment_status
 """
 
@@ -36,7 +47,7 @@ def default_target_date() -> str:
 
 def save_payload(output_file: Path, rows: list[dict]) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    output_file.write_text(json.dumps(rows, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
 
 def main() -> None:

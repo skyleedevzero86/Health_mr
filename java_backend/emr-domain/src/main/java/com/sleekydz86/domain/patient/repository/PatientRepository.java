@@ -22,23 +22,21 @@ public interface PatientRepository extends JpaRepository<PatientEntity, Long>, P
 
     Page<PatientEntity> findByPatientNameContaining(String name, Pageable pageable);
 
-    @Query("SELECT p FROM Patient p WHERE p.patientRrn.value = :patientRrn")
-    Optional<PatientEntity> findByPatientRrn(@Param("patientRrn") String patientRrn);
+    List<PatientEntity> findByRrnHmac(String rrnHmac);
 
-    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.patientRrn.value = :patientRrn")
-    boolean existsByPatientRrn(@Param("patientRrn") String patientRrn);
+    boolean existsByRrnHmac(String rrnHmac);
 
-    @Query("SELECT p FROM Patient p WHERE p.patientEmail.value = :email")
-    Optional<PatientEntity> findByPatientEmail(@Param("email") String email);
+    List<PatientEntity> findByEmailHmac(String emailHmac);
 
-    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.patientEmail.value = :email")
-    boolean existsByPatientEmail(@Param("email") String email);
+    boolean existsByEmailHmac(String emailHmac);
 
-    @Query("SELECT p FROM Patient p WHERE p.patientTel.value = :tel")
-    Optional<PatientEntity> findByPatientTel(@Param("tel") String tel);
+    List<PatientEntity> findByTelHmac(String telHmac);
 
-    @Query("SELECT COUNT(p) > 0 FROM Patient p WHERE p.patientTel.value = :tel")
-    boolean existsByPatientTel(@Param("tel") String tel);
+    boolean existsByTelHmac(String telHmac);
+
+    List<PatientEntity> findByPassportHmac(String passportHmac);
+
+    boolean existsByPassportHmac(String passportHmac);
 
     List<PatientEntity> findAllByOrderByPatientLastVisitDesc();
 
@@ -46,6 +44,6 @@ public interface PatientRepository extends JpaRepository<PatientEntity, Long>, P
     List<PatientEntity> findRecentPatients(@Param("since") LocalDate since);
 
     @Query("SELECT p FROM Patient p ORDER BY p.patientNo.value DESC")
-    Optional<PatientEntity> findTopByOrderByPatientNoDesc();
+    List<PatientEntity> findLatestByPatientNo(Pageable pageable);
 }
 

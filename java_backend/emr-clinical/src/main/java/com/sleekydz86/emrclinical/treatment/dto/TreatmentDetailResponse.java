@@ -1,5 +1,6 @@
 package com.sleekydz86.emrclinical.treatment.dto;
 
+import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
 import com.sleekydz86.emrclinical.types.TreatmentType;
@@ -32,12 +33,14 @@ public class TreatmentDetailResponse {
     private LocalDateTime lastModifiedDate;
 
     public static TreatmentDetailResponse from(TreatmentEntity entity) {
+        PatientEntity patient = entity.getPatientEntity();
+        if (patient == null && entity.getCheckInEntity() != null) {
+            patient = entity.getCheckInEntity().getPatientEntity();
+        }
         return TreatmentDetailResponse.builder()
                 .treatmentId(entity.getTreatmentId())
-                .patientNo(entity.getCheckInEntity() != null ?
-                        entity.getCheckInEntity().getPatientEntity().getPatientNoValue() : null)
-                .patientName(entity.getCheckInEntity() != null ?
-                        entity.getCheckInEntity().getPatientEntity().getPatientName() : null)
+                .patientNo(patient != null ? patient.getPatientNoValue() : null)
+                .patientName(patient != null ? patient.getPatientName() : null)
                 .doctorId(entity.getTreatmentDoc().getId())
                 .doctorName(entity.getTreatmentDoc().getName())
                 .doctorEmail(entity.getTreatmentDoc().getEmailValue())

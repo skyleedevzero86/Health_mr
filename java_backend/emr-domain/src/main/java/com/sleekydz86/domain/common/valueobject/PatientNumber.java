@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 @EqualsAndHashCode
 public class PatientNumber {
 
-    private static final Pattern PATIENT_NUMBER_PATTERN = Pattern.compile("^N\\d{7}$");
+    private static final Pattern PATIENT_NUMBER_PATTERN = Pattern.compile("^N\\d{7,8}$");
     private static final String PREFIX = "N";
 
     @Column(name = "patient_no", length = 8, unique = true)

@@ -124,7 +124,7 @@ public class TreatmentRepositoryImpl implements TreatmentRepositoryCustom {
             builder.and(treatment.treatmentDoc.id.eq(doctorId));
         }
         if (departmentId != null) {
-            builder.and(treatment.departmentEntity.departmentId.eq(departmentId));
+            builder.and(treatment.departmentEntity.id.eq(departmentId));
         }
         if (treatmentType != null) {
             builder.and(treatment.treatmentType.eq(treatmentType));

@@ -36,10 +36,16 @@ public class IdempotencyAspect {
         String idempotencyKey = generateIdempotencyKey(idempotent, method, args);
         log.debug("멱등성 체크: method={}, key={}", method.getName(), idempotencyKey);
 
-        Object previousResult = idempotencyService.getPreviousResult(
-                idempotencyKey, 
-                method.getReturnType()
-        );
+        Object previousResult;
+        try {
+            previousResult = idempotencyService.getPreviousResult(
+                    idempotencyKey,
+                    method.getReturnType()
+            );
+        } catch (RuntimeException exception) {
+            log.warn("멱등 저장소 오류, 비즈니스 로직을 계속 진행합니다: method={}", method.getName(), exception);
+            return joinPoint.proceed();
+        }
 
         if (previousResult != null) {
             log.info("중복 요청 감지, 이전 결과 반환: method={}, key={}", method.getName(), idempotencyKey);
@@ -52,7 +58,13 @@ public class IdempotencyAspect {
             }
         }
 
-        boolean isDuplicate = idempotencyService.checkAndSet(idempotencyKey, idempotent.ttl());
+        boolean isDuplicate;
+        try {
+            isDuplicate = idempotencyService.checkAndSet(idempotencyKey, idempotent.ttl());
+        } catch (RuntimeException exception) {
+            log.warn("멱등 저장소 오류, 비즈니스 로직을 계속 진행합니다: method={}", method.getName(), exception);
+            return joinPoint.proceed();
+        }
         
         if (isDuplicate) {
             log.warn("동시 중복 요청 감지: method={}, key={}", method.getName(), idempotencyKey);
@@ -78,11 +90,21 @@ public class IdempotencyAspect {
 
         try {
             Object result = joinPoint.proceed();
-            idempotencyService.saveResult(idempotencyKey, result, idempotent.ttl());
+            try {
+                idempotencyService.saveResult(idempotencyKey, result, idempotent.ttl());
+            } catch (RuntimeException exception) {
+                log.warn("Idempotency result store unavailable; returning business result. method={}",
+                        method.getName(), exception);
+            }
             log.debug("멱등성 처리 완료: method={}, key={}", method.getName(), idempotencyKey);
             return result;
         } catch (Exception e) {
-            idempotencyService.delete(idempotencyKey);
+            try {
+                idempotencyService.delete(idempotencyKey);
+            } catch (RuntimeException exception) {
+                log.warn("Idempotency key cleanup failed; preserving original exception. method={}",
+                        method.getName(), exception);
+            }
             log.error("비즈니스 로직 실행 실패, 멱등성 키 삭제: method={}, key={}", 
                     method.getName(), idempotencyKey, e);
             throw e;

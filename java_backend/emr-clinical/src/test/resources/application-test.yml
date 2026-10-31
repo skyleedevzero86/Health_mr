@@ -1,0 +1,54 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:emr_clinical;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    mysql:
+      url: jdbc:h2:mem:emr_clinical;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      jdbc-url: jdbc:h2:mem:emr_clinical;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+    postgresql:
+      url: jdbc:h2:mem:emr_clinical_pg;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      jdbc-url: jdbc:h2:mem:emr_clinical_pg;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        globally_quoted_identifiers: false
+  task:
+    scheduling:
+      enabled: false
+  mail:
+    host: localhost
+    port: 25
+
+qualification:
+  mock-api-url: http://127.0.0.1:1
+
+encryption:
+  hmac-key: ${ENCRYPTION_HMAC_KEY:test-hmac-key-not-for-production}
+
+patient:
+  blind-index:
+    backfill-enabled: false
+
+treatment:
+  inpatient-statistics:
+    xls:
+      auto-import: false
+  department-statistics:
+    csv:
+      auto-import: false

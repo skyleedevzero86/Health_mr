@@ -12,11 +12,11 @@ import java.time.LocalDate;
 
 @Entity(name = "HealthCheckupInstitution")
 @Table(name = "health_checkup_institution", indexes = {
-    @Index(name = "idx_region_code", columnList = "region_code"),
-    @Index(name = "idx_institution_type", columnList = "institution_type"),
-    @Index(name = "idx_institution_name", columnList = "institution_name"),
-    @Index(name = "idx_is_active", columnList = "is_active"),
-    @Index(name = "idx_region_type", columnList = "region_code, institution_type")
+    @Index(name = "idx_health_checkup_region_code", columnList = "region_code"),
+    @Index(name = "idx_health_checkup_institution_type", columnList = "institution_type"),
+    @Index(name = "idx_health_checkup_institution_name", columnList = "institution_name"),
+    @Index(name = "idx_health_checkup_is_active", columnList = "is_active"),
+    @Index(name = "idx_health_checkup_region_type", columnList = "region_code, institution_type")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

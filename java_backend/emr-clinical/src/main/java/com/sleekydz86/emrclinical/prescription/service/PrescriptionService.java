@@ -7,6 +7,7 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
+import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.emrclinical.prescription.api.dto.AdministrativeActionItemResponse;
 import com.sleekydz86.emrclinical.prescription.api.dto.AdministrativeActionResponse;
 import com.sleekydz86.emrclinical.prescription.api.dto.DrugInfoItemResponse;
@@ -98,8 +99,15 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
     @Transactional
     public PrescriptionEntity registerPrescription(PrescriptionCreateRequest request) {
         TreatmentEntity treatment = treatmentService.getTreatmentById(request.getTreatmentId());
+        Long treatmentPatientNo = treatmentService.findStoredPatientNo(treatment.getTreatmentId());
+        if (treatmentPatientNo == null) {
+            throw new BusinessException("진료에 환자 정보가 없습니다.");
+        }
         PatientEntity patient = patientService.getPatientByNo(request.getPatientNo());
-        UserEntity doctor = userService.getUserById(request.getPrescriptionDocId());
+        if (!treatmentPatientNo.equals(patient.getPatientNoValue())) {
+            throw new BusinessException("처방 환자는 진료 환자와 같아야 합니다.");
+        }
+        UserEntity doctor = resolveDoctor(request.getPrescriptionDocId());
 
         PrescriptionEntity prescription = PrescriptionEntity.builder()
                 .treatmentEntity(treatment)
@@ -280,7 +288,20 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
     @Transactional
     public void cancelPrescription(Long prescriptionId, String cancelReason) {
         PrescriptionEntity prescription = getPrescriptionById(prescriptionId);
+        if (prescription.getPrescriptionStatus() == PrescriptionStatus.DISPENSED) {
+            throw new BusinessException("이미 조제된 처방은 취소할 수 없습니다.");
+        }
         prescription.cancel(cancelReason);
         prescriptionRepository.save(prescription);
+    }
+
+    private UserEntity resolveDoctor(Long userId) {
+        UserEntity user = userService.getUserById(userId);
+        if (user.getRole() == RoleType.DOCTOR) {
+            return user;
+        }
+        return userService.getUsersByRole(RoleType.DOCTOR).stream()
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("진료 의사가 설정되지 않았습니다."));
     }
 }

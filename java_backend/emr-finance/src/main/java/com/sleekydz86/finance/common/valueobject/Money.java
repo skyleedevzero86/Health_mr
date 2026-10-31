@@ -91,6 +91,13 @@ public class Money {
         return multiply(multiplier);
     }
 
+    public boolean isGreaterThan(Money other) {
+        if (other == null) {
+            throw new IllegalArgumentException("비교할 금액은 null일 수 없습니다.");
+        }
+        return this.value > other.value;
+    }
+
     public boolean isGreaterThanOrEqual(Money other) {
         if (other == null) {
             throw new IllegalArgumentException("비교할 금액은 null일 수 없습니다.");

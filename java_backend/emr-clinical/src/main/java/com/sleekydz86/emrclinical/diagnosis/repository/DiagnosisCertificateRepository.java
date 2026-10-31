@@ -15,7 +15,8 @@ public interface DiagnosisCertificateRepository extends JpaRepository<DiagnosisC
 
     Optional<DiagnosisCertificateEntity> findByCertificateNumber(String certificateNumber);
 
-    Page<DiagnosisCertificateEntity> findByPatient_Id(Long patientId, Pageable pageable);
+    @Query("SELECT d FROM DiagnosisCertificateEntity d WHERE d.patient.patientNo.value = :patientId")
+    Page<DiagnosisCertificateEntity> findByPatient_Id(@Param("patientId") Long patientId, Pageable pageable);
 
     Page<DiagnosisCertificateEntity> findByDoctor_Id(Long doctorId, Pageable pageable);
 

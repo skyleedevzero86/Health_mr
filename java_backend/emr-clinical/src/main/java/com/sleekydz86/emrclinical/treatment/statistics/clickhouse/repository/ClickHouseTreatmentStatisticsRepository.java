@@ -22,7 +22,8 @@ public class ClickHouseTreatmentStatisticsRepository {
 
     private static final String TREATMENT_SUMMARY_SQL = """
             SELECT
-                coalesce(sum(patient_count), 0) AS patient_count,
+                coalesce(sum(patient_count), 0) AS visit_patient_count,
+                uniqExactMerge(unique_patient_state) AS unique_patient_count,
                 coalesce(sum(treatment_count), 0) AS treatment_count,
                 coalesce(sum(total_medical_fee), 0) AS total_medical_fee
             FROM analytics_treatment_daily
@@ -32,7 +33,8 @@ public class ClickHouseTreatmentStatisticsRepository {
     private static final String TREATMENT_DAILY_SQL = """
             SELECT
                 metric_date,
-                sum(patient_count) AS patient_count,
+                sum(patient_count) AS visit_patient_count,
+                uniqExactMerge(unique_patient_state) AS unique_patient_count,
                 sum(treatment_count) AS treatment_count,
                 sum(total_medical_fee) AS total_medical_fee
             FROM analytics_treatment_daily
@@ -44,7 +46,8 @@ public class ClickHouseTreatmentStatisticsRepository {
     private static final String TREATMENT_DEPARTMENT_SQL = """
             SELECT
                 department_name,
-                sum(patient_count) AS patient_count,
+                sum(patient_count) AS visit_patient_count,
+                uniqExactMerge(unique_patient_state) AS unique_patient_count,
                 sum(treatment_count) AS treatment_count,
                 sum(total_medical_fee) AS total_medical_fee
             FROM analytics_treatment_daily
@@ -66,7 +69,8 @@ public class ClickHouseTreatmentStatisticsRepository {
                 TREATMENT_SUMMARY_SQL,
                 createDateParams(startDate, endDate),
                 (rs, rowNum) -> ClickHouseTreatmentSummaryResponse.builder()
-                        .patientCount(getLong(rs, "patient_count"))
+                        .visitPatientCount(getLong(rs, "visit_patient_count"))
+                        .uniquePatientCount(getLong(rs, "unique_patient_count"))
                         .treatmentCount(getLong(rs, "treatment_count"))
                         .totalMedicalFee(getLong(rs, "total_medical_fee"))
                         .build());
@@ -99,7 +103,8 @@ public class ClickHouseTreatmentStatisticsRepository {
     private RowMapper<ClickHouseDailyTreatmentStatisticsResponse> treatmentDailyRowMapper() {
         return (rs, rowNum) -> ClickHouseDailyTreatmentStatisticsResponse.builder()
                 .metricDate(rs.getDate("metric_date").toLocalDate())
-                .patientCount(getLong(rs, "patient_count"))
+                .visitPatientCount(getLong(rs, "visit_patient_count"))
+                .uniquePatientCount(getLong(rs, "unique_patient_count"))
                 .treatmentCount(getLong(rs, "treatment_count"))
                 .totalMedicalFee(getLong(rs, "total_medical_fee"))
                 .build();
@@ -108,7 +113,8 @@ public class ClickHouseTreatmentStatisticsRepository {
     private RowMapper<ClickHouseTreatmentDepartmentStatisticsResponse> treatmentDepartmentRowMapper() {
         return (rs, rowNum) -> ClickHouseTreatmentDepartmentStatisticsResponse.builder()
                 .departmentName(rs.getString("department_name"))
-                .patientCount(getLong(rs, "patient_count"))
+                .visitPatientCount(getLong(rs, "visit_patient_count"))
+                .uniquePatientCount(getLong(rs, "unique_patient_count"))
                 .treatmentCount(getLong(rs, "treatment_count"))
                 .totalMedicalFee(getLong(rs, "total_medical_fee"))
                 .build();

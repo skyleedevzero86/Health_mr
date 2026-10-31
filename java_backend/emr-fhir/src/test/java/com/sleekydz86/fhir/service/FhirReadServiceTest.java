@@ -12,6 +12,7 @@ import com.sleekydz86.emrclinical.treatment.repository.TreatmentRepository;
 import com.sleekydz86.fhir.mapper.*;
 import com.sleekydz86.support.examination.journal.repository.ExaminationResultRepository;
 import org.hl7.fhir.r4.model.Bundle;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -20,8 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class FhirReadServiceTest {
+
     @Test
+    @DisplayName("환자와 진료진 검색은 검색 묶음 결과를 반환한다")
     void patientAndPractitionerSearchReturnSearchsetBundles() {
+        // given
         PatientRepository patients = mock(PatientRepository.class);
         UserRepository users = mock(UserRepository.class);
         PatientEntity patient = PatientEntity.builder().patientNo(PatientNumber.of(123L))
@@ -29,7 +33,6 @@ class FhirReadServiceTest {
         UserEntity doctor = UserEntity.builder().id(7L).role(RoleType.DOCTOR).name("김의사").build();
         when(patients.findByPatientNameContaining("홍")).thenReturn(List.of(patient));
         when(users.findByRoleIn(List.of(RoleType.DOCTOR, RoleType.NURSE))).thenReturn(List.of(doctor));
-
         FhirReadService service = new FhirReadService(
                 patients, users, mock(TreatmentRepository.class), mock(ExaminationResultRepository.class),
                 mock(DiagnosisCertificateRepository.class), mock(PrescriptionItemRepository.class),
@@ -37,9 +40,11 @@ class FhirReadServiceTest {
                 mock(ObservationFhirMapper.class), mock(ConditionFhirMapper.class),
                 mock(MedicationRequestFhirMapper.class));
 
+        // when
         Bundle patientBundle = service.patients("홍");
         Bundle practitionerBundle = service.practitioners("김");
 
+        // then
         assertThat(patientBundle.getType()).isEqualTo(Bundle.BundleType.SEARCHSET);
         assertThat(patientBundle.getTotal()).isEqualTo(1);
         assertThat(patientBundle.getEntryFirstRep().getResource().fhirType()).isEqualTo("Patient");

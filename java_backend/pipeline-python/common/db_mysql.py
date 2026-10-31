@@ -12,7 +12,7 @@ def create_mysql_engine(settings: PipelineSettings) -> Engine:
     mysql = settings.mysql
     url = (
         f"mysql+pymysql://{mysql.username}:{mysql.password}"
-        f"@{mysql.host}:{mysql.port}/{mysql.database}"
+        f"@{mysql.host}:{mysql.port}/{mysql.database}?charset=utf8mb4"
     )
     return create_engine(url, pool_pre_ping=True)
 

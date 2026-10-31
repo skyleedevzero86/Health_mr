@@ -38,7 +38,7 @@ public class PrescriptionController {
     private final ExcelExportService excelExportService;
 
     @PostMapping("/register")
-    @AuthRole({"DOCTOR", "ADMIN"})
+    @AuthRole({"STAFF", "DOCTOR", "ADMIN"})
     @AuditLog(action = AuditLog.ActionType.CREATE)
     public ResponseEntity<PrescriptionResponse> registerPrescription(
             @Valid @RequestBody PrescriptionCreateRequest request) {
@@ -172,6 +172,7 @@ public class PrescriptionController {
 
     @PostMapping("/{prescriptionId}/cancel")
     @AuthRole({"DOCTOR", "ADMIN"})
+    @AuditLog(action = AuditLog.ActionType.DELETE)
     public ResponseEntity<Void> cancelPrescription(
             @PathVariable Long prescriptionId,
             @Valid @RequestBody PrescriptionCancelRequest request) {

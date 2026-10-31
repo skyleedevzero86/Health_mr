@@ -14,6 +14,10 @@ import java.time.LocalDate;
 @Getter
 public class UserCreateRequest {
 
+    @NotBlank(message = "사원번호는 필수항목입니다.")
+    @Size(max = 30)
+    private String employeeNo;
+
     @NotNull(message = "부서는 필수항목입니다.")
     private Long departmentId;
 
@@ -61,6 +65,7 @@ public class UserCreateRequest {
 
         return UserEntity.builder()
                 .role(this.role != null ? this.role : RoleType.WAIT)
+                .employeeNo(this.employeeNo)
                 .loginId(loginIdObj)
                 .department(department)
                 .name(this.name)

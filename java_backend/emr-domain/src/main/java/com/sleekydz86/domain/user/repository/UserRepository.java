@@ -2,6 +2,7 @@ package com.sleekydz86.domain.user.repository;
 
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.type.RoleType;
+import com.sleekydz86.domain.user.type.AccountStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,14 +26,24 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.email.value = :email")
     boolean existsByEmail(@Param("email") String email);
 
+    boolean existsByEmployeeNo(String employeeNo);
+
+    boolean existsByInttCdAndEmployeeNo(String inttCd, String employeeNo);
+
+    Optional<UserEntity> findByInttCdAndEmployeeNo(String inttCd, String employeeNo);
+
     List<UserEntity> findAllByRole(RoleType role);
+
+    List<UserEntity> findAllByAccountStatus(AccountStatus accountStatus);
 
     Page<UserEntity> findAllByRole(RoleType role, Pageable pageable);
 
     List<UserEntity> findByRoleIn(List<RoleType> roles);
 
-    List<UserEntity> findByDepartmentId(Long departmentId);
+    @Query("SELECT u FROM User u WHERE u.department.id = :departmentId")
+    List<UserEntity> findByDepartmentId(@Param("departmentId") Long departmentId);
 
+    @Query("SELECT u FROM User u ORDER BY u.createdDate DESC")
     List<UserEntity> findAllByOrderByRegisterDateDesc();
 
     @Query("SELECT u FROM User u WHERE u.name LIKE %:name%")
@@ -41,4 +52,3 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT COUNT(u) FROM User u WHERE u.department.id = :departmentId")
     Long countByDepartmentId(@Param("departmentId") Long departmentId);
 }
-

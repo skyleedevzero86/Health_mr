@@ -9,6 +9,7 @@ import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -43,12 +44,21 @@ public class MySQLDataSourceConfig {
         @Bean(name = "mysqlEntityManagerFactory")
         public LocalContainerEntityManagerFactoryBean mysqlEntityManagerFactory(
                         EntityManagerFactoryBuilder builder,
-                        @Qualifier("mysqlDataSource") DataSource dataSource) {
+                        @Qualifier("mysqlDataSource") DataSource dataSource,
+                        Environment environment) {
                 Map<String, String> properties = new HashMap<>();
-                properties.put("hibernate.hbm2ddl.auto", "validate");
-                properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+                properties.put("hibernate.hbm2ddl.auto",
+                                environment.getProperty("spring.jpa.hibernate.ddl-auto", "validate"));
+                properties.put("hibernate.dialect",
+                                environment.getProperty("spring.jpa.properties.hibernate.dialect",
+                                                "org.hibernate.dialect.MySQL8Dialect"));
                 properties.put("hibernate.show_sql", "true");
                 properties.put("hibernate.format_sql", "true");
+                String quotedIdentifiers = environment
+                                .getProperty("spring.jpa.properties.hibernate.globally_quoted_identifiers");
+                if (quotedIdentifiers != null) {
+                        properties.put("hibernate.globally_quoted_identifiers", quotedIdentifiers);
+                }
 
                 return builder
                                 .dataSource(dataSource)

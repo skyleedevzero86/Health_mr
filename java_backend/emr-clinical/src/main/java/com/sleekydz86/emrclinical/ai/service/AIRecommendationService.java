@@ -49,25 +49,25 @@ public class AIRecommendationService {
             confidence = 0.9;
             reason = "응급 징후가 보여 응급 진료를 우선 권장합니다.";
             alternatives.add(TreatmentRecommendationResponse.Alternative.builder()
-                    .type(TreatmentType.IN)
+                    .type(TreatmentType.INPATIENT)
                     .confidence(0.7)
                     .reason("상태에 따라 입원 진료가 이어질 수 있습니다.")
                     .build());
         } else if (containsAny(symptoms, "입원", "수술", "중증", "입원 필요")) {
-            recommendedType = TreatmentType.IN;
+            recommendedType = TreatmentType.INPATIENT;
             confidence = 0.8;
             reason = "입원 치료 가능성이 높은 증상으로 판단했습니다.";
             alternatives.add(TreatmentRecommendationResponse.Alternative.builder()
-                    .type(TreatmentType.OUT)
+                    .type(TreatmentType.OUTPATIENT)
                     .confidence(0.6)
                     .reason("외래 진료 후 입원 여부를 다시 판단할 수 있습니다.")
                     .build());
         } else {
-            recommendedType = TreatmentType.OUT;
+            recommendedType = TreatmentType.OUTPATIENT;
             confidence = 0.7;
             reason = "현재 정보 기준으로는 외래 진료가 적절합니다.";
             alternatives.add(TreatmentRecommendationResponse.Alternative.builder()
-                    .type(TreatmentType.IN)
+                    .type(TreatmentType.INPATIENT)
                     .confidence(0.5)
                     .reason("증상 악화 시 입원 전환이 필요할 수 있습니다.")
                     .build());

@@ -3,7 +3,6 @@ package com.sleekydz86.finance.medicalfee.service;
 import com.sleekydz86.finance.medicalfee.api.NonCoveredMedicalFeeApiClient;
 import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemCodeList2Response;
 import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemHospDtlResponse;
-import com.sleekydz86.finance.medicalfee.api.dto.NonPaymentItemHospSummaryResponse;
 import com.sleekydz86.finance.medicalfee.dto.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

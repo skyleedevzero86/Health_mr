@@ -34,7 +34,8 @@ public class TreatmentAnalyticsStatisticsController {
     private static final String MESSAGE_DAILY = "\uC77C\uBCC4 \uC9C4\uB8CC \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
     private static final String MESSAGE_DEPARTMENT = "\uC9C4\uB8CC\uACFC\uBCC4 \uD1B5\uACC4\uB97C \uC870\uD68C\uD588\uC2B5\uB2C8\uB2E4.";
     private static final String HEADER_DATE = "\uC77C\uC790";
-    private static final String HEADER_PATIENT_COUNT = "\uD658\uC790\uC218";
+    private static final String HEADER_VISIT_PATIENT_COUNT = "\uC5F0\uD658\uC790\uC218";
+    private static final String HEADER_UNIQUE_PATIENT_COUNT = "\uC2E4\uD658\uC790\uC218";
     private static final String HEADER_TREATMENT_COUNT = "\uC9C4\uB8CC\uAC74\uC218";
     private static final String HEADER_TOTAL_MEDICAL_FEE = "\uCD1D\uC9C4\uB8CC\uBE44";
     private static final String HEADER_DEPARTMENT = "\uC9C4\uB8CC\uACFC";
@@ -133,12 +134,18 @@ public class TreatmentAnalyticsStatisticsController {
         List<ClickHouseDailyTreatmentStatisticsResponse> statistics =
                 treatmentAnalyticsStatisticsService.getDailyStatistics(startDate, endDate);
 
-        List<String> headers = List.of(HEADER_DATE, HEADER_PATIENT_COUNT, HEADER_TREATMENT_COUNT, HEADER_TOTAL_MEDICAL_FEE);
+        List<String> headers = List.of(
+                HEADER_DATE,
+                HEADER_VISIT_PATIENT_COUNT,
+                HEADER_UNIQUE_PATIENT_COUNT,
+                HEADER_TREATMENT_COUNT,
+                HEADER_TOTAL_MEDICAL_FEE);
         List<Map<String, Object>> data = new ArrayList<>();
         for (ClickHouseDailyTreatmentStatisticsResponse statistic : statistics) {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put(HEADER_DATE, statistic.getMetricDate());
-            row.put(HEADER_PATIENT_COUNT, statistic.getPatientCount());
+            row.put(HEADER_VISIT_PATIENT_COUNT, statistic.getVisitPatientCount());
+            row.put(HEADER_UNIQUE_PATIENT_COUNT, statistic.getUniquePatientCount());
             row.put(HEADER_TREATMENT_COUNT, statistic.getTreatmentCount());
             row.put(HEADER_TOTAL_MEDICAL_FEE, statistic.getTotalMedicalFee());
             data.add(row);
@@ -170,12 +177,18 @@ public class TreatmentAnalyticsStatisticsController {
         List<ClickHouseTreatmentDepartmentStatisticsResponse> statistics =
                 treatmentAnalyticsStatisticsService.getDepartmentStatistics(startDate, endDate);
 
-        List<String> headers = List.of(HEADER_DEPARTMENT, HEADER_PATIENT_COUNT, HEADER_TREATMENT_COUNT, HEADER_TOTAL_MEDICAL_FEE);
+        List<String> headers = List.of(
+                HEADER_DEPARTMENT,
+                HEADER_VISIT_PATIENT_COUNT,
+                HEADER_UNIQUE_PATIENT_COUNT,
+                HEADER_TREATMENT_COUNT,
+                HEADER_TOTAL_MEDICAL_FEE);
         List<Map<String, Object>> data = new ArrayList<>();
         for (ClickHouseTreatmentDepartmentStatisticsResponse statistic : statistics) {
             Map<String, Object> row = new LinkedHashMap<>();
             row.put(HEADER_DEPARTMENT, statistic.getDepartmentName());
-            row.put(HEADER_PATIENT_COUNT, statistic.getPatientCount());
+            row.put(HEADER_VISIT_PATIENT_COUNT, statistic.getVisitPatientCount());
+            row.put(HEADER_UNIQUE_PATIENT_COUNT, statistic.getUniquePatientCount());
             row.put(HEADER_TREATMENT_COUNT, statistic.getTreatmentCount());
             row.put(HEADER_TOTAL_MEDICAL_FEE, statistic.getTotalMedicalFee());
             data.add(row);
@@ -206,7 +219,8 @@ public class TreatmentAnalyticsStatisticsController {
 
     private Map<String, Object> buildSummaryAudit(ClickHouseTreatmentSummaryResponse response) {
         Map<String, Object> summary = new LinkedHashMap<>();
-        summary.put("patientCount", response.getPatientCount());
+        summary.put("visitPatientCount", response.getVisitPatientCount());
+        summary.put("uniquePatientCount", response.getUniquePatientCount());
         summary.put("treatmentCount", response.getTreatmentCount());
         summary.put("totalMedicalFee", response.getTotalMedicalFee());
         return summary;

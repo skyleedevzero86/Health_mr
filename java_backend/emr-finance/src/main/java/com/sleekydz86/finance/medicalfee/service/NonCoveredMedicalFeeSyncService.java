@@ -49,17 +49,19 @@ public class NonCoveredMedicalFeeSyncService {
             return getFeeFromDatabase(npayCd);
         }
 
-        InstitutionEntity institution;
+        InstitutionEntity loadedInstitution;
         try {
-            institution = institutionService.getInstitutionEntityByCode(currentInstitutionCode);
+            loadedInstitution = institutionService.getInstitutionEntityByCode(currentInstitutionCode);
         } catch (NotFoundException e) {
-            institution = null;
+            loadedInstitution = null;
         }
 
-        if (institution == null) {
+        if (loadedInstitution == null) {
             log.warn("병원 정보를 찾을 수 없습니다. DB 저장 금액 사용");
             return getFeeFromDatabase(npayCd);
         }
+
+        InstitutionEntity institution = loadedInstitution;
 
         return apiClient.getNonPaymentItemHospDtlList(
                 null,
@@ -235,19 +237,20 @@ public class NonCoveredMedicalFeeSyncService {
                         continue;
                     }
 
-                    getNonCoveredFeeAmountForCurrentInstitution(npayCd)
-                            .blockOptional()
-                            .ifPresent(amount -> {
-                                if (amount > 0) {
-                                    Long currentAmount = medicalType.getMedicalTypeFeeValue();
-                                    if (currentAmount == null || !currentAmount.equals(amount)) {
-                                        medicalType.updateFee(Money.of(amount));
-                                        medicalTypeRepository.save(medicalType);
-                                        successCount++;
-                                        log.debug("진료 유형 금액 동기화: Code={}, Amount={}", npayCd, amount);
-                                    }
-                                }
-                            });
+                    var amountOptional = getNonCoveredFeeAmountForCurrentInstitution(npayCd)
+                            .blockOptional();
+                    if (amountOptional.isPresent()) {
+                        Long amount = amountOptional.get();
+                        if (amount > 0) {
+                            Long currentAmount = medicalType.getMedicalTypeFeeValue();
+                            if (currentAmount == null || !currentAmount.equals(amount)) {
+                                medicalType.updateFee(Money.of(amount));
+                                medicalTypeRepository.save(medicalType);
+                                successCount++;
+                                log.debug("진료 유형 금액 동기화: Code={}, Amount={}", npayCd, amount);
+                            }
+                        }
+                    }
                 } catch (Exception e) {
                     failCount++;
                     log.error("진료 유형 금액 동기화 실패: Code={}", medicalType.getMedicalTypeCode(), e);

@@ -54,6 +54,27 @@ public class PatientRegisterRequest {
     @Size(max = 50)
     private String guardian;
 
+    public static PatientRegisterRequest of(
+            String patientName,
+            String patientRrn,
+            String patientGender,
+            LocalDate patientBirth,
+            String patientEmail,
+            String patientTel,
+            String patientForeign,
+            String patientPassport) {
+        PatientRegisterRequest request = new PatientRegisterRequest();
+        request.patientName = patientName;
+        request.patientRrn = patientRrn;
+        request.patientGender = patientGender;
+        request.patientBirth = patientBirth;
+        request.patientEmail = patientEmail;
+        request.patientTel = patientTel;
+        request.patientForeign = patientForeign;
+        request.patientPassport = patientPassport;
+        return request;
+    }
+
     public PatientEntity toEntity(PatientNumber patientNo) {
         return PatientEntity.builder()
                 .patientNo(patientNo)

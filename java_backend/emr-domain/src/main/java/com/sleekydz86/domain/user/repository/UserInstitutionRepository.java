@@ -2,9 +2,11 @@ package com.sleekydz86.domain.user.repository;
 
 import com.sleekydz86.domain.common.repository.BaseRepository;
 import com.sleekydz86.domain.user.entity.UserInstitution;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +36,15 @@ public interface UserInstitutionRepository extends BaseRepository<UserInstitutio
 
     @Query("SELECT COUNT(ui) FROM UserInstitution ui WHERE ui.user.id = :userId")
     long countByUserId(@Param("userId") Long userId);
-    void deleteByUserId(Long userId);
-    void deleteByUserIdAndInstitutionId(Long userId, Long institutionId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM UserInstitution ui WHERE ui.user.id = :userId")
+    void deleteByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM UserInstitution ui WHERE ui.user.id = :userId AND ui.institution.institutionId = :institutionId")
+    void deleteByUserIdAndInstitutionId(@Param("userId") Long userId, @Param("institutionId") Long institutionId);
 }
 

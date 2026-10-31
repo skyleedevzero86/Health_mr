@@ -3,7 +3,7 @@ package com.sleekydz86.emrclinical.treatment.statistics.department.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("departmentRegionCodeExtractor")
 @RequiredArgsConstructor
 public class RegionCodeExtractor {
 

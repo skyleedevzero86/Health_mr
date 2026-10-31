@@ -7,6 +7,7 @@ import com.sleekydz86.finance.qualification.dto.BasicLivelihoodResponse;
 import com.sleekydz86.finance.qualification.dto.HealthInsuranceResponse;
 import com.sleekydz86.finance.qualification.dto.MedicalAssistanceResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -23,16 +24,19 @@ public class QualificationService {
     private final WebClient.Builder webClientBuilder;
     private final PatientService patientService;
     private final RedisTemplate<String, Object> redisTemplate;
-    private static final String MOCK_API_URL = "http://localhost:8085/mock/insurance/eligibility";
     private static final String CACHE_PREFIX_QUALIFICATION = "qualification:patient:";
     private static final long CACHE_TTL_DAYS = 1;
     private WebClient webClient;
 
-    public QualificationService(WebClient.Builder webClientBuilder, PatientService patientService, RedisTemplate<String, Object> redisTemplate) {
+    public QualificationService(
+            WebClient.Builder webClientBuilder,
+            PatientService patientService,
+            RedisTemplate<String, Object> redisTemplate,
+            @Value("${qualification.mock-api-url}") String mockApiUrl) {
         this.webClientBuilder = webClientBuilder;
         this.patientService = patientService;
         this.redisTemplate = redisTemplate;
-        this.webClient = webClientBuilder.baseUrl(MOCK_API_URL).build();
+        this.webClient = webClientBuilder.baseUrl(mockApiUrl).build();
     }
 
     public Mono<HealthInsuranceResponse> getHealthInsuranceInfo(Long patientNo) {
