@@ -4,24 +4,30 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(classes = EmrClinicalApplicationTests.TestApp.class)
 @ActiveProfiles("test")
 class EmrClinicalApplicationTests {
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    @Autowired
+    private Environment environment;
+
     @SpringBootApplication(scanBasePackages = "com.sleekydz86")
     static class TestApp {
-        @Bean
-        ObjectMapper objectMapper() {
-            return new ObjectMapper().findAndRegisterModules();
-        }
-
         @Bean
         @SuppressWarnings("rawtypes")
         RedisTemplate redisTemplate() {
@@ -37,9 +43,19 @@ class EmrClinicalApplicationTests {
     @Test
     @DisplayName("진료 모듈 애플리케이션 컨텍스트가 정상적으로 기동된다")
     void contextLoads() {
-        // given 테스트 프로필과 로컬 H2 설정이 적용된 상태
-        // when 스프링 컨텍스트를 기동한다
-        // then 빈 생성 과정에서 예외가 발생하지 않는다
+        // given
+        String[] activeProfiles = environment.getActiveProfiles();
+        String mysqlJdbcUrl = environment.getProperty("spring.datasource.mysql.url");
+
+        // when
+        int beanCount = applicationContext.getBeanDefinitionCount();
+
+        // then
+        assertThat(activeProfiles).contains("test");
+        assertThat(mysqlJdbcUrl).contains("jdbc:h2:mem:");
+        assertThat(applicationContext).isNotNull();
+        assertThat(beanCount).isPositive();
+        assertThat(applicationContext.getBean(ObjectMapper.class)).isNotNull();
     }
 
 }
