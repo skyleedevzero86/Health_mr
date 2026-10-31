@@ -18,16 +18,25 @@ from common.logger import get_logger
 # Update table and column names according to the real MySQL schema in this repo.
 EXTRACT_SQL = """
 SELECT
-    DATE(t.created_date) AS metric_date,
-    COALESCE(t.department_name, 'UNKNOWN') AS department_name,
-    COUNT(DISTINCT t.patient_no) AS patient_count,
-    COUNT(*) AS treatment_count,
-    COALESCE(SUM(p.total_amount), 0) AS total_medical_fee
-FROM treatment t
-LEFT JOIN payment p
+    DATE(t.treatment_date) AS metric_date,
+    COALESCE(d.department_name, t.treatment_dept, '미지정') AS department_name,
+    CAST(COUNT(DISTINCT t.patient_no) AS UNSIGNED) AS patient_count,
+    CAST(COUNT(*) AS UNSIGNED) AS treatment_count,
+    CAST(COALESCE(SUM(COALESCE(p.total_medical_fee, 0)), 0) AS UNSIGNED) AS total_medical_fee
+FROM treatments t
+LEFT JOIN department d
+    ON d.id = t.department_id
+LEFT JOIN (
+    SELECT
+        treatment_id,
+        SUM(COALESCE(payment_total_amount, 0)) AS total_medical_fee
+    FROM `Payment`
+    GROUP BY treatment_id
+) p
     ON p.treatment_id = t.treatment_id
-WHERE DATE(t.created_date) = :target_date
-GROUP BY DATE(t.created_date), COALESCE(t.department_name, 'UNKNOWN')
+WHERE t.treatment_date IS NOT NULL
+  AND DATE(t.treatment_date) = :target_date
+GROUP BY DATE(t.treatment_date), COALESCE(d.department_name, t.treatment_dept, '미지정')
 ORDER BY department_name
 """
 
@@ -38,7 +47,7 @@ def default_target_date() -> str:
 
 def save_payload(output_file: Path, rows: list[dict]) -> None:
     output_file.parent.mkdir(parents=True, exist_ok=True)
-    output_file.write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    output_file.write_text(json.dumps(rows, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
 
 def main() -> None:

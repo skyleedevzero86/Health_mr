@@ -34,14 +34,33 @@ def default_input_file(settings, dataset: str, target_date: str) -> Path:
 def load_json_rows(input_file: Path) -> list[dict]:
     if not input_file.exists():
         raise FileNotFoundError(f"입력 파일을 찾을 수 없습니다: {input_file}")
-    return json.loads(input_file.read_text(encoding="utf-8"))
+    rows = json.loads(input_file.read_text(encoding="utf-8"))
+    int_keys = (
+        "patient_count",
+        "treatment_count",
+        "total_medical_fee",
+        "payment_count",
+        "total_amount",
+        "unpaid_amount",
+    )
+    coerced = []
+    for row in rows:
+        item = dict(row)
+        metric_date = item.get("metric_date")
+        if isinstance(metric_date, str):
+            item["metric_date"] = date.fromisoformat(metric_date[:10])
+        for key in int_keys:
+            if key in item and item[key] is not None:
+                item[key] = int(item[key])
+        coerced.append(item)
+    return coerced
 
 
 def record_job_execution(client, job_execution_id: str, metrics: JobMetrics, dataset: str, input_file: str) -> None:
     row = {
         "job_execution_id": job_execution_id,
         "job_name": f"load_{dataset}",
-        "target_date": metrics.target_date,
+        "target_date": date.fromisoformat(str(metrics.target_date)[:10]),
         "status": metrics.status,
         "source_count": metrics.source_count,
         "loaded_count": metrics.loaded_count,
@@ -53,6 +72,30 @@ def record_job_execution(client, job_execution_id: str, metrics: JobMetrics, dat
         "error_message": metrics.error_message or "",
     }
     insert_rows(client, "etl_job_execution", [row])
+
+
+def replace_day_partition(client, table_name: str, target_date: str, rows: list[dict]) -> int:
+    target = date.fromisoformat(str(target_date)[:10])
+    partition = target.isoformat()
+    day_rows = [row for row in rows if row.get("metric_date") == target]
+    tmp_name = f"{table_name}_tmp_{uuid4().hex}"
+    try:
+        client.command(f"CREATE TABLE {tmp_name} AS {table_name}")
+        if day_rows:
+            insert_rows(client, tmp_name, day_rows)
+            client.command(
+                f"ALTER TABLE {table_name} REPLACE PARTITION '{partition}' FROM {tmp_name}"
+            )
+        else:
+            try:
+                client.command(f"ALTER TABLE {table_name} DROP PARTITION '{partition}'")
+            except Exception as exc:
+                message = str(exc)
+                if "No partition" not in message and "Unknown partition" not in message:
+                    raise
+        return len(day_rows)
+    finally:
+        client.command(f"DROP TABLE IF EXISTS {tmp_name}")
 
 
 def record_job_error(client, job_execution_id: str, dataset: str, input_file: str, error_message: str) -> None:
@@ -90,7 +133,7 @@ def main() -> None:
     try:
         rows = load_json_rows(input_file)
         metrics.source_count = len(rows)
-        loaded_count = insert_rows(client, table_name, rows)
+        loaded_count = replace_day_partition(client, table_name, args.target_date, rows)
         metrics.mark_success(loaded_count)
         record_job_execution(client, job_execution_id, metrics, args.dataset, str(input_file))
         logger.info("데이터 적재 완료: 데이터셋=%s, 적재건수=%s", args.dataset, loaded_count)

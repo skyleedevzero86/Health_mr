@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS analytics_treatment_daily
 )
 ENGINE = MergeTree
 -- 월 단위 보관/백필 운영에 최적화
-PARTITION BY toYYYYMM(metric_date)
+PARTITION BY metric_date
 -- 기간 + 부서 기준 탐색이 잦으므로 해당 순서로 정렬
 ORDER BY (metric_date, department_name);

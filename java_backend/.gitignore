@@ -80,3 +80,5 @@ docs/
 /health-mr-frontend/
 /statistics/
 **/src/test/resources/*.yml
+*.pyc
+*.json
