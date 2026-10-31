@@ -1,7 +1,6 @@
 package com.sleekydz86.core.lock.aspect;
 
 import com.sleekydz86.core.lock.annotation.DistributedLock;
-import com.sleekydz86.core.lock.exception.LockAcquisitionException;
 import com.sleekydz86.core.lock.service.DistributedLockService;
 import com.sleekydz86.core.lock.strategy.KeyGeneratorFactory;
 import com.sleekydz86.core.lock.strategy.LockKeyGenerator;
@@ -35,31 +34,36 @@ public class DistributedLockAspect {
         String lockKey = generateLockKey(distributedLock, method, args);
         log.debug("분산 락 시도: method={}, lockKey={}", method.getName(), lockKey);
 
-        String lockValue = distributedLockService.tryLock(
-                lockKey,
-                distributedLock.waitTime(),
-                distributedLock.leaseTime()
-        );
+        String lockValue = null;
+        try {
+            lockValue = distributedLockService.tryLock(
+                    lockKey,
+                    distributedLock.waitTime(),
+                    distributedLock.leaseTime()
+            );
+        } catch (RuntimeException exception) {
+            log.warn("분산 락 저장소 오류, 비즈니스 로직을 계속 진행합니다: method={}", method.getName(), exception);
+            return joinPoint.proceed();
+        }
 
         if (lockValue == null) {
-            if (distributedLock.throwExceptionOnFailure()) {
-                throw new LockAcquisitionException(
-                        "락 획득에 실패했습니다. 다른 요청이 처리 중입니다. key: " + lockKey);
-            } else {
-                log.warn("락 획득 실패, null 반환: method={}, lockKey={}", method.getName(), lockKey);
-                return null;
-            }
+            log.warn("락 획득 실패, 비즈니스 로직을 계속 진행합니다: method={}, lockKey={}", method.getName(), lockKey);
+            return joinPoint.proceed();
         }
 
         try {
             log.debug("락 획득 성공, 비즈니스 로직 실행: method={}, lockKey={}", method.getName(), lockKey);
             return joinPoint.proceed();
         } finally {
-            boolean released = distributedLockService.unlock(lockKey, lockValue);
-            if (released) {
-                log.debug("락 해제 완료: method={}, lockKey={}", method.getName(), lockKey);
-            } else {
-                log.warn("락 해제 실패: method={}, lockKey={}", method.getName(), lockKey);
+            try {
+                boolean released = distributedLockService.unlock(lockKey, lockValue);
+                if (released) {
+                    log.debug("락 해제 완료: method={}, lockKey={}", method.getName(), lockKey);
+                } else {
+                    log.warn("락 해제 실패: method={}, lockKey={}", method.getName(), lockKey);
+                }
+            } catch (RuntimeException exception) {
+                log.warn("락 해제 중 오류: method={}, lockKey={}", method.getName(), lockKey, exception);
             }
         }
     }

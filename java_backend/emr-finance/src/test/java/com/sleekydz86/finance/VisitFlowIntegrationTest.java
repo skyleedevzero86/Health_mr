@@ -116,7 +116,8 @@ class VisitFlowIntegrationTest {
         DepartmentEntity department = saveDepartment("FLW", "흐름과");
 
         // when
-        CheckInEntity pending = checkInService.createCheckIn(patient.getPatientNoValue(), doctor.getId());
+        CheckInEntity pending = checkInService.createCheckIn(
+                patient.getPatientNoValue(), doctor.getId(), department.getId());
         CheckInStatus pendingStatus = pending.getCheckInStatus();
         CheckInEntity completed = checkInService.completeCheckIn(pending.getCheckInId());
 
@@ -174,7 +175,9 @@ class VisitFlowIntegrationTest {
         stubInfrastructure();
         PatientEntity patient = savePatient("거절환자");
         UserEntity doctor = saveDoctor("rejdoc");
-        CheckInEntity pending = checkInService.createCheckIn(patient.getPatientNoValue(), doctor.getId());
+        DepartmentEntity department = saveDepartment("REJ", "거절과");
+        CheckInEntity pending = checkInService.createCheckIn(
+                patient.getPatientNoValue(), doctor.getId(), department.getId());
         TreatmentCreateRequest request = new TreatmentCreateRequest();
         request.setTreatmentType(TreatmentType.OUTPATIENT);
         request.setDoctorId(doctor.getId());

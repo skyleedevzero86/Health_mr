@@ -41,6 +41,9 @@ public class AuditEntity {
     @Column(length = 500)
     private String userAgent;
 
+    @Column(length = 20)
+    private String outcome;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -55,6 +58,7 @@ public class AuditEntity {
             String afterData,
             String ipAddress,
             String userAgent,
+            String outcome,
             LocalDateTime createdAt
     ) {
         validate(userId, actionType, entityType, entityId);
@@ -67,6 +71,7 @@ public class AuditEntity {
         this.afterData = afterData;
         this.ipAddress = ipAddress;
         this.userAgent = userAgent;
+        this.outcome = outcome != null ? outcome : "SUCCESS";
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
     }
 

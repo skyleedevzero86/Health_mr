@@ -26,4 +26,8 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
     implementation("com.clickhouse:clickhouse-jdbc:0.8.6")
     testRuntimeOnly("com.h2database:h2")
+    testImplementation(platform("org.testcontainers:testcontainers-bom:1.21.2"))
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:mysql")
 }

@@ -35,7 +35,8 @@ public class CheckInController {
             @Valid @RequestBody CheckInCreateRequest request,
             @AuthUser Long userId) {
         Long resolvedUserId = request.getUserId() != null ? request.getUserId() : userId;
-        CheckInEntity checkIn = checkInService.createCheckIn(request.getPatientNo(), resolvedUserId);
+        CheckInEntity checkIn = checkInService.createCheckIn(
+                request.getPatientNo(), resolvedUserId, request.getDepartmentId());
         return ResponseEntity.status(HttpStatus.CREATED).body(CheckInResponse.from(checkIn));
     }
 
@@ -56,12 +57,14 @@ public class CheckInController {
 
     @PostMapping("/{checkInId}/complete")
     @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.UPDATE)
     public ResponseEntity<CheckInResponse> completeCheckIn(@PathVariable Long checkInId) {
         return ResponseEntity.ok(CheckInResponse.from(checkInService.completeCheckIn(checkInId)));
     }
 
     @PostMapping("/{checkInId}/cancel")
     @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.DELETE)
     public ResponseEntity<CheckInResponse> cancelCheckIn(@PathVariable Long checkInId) {
         return ResponseEntity.ok(CheckInResponse.from(checkInService.cancelCheckIn(checkInId)));
     }

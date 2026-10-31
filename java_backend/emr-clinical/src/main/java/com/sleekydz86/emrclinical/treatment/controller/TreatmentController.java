@@ -169,6 +169,7 @@ public class TreatmentController {
 
     @PostMapping("/{treatmentId}/complete")
     @AuthRole({ "STAFF", "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.UPDATE)
     public ResponseEntity<Void> completeTreatment(
             @PathVariable Long treatmentId,
             @Valid @RequestBody TreatmentCompleteRequest request) {
@@ -178,6 +179,7 @@ public class TreatmentController {
 
     @PostMapping("/{treatmentId}/cancel")
     @AuthRole({ "DOCTOR", "ADMIN" })
+    @AuditLog(action = AuditLog.ActionType.DELETE)
     public ResponseEntity<Void> cancelTreatment(
             @PathVariable Long treatmentId,
             @RequestParam(required = false) String cancelReason) {

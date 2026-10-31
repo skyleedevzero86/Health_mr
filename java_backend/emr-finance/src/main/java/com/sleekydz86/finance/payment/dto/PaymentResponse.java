@@ -37,8 +37,13 @@ public class PaymentResponse {
     private LocalDateTime approvalDate;
 
     private String cardCompany;
+    private boolean alreadyProcessed;
 
     public static PaymentResponse from(PaymentEntity entity) {
+        return from(entity, false);
+    }
+
+    public static PaymentResponse from(PaymentEntity entity, boolean alreadyProcessed) {
         PaymentResponse response = new PaymentResponse();
         response.setPaymentId(entity.getPaymentId());
         response.setTreatmentId(entity.getTreatmentEntity().getTreatmentId());
@@ -57,6 +62,7 @@ public class PaymentResponse {
         response.setApprovalNumber(entity.getApprovalNumber());
         response.setApprovalDate(entity.getApprovalDate());
         response.setCardCompany(entity.getCardCompany());
+        response.setAlreadyProcessed(alreadyProcessed);
         return response;
     }
 }

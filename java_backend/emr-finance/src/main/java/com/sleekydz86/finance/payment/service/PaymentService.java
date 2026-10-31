@@ -1,6 +1,7 @@
 package com.sleekydz86.finance.payment.service;
 
 import com.sleekydz86.core.audit.annotation.AuditLog;
+import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.publisher.EventPublisher;
@@ -100,7 +101,12 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
                 .paymentDate(LocalDateTime.now())
                 .build();
 
-        PaymentEntity saved = paymentRepository.save(payment);
+        PaymentEntity saved;
+        try {
+            saved = paymentRepository.saveAndFlush(payment);
+        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+            throw new DuplicateException("이미 결제 정보가 등록된 진료입니다.", exception);
+        }
 
         eventPublisher.publish(new PaymentCreatedEvent(
                 saved.getPaymentId(),
@@ -244,12 +250,24 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
             throwExceptionOnDuplicate = false
     )
     public PaymentResponse completePayment(Long paymentId, PaymentCompleteRequest request) {
-        PaymentEntity payment = paymentRepository.findDetailById(paymentId)
+        int updated = paymentRepository.markPaidIfOpen(
+                paymentId,
+                PaymentStatus.PAID,
+                request.getPaymentMethod(),
+                request.getApprovalNumber(),
+                request.getCardCompany(),
+                LocalDateTime.now(),
+                List.of(PaymentStatus.UNPAID, PaymentStatus.PARTIAL));
+
+        PaymentEntity saved = paymentRepository.findDetailById(paymentId)
                 .orElseThrow(() -> new NotFoundException("결제를 찾을 수 없습니다. ID: " + paymentId));
 
-        payment.complete(request.getPaymentMethod(), request.getApprovalNumber(), request.getCardCompany());
-
-        PaymentEntity saved = paymentRepository.save(payment);
+        if (updated == 0) {
+            if (saved.getPaymentStatus() == PaymentStatus.PAID) {
+                return PaymentResponse.from(saved, true);
+            }
+            throw new BusinessException("취소되거나 환불된 결제는 완료할 수 없습니다.");
+        }
 
         eventPublisher.publish(new PaymentCompletedEvent(
                 saved.getPaymentId(),
@@ -257,8 +275,9 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
                 saved.getPatientEntity() != null ? saved.getPatientEntity().getPatientNoValue() : null));
 
         paymentNotificationService.sendPaymentCompletedNotification(saved);
+        invalidatePaymentCache(saved);
 
-        return PaymentResponse.from(saved);
+        return PaymentResponse.from(saved, false);
     }
 
     @Transactional
@@ -266,6 +285,10 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
     public PaymentResponse cancelPayment(Long paymentId, PaymentCancelRequest request) {
         PaymentEntity payment = validateExists(paymentRepository, paymentId,
                 "결제를 찾을 수 없습니다. ID: " + paymentId);
+
+        if (payment.getPaymentStatus() != PaymentStatus.UNPAID) {
+            throw new BusinessException("미수납 건만 취소할 수 있습니다.");
+        }
 
         payment.cancel(request.getCancelReason());
 

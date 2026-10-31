@@ -6,6 +6,7 @@ import com.sleekydz86.finance.type.PaymentMethod;
 import com.sleekydz86.finance.type.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -65,5 +66,21 @@ public interface PaymentRepository extends BaseRepository<PaymentEntity, Long> {
             "AND p.paymentStatus = :status")
     boolean existsByTreatmentIdAndStatus(@Param("treatmentId") Long treatmentId,
                                          @Param("status") PaymentStatus status);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Payment p set p.paymentStatus = :paidStatus, p.paymentMethod = :method, "
+            + "p.approvalNumber = :approvalNumber, p.cardCompany = :cardCompany, "
+            + "p.paymentDate = :paidAt, p.approvalDate = :paidAt, "
+            + "p.paymentCurrentMoney.value = p.paymentTotalAmount.value, "
+            + "p.paymentRemainMoney.value = 0 "
+            + "where p.paymentId = :paymentId and p.paymentStatus in :openStatuses")
+    int markPaidIfOpen(
+            @Param("paymentId") Long paymentId,
+            @Param("paidStatus") PaymentStatus paidStatus,
+            @Param("method") PaymentMethod method,
+            @Param("approvalNumber") String approvalNumber,
+            @Param("cardCompany") String cardCompany,
+            @Param("paidAt") LocalDateTime paidAt,
+            @Param("openStatuses") List<PaymentStatus> openStatuses);
 }
 

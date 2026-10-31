@@ -1,6 +1,8 @@
 package com.sleekydz86.emrclinical.treatment.service;
 
+import com.sleekydz86.core.clinical.TreatmentPaymentGuard;
 import com.sleekydz86.core.common.exception.custom.BusinessException;
+import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.event.domain.TreatmentCancelledEvent;
 import com.sleekydz86.core.event.domain.TreatmentCompletedEvent;
@@ -34,7 +36,9 @@ import com.sleekydz86.emrclinical.types.CheckInStatus;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
 import com.sleekydz86.emrclinical.types.TreatmentType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -59,6 +63,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
     private final InTreatmentRepository inTreatmentRepository;
     private final EmergencyTreatmentRepository emergencyTreatmentRepository;
     private final TreatmentNotificationService treatmentNotificationService;
+    private final ObjectProvider<TreatmentPaymentGuard> treatmentPaymentGuard;
 
     @Value("${clinical.integration.auto-complete-reservation-on-treatment-complete:true}")
     private boolean autoCompleteReservationOnTreatmentComplete;
@@ -78,7 +83,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         List<TreatmentEntity> existingTreatments = treatmentRepository.findByCheckInEntity_CheckInId(
                 checkIn.getCheckInId());
         if (!existingTreatments.isEmpty()) {
-            throw new BusinessException("이미 해당 접수로 생성된 진료가 있습니다.");
+            throw new DuplicateException("이미 해당 접수로 생성된 진료가 있습니다.");
         }
 
         PatientEntity patient = checkIn.getPatientEntity();
@@ -89,12 +94,15 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
             throw new BusinessException("접수 환자와 요청 환자가 다릅니다.");
         }
 
-        UserEntity doctor = resolveDoctor(request.getDoctorId());
-
-        DepartmentEntity department = null;
-        if (request.getDepartmentId() != null) {
-            department = departmentService.getDepartmentById(request.getDepartmentId());
+        DepartmentEntity department = checkIn.getDepartmentEntity();
+        if (department == null) {
+            throw new BusinessException("접수 진료과가 없습니다.");
         }
+        if (request.getDepartmentId() != null && !request.getDepartmentId().equals(department.getId())) {
+            throw new BusinessException("접수 진료과와 다릅니다.");
+        }
+
+        UserEntity doctor = resolveDoctor(request.getDoctorId());
 
         TreatmentEntity treatment = TreatmentEntity.builder()
                 .treatmentType(request.getTreatmentType())
@@ -102,12 +110,17 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
                 .treatmentStatus(TreatmentStatus.PENDING)
                 .treatmentDoc(doctor)
                 .departmentEntity(department)
-                .treatmentDept(department != null ? department.getName() : null)
+                .treatmentDept(department.getName())
                 .checkInEntity(checkIn)
                 .patientEntity(patient)
                 .build();
 
-        TreatmentEntity saved = treatmentRepository.saveAndFlush(treatment);
+        TreatmentEntity saved;
+        try {
+            saved = treatmentRepository.saveAndFlush(treatment);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateException("이미 해당 접수로 생성된 진료가 있습니다.", exception);
+        }
 
         createTreatmentTypeEntity(saved, request.getTreatmentType(), checkIn);
 
@@ -277,6 +290,10 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         if (treatment.getTreatmentStatus() == TreatmentStatus.COMPLETED) {
             throw new BusinessException("완료된 진료는 취소할 수 없습니다.");
         }
+        TreatmentPaymentGuard paymentGuard = treatmentPaymentGuard.getIfAvailable();
+        if (paymentGuard != null && paymentGuard.hasCollectedPayment(treatmentId)) {
+            throw new BusinessException("수납이 완료된 진료는 환불 후에만 취소할 수 있습니다.");
+        }
         treatment.cancel(cancelReason != null ? cancelReason : "진료 취소");
         treatmentRepository.save(treatment);
 
@@ -298,12 +315,13 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         List<TreatmentEntity> existingTreatments = treatmentRepository.findByCheckInEntity_CheckInId(
                 checkIn.getCheckInId());
         if (!existingTreatments.isEmpty()) {
-            throw new BusinessException("이미 해당 접수로 생성된 진료가 있습니다.");
+            throw new DuplicateException("이미 해당 접수로 생성된 진료가 있습니다.");
         }
 
-        DepartmentEntity defaultDepartment = departmentService.getAllDepartments().stream()
-                .findFirst()
-                .orElseThrow(() -> new BusinessException("진료과가 설정되지 않았습니다."));
+        DepartmentEntity department = checkIn.getDepartmentEntity();
+        if (department == null) {
+            throw new BusinessException("접수 진료과가 없습니다.");
+        }
 
         UserEntity defaultDoctor = resolveDoctor(checkIn.getUserEntity().getId());
 
@@ -313,12 +331,17 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
                 .treatmentType(TreatmentType.OUTPATIENT)
                 .treatmentDate(LocalDateTime.now())
                 .treatmentStatus(TreatmentStatus.PENDING)
-                .departmentEntity(defaultDepartment)
-                .treatmentDept(defaultDepartment.getName())
+                .departmentEntity(department)
+                .treatmentDept(department.getName())
                 .treatmentDoc(defaultDoctor)
                 .build();
 
-        TreatmentEntity saved = treatmentRepository.saveAndFlush(treatment);
+        TreatmentEntity saved;
+        try {
+            saved = treatmentRepository.saveAndFlush(treatment);
+        } catch (DataIntegrityViolationException exception) {
+            throw new DuplicateException("이미 해당 접수로 생성된 진료가 있습니다.", exception);
+        }
 
         createTreatmentTypeEntity(saved, TreatmentType.OUTPATIENT, checkIn);
 

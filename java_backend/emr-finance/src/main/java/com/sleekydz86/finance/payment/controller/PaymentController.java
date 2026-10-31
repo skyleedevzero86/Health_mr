@@ -166,8 +166,9 @@ public class PaymentController {
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentCompleteRequest request) {
         PaymentResponse response = paymentService.completePayment(paymentId, request);
+        String message = response.isAlreadyProcessed() ? "이미 처리된 수납입니다." : "결제 완료 처리를 마쳤습니다.";
         return ResponseEntity.ok(Map.of(
-                "message", "결제 완료 처리를 마쳤습니다.",
+                "message", message,
                 "data", response));
     }
 

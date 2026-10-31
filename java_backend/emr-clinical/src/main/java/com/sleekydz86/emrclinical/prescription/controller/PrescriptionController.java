@@ -172,6 +172,7 @@ public class PrescriptionController {
 
     @PostMapping("/{prescriptionId}/cancel")
     @AuthRole({"DOCTOR", "ADMIN"})
+    @AuditLog(action = AuditLog.ActionType.DELETE)
     public ResponseEntity<Void> cancelPrescription(
             @PathVariable Long prescriptionId,
             @Valid @RequestBody PrescriptionCancelRequest request) {

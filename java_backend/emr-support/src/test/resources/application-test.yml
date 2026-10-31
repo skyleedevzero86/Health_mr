@@ -1,0 +1,56 @@
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration
+      - org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration
+  datasource:
+    url: jdbc:h2:mem:emr_support;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    mysql:
+      url: jdbc:h2:mem:emr_support;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      jdbc-url: jdbc:h2:mem:emr_support;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+    postgresql:
+      url: jdbc:h2:mem:emr_support_pg;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      jdbc-url: jdbc:h2:mem:emr_support_pg;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;NON_KEYWORDS=USER,VALUE,KEY,YEAR
+      username: sa
+      password:
+      driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        globally_quoted_identifiers: true
+  task:
+    scheduling:
+      enabled: false
+  mail:
+    host: localhost
+    port: 25
+
+health-checkup:
+  institution:
+    csv:
+      auto-import: false
+
+encryption:
+  hmac-key: ${ENCRYPTION_HMAC_KEY:test-hmac-key-not-for-production}
+
+patient:
+  blind-index:
+    backfill-enabled: false
+
+drug-info:
+  api:
+    base-url: http://localhost
+
+drug-administrative-action:
+  api:
+    base-url: http://localhost

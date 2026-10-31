@@ -28,7 +28,7 @@ public class TreatmentEntity extends BaseEntity {
     private Long treatmentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "checkIn_id", referencedColumnName = "checkIn_id")
+    @JoinColumn(name = "checkIn_id", referencedColumnName = "checkIn_id", unique = true)
     private CheckInEntity checkInEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)

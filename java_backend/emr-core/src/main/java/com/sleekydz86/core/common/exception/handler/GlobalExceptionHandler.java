@@ -7,6 +7,7 @@ import com.sleekydz86.core.security.jwt.CustomErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
@@ -87,6 +88,19 @@ public class GlobalExceptionHandler {
                 details
         );
         return ResponseEntity.status(ErrorCode.VALIDATION_ERROR.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<CustomErrorResponse> handleDataIntegrityViolationException(
+            DataIntegrityViolationException e, HttpServletRequest request) {
+        log.error("DataIntegrityViolationException 발생: {}", e.getMessage(), e);
+        CustomErrorResponse response = CustomErrorResponse.of(
+                ErrorCode.DUPLICATE_ERROR.getStatus(),
+                ErrorCode.DUPLICATE_ERROR.getMessage(),
+                ErrorCode.DUPLICATE_ERROR.name(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(ErrorCode.DUPLICATE_ERROR.getStatus()).body(response);
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)

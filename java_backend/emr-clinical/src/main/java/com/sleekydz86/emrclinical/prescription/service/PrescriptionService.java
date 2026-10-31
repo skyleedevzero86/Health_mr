@@ -288,6 +288,9 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
     @Transactional
     public void cancelPrescription(Long prescriptionId, String cancelReason) {
         PrescriptionEntity prescription = getPrescriptionById(prescriptionId);
+        if (prescription.getPrescriptionStatus() == PrescriptionStatus.DISPENSED) {
+            throw new BusinessException("이미 조제된 처방은 취소할 수 없습니다.");
+        }
         prescription.cancel(cancelReason);
         prescriptionRepository.save(prescription);
     }

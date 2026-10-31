@@ -16,6 +16,8 @@ public class CheckInResponse {
     private String patientName;
     private Long userId;
     private String userName;
+    private Long departmentId;
+    private String departmentName;
     private LocalDateTime checkInDate;
     private CheckInStatus checkInStatus;
     private String checkInComment;
@@ -29,6 +31,8 @@ public class CheckInResponse {
                 .patientName(entity.getPatientEntity().getPatientName())
                 .userId(entity.getUserEntity() != null ? entity.getUserEntity().getId() : null)
                 .userName(entity.getUserEntity() != null ? entity.getUserEntity().getName() : null)
+                .departmentId(entity.getDepartmentEntity() != null ? entity.getDepartmentEntity().getId() : null)
+                .departmentName(entity.getDepartmentEntity() != null ? entity.getDepartmentEntity().getName() : null)
                 .checkInDate(entity.getCheckInDate())
                 .checkInStatus(entity.getCheckInStatus())
                 .checkInComment(entity.getCheckInComment())
