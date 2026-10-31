@@ -129,7 +129,7 @@ def insert_treatment_unique_rows(client, tmp_name: str, day_rows: list[dict]) ->
                 any(patient_count),
                 any(treatment_count),
                 any(total_medical_fee),
-                uniqExactState(nullIf(patient_key_hash, ''))
+                uniqExactStateIf(patient_key_hash, patient_key_hash != '')
             FROM {raw_name}
             GROUP BY metric_date, department_name
             """

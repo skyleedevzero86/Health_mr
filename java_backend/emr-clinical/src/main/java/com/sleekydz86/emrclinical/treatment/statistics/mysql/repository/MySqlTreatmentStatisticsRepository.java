@@ -21,35 +21,65 @@ public class MySqlTreatmentStatisticsRepository {
 
     private static final String TREATMENT_SUMMARY_SQL = """
             SELECT
-                COALESCE(SUM(patient_count), 0) AS patient_count,
-                COALESCE(SUM(treatment_count), 0) AS treatment_count,
-                COALESCE(SUM(total_medical_fee), 0) AS total_medical_fee
-            FROM analytics_treatment_daily
-            WHERE metric_date BETWEEN :startDate AND :endDate
+                COALESCE(SUM(v.patient_count), 0) AS visit_patient_count,
+                COALESCE((
+                    SELECT COUNT(DISTINCT t.patient_no)
+                    FROM treatments t
+                    WHERE t.treatment_date IS NOT NULL
+                      AND DATE(t.treatment_date) BETWEEN :startDate AND :endDate
+                ), 0) AS unique_patient_count,
+                COALESCE(SUM(v.treatment_count), 0) AS treatment_count,
+                COALESCE(SUM(v.total_medical_fee), 0) AS total_medical_fee
+            FROM analytics_treatment_daily v
+            WHERE v.metric_date BETWEEN :startDate AND :endDate
             """;
 
     private static final String TREATMENT_DAILY_SQL = """
             SELECT
-                metric_date,
-                SUM(patient_count) AS patient_count,
-                SUM(treatment_count) AS treatment_count,
-                SUM(total_medical_fee) AS total_medical_fee
-            FROM analytics_treatment_daily
-            WHERE metric_date BETWEEN :startDate AND :endDate
-            GROUP BY metric_date
-            ORDER BY metric_date
+                v.metric_date,
+                SUM(v.patient_count) AS visit_patient_count,
+                COALESCE(u.unique_patient_count, 0) AS unique_patient_count,
+                SUM(v.treatment_count) AS treatment_count,
+                SUM(v.total_medical_fee) AS total_medical_fee
+            FROM analytics_treatment_daily v
+            LEFT JOIN (
+                SELECT
+                    DATE(t.treatment_date) AS metric_date,
+                    COUNT(DISTINCT t.patient_no) AS unique_patient_count
+                FROM treatments t
+                WHERE t.treatment_date IS NOT NULL
+                  AND DATE(t.treatment_date) BETWEEN :startDate AND :endDate
+                GROUP BY DATE(t.treatment_date)
+            ) u
+                ON u.metric_date = v.metric_date
+            WHERE v.metric_date BETWEEN :startDate AND :endDate
+            GROUP BY v.metric_date, u.unique_patient_count
+            ORDER BY v.metric_date
             """;
 
     private static final String TREATMENT_DEPARTMENT_SQL = """
             SELECT
-                department_name,
-                SUM(patient_count) AS patient_count,
-                SUM(treatment_count) AS treatment_count,
-                SUM(total_medical_fee) AS total_medical_fee
-            FROM analytics_treatment_daily
-            WHERE metric_date BETWEEN :startDate AND :endDate
-            GROUP BY department_name
-            ORDER BY total_medical_fee DESC, department_name ASC
+                v.department_name,
+                SUM(v.patient_count) AS visit_patient_count,
+                COALESCE(u.unique_patient_count, 0) AS unique_patient_count,
+                SUM(v.treatment_count) AS treatment_count,
+                SUM(v.total_medical_fee) AS total_medical_fee
+            FROM analytics_treatment_daily v
+            LEFT JOIN (
+                SELECT
+                    COALESCE(d.department_name, t.treatment_dept, '미지정') AS department_name,
+                    COUNT(DISTINCT t.patient_no) AS unique_patient_count
+                FROM treatments t
+                LEFT JOIN department d
+                    ON d.id = t.department_id
+                WHERE t.treatment_date IS NOT NULL
+                  AND DATE(t.treatment_date) BETWEEN :startDate AND :endDate
+                GROUP BY COALESCE(d.department_name, t.treatment_dept, '미지정')
+            ) u
+                ON u.department_name = v.department_name
+            WHERE v.metric_date BETWEEN :startDate AND :endDate
+            GROUP BY v.department_name, u.unique_patient_count
+            ORDER BY total_medical_fee DESC, v.department_name ASC
             """;
 
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -63,7 +93,8 @@ public class MySqlTreatmentStatisticsRepository {
                 TREATMENT_SUMMARY_SQL,
                 createDateParams(startDate, endDate),
                 (rs, rowNum) -> ClickHouseTreatmentSummaryResponse.builder()
-                        .patientCount(getLong(rs, "patient_count"))
+                        .visitPatientCount(getLong(rs, "visit_patient_count"))
+                        .uniquePatientCount(getLong(rs, "unique_patient_count"))
                         .treatmentCount(getLong(rs, "treatment_count"))
                         .totalMedicalFee(getLong(rs, "total_medical_fee"))
                         .build());
@@ -94,7 +125,8 @@ public class MySqlTreatmentStatisticsRepository {
     private RowMapper<ClickHouseDailyTreatmentStatisticsResponse> treatmentDailyRowMapper() {
         return (rs, rowNum) -> ClickHouseDailyTreatmentStatisticsResponse.builder()
                 .metricDate(rs.getDate("metric_date").toLocalDate())
-                .patientCount(getLong(rs, "patient_count"))
+                .visitPatientCount(getLong(rs, "visit_patient_count"))
+                .uniquePatientCount(getLong(rs, "unique_patient_count"))
                 .treatmentCount(getLong(rs, "treatment_count"))
                 .totalMedicalFee(getLong(rs, "total_medical_fee"))
                 .build();
@@ -103,7 +135,8 @@ public class MySqlTreatmentStatisticsRepository {
     private RowMapper<ClickHouseTreatmentDepartmentStatisticsResponse> treatmentDepartmentRowMapper() {
         return (rs, rowNum) -> ClickHouseTreatmentDepartmentStatisticsResponse.builder()
                 .departmentName(rs.getString("department_name"))
-                .patientCount(getLong(rs, "patient_count"))
+                .visitPatientCount(getLong(rs, "visit_patient_count"))
+                .uniquePatientCount(getLong(rs, "unique_patient_count"))
                 .treatmentCount(getLong(rs, "treatment_count"))
                 .totalMedicalFee(getLong(rs, "total_medical_fee"))
                 .build();
