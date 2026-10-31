@@ -8,7 +8,8 @@ import lombok.Getter;
 public class ClickHouseTreatmentDepartmentStatisticsResponse {
 
     private String departmentName;
-    private Long patientCount;
+    private Long visitPatientCount;
+    private Long uniquePatientCount;
     private Long treatmentCount;
     private Long totalMedicalFee;
 }

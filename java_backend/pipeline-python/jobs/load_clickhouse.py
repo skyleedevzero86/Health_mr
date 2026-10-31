@@ -52,6 +52,9 @@ def load_json_rows(input_file: Path) -> list[dict]:
         for key in int_keys:
             if key in item and item[key] is not None:
                 item[key] = int(item[key])
+        hashes = item.get("patient_key_hashes")
+        if hashes is not None:
+            item["patient_key_hashes"] = [str(value) for value in hashes]
         coerced.append(item)
     return coerced
 
@@ -74,6 +77,67 @@ def record_job_execution(client, job_execution_id: str, metrics: JobMetrics, dat
     insert_rows(client, "etl_job_execution", [row])
 
 
+def drop_partition_if_exists(client, table_name: str, partition: str) -> None:
+    try:
+        client.command(f"ALTER TABLE {table_name} DROP PARTITION '{partition}'")
+    except Exception as exc:
+        message = str(exc)
+        if "No partition" not in message and "Unknown partition" not in message:
+            raise
+
+
+def insert_treatment_unique_rows(client, tmp_name: str, day_rows: list[dict]) -> None:
+    raw_name = f"{tmp_name}_raw"
+    try:
+        client.command(
+            f"""
+            CREATE TABLE {raw_name}
+            (
+                metric_date Date,
+                department_name String,
+                patient_count UInt64,
+                treatment_count UInt64,
+                total_medical_fee UInt64,
+                patient_key_hash String
+            )
+            ENGINE = Memory
+            """
+        )
+        raw_rows = []
+        for row in day_rows:
+            hashes = row.get("patient_key_hashes") or [""]
+            if not hashes:
+                hashes = [""]
+            for patient_key_hash in hashes:
+                raw_rows.append(
+                    {
+                        "metric_date": row["metric_date"],
+                        "department_name": row["department_name"],
+                        "patient_count": int(row.get("patient_count") or 0),
+                        "treatment_count": int(row.get("treatment_count") or 0),
+                        "total_medical_fee": int(row.get("total_medical_fee") or 0),
+                        "patient_key_hash": patient_key_hash,
+                    }
+                )
+        insert_rows(client, raw_name, raw_rows)
+        client.command(
+            f"""
+            INSERT INTO {tmp_name}
+            SELECT
+                metric_date,
+                department_name,
+                any(patient_count),
+                any(treatment_count),
+                any(total_medical_fee),
+                uniqExactState(nullIf(patient_key_hash, ''))
+            FROM {raw_name}
+            GROUP BY metric_date, department_name
+            """
+        )
+    finally:
+        client.command(f"DROP TABLE IF EXISTS {raw_name}")
+
+
 def replace_day_partition(client, table_name: str, target_date: str, rows: list[dict]) -> int:
     target = date.fromisoformat(str(target_date)[:10])
     partition = target.isoformat()
@@ -82,17 +146,15 @@ def replace_day_partition(client, table_name: str, target_date: str, rows: list[
     try:
         client.command(f"CREATE TABLE {tmp_name} AS {table_name}")
         if day_rows:
-            insert_rows(client, tmp_name, day_rows)
+            if table_name == "analytics_treatment_daily":
+                insert_treatment_unique_rows(client, tmp_name, day_rows)
+            else:
+                insert_rows(client, tmp_name, day_rows)
             client.command(
                 f"ALTER TABLE {table_name} REPLACE PARTITION '{partition}' FROM {tmp_name}"
             )
         else:
-            try:
-                client.command(f"ALTER TABLE {table_name} DROP PARTITION '{partition}'")
-            except Exception as exc:
-                message = str(exc)
-                if "No partition" not in message and "Unknown partition" not in message:
-                    raise
+            drop_partition_if_exists(client, table_name, partition)
         return len(day_rows)
     finally:
         client.command(f"DROP TABLE IF EXISTS {tmp_name}")

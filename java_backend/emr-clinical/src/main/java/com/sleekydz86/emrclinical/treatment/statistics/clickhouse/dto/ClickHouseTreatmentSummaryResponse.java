@@ -7,7 +7,8 @@ import lombok.Getter;
 @Builder
 public class ClickHouseTreatmentSummaryResponse {
 
-    private Long patientCount;
+    private Long visitPatientCount;
+    private Long uniquePatientCount;
     private Long treatmentCount;
     private Long totalMedicalFee;
 }

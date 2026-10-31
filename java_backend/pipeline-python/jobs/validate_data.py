@@ -21,11 +21,17 @@ from common.logger import get_logger
 
 MYSQL_TREATMENT_SQL = """
 SELECT
-    CAST(COALESCE(SUM(treatment_count), 0) AS UNSIGNED) AS total_count,
-    CAST(COALESCE(SUM(patient_count), 0) AS UNSIGNED) AS patient_count,
-    CAST(COALESCE(SUM(total_medical_fee), 0) AS UNSIGNED) AS total_fee
-FROM analytics_treatment_daily
-WHERE metric_date = :target_date
+    CAST(COALESCE(SUM(v.treatment_count), 0) AS UNSIGNED) AS total_count,
+    CAST(COALESCE(SUM(v.patient_count), 0) AS UNSIGNED) AS visit_patient_count,
+    CAST(COALESCE((
+        SELECT COUNT(DISTINCT t.patient_no)
+        FROM treatments t
+        WHERE t.treatment_date IS NOT NULL
+          AND DATE(t.treatment_date) = :target_date
+    ), 0) AS UNSIGNED) AS unique_patient_count,
+    CAST(COALESCE(SUM(v.total_medical_fee), 0) AS UNSIGNED) AS total_fee
+FROM analytics_treatment_daily v
+WHERE v.metric_date = :target_date
 """
 
 MYSQL_PAYMENT_SQL = """
@@ -40,7 +46,8 @@ WHERE metric_date = :target_date
 CLICKHOUSE_TREATMENT_SQL = """
 SELECT
     sum(treatment_count) AS total_count,
-    sum(patient_count) AS patient_count,
+    sum(patient_count) AS visit_patient_count,
+    uniqExactMerge(unique_patient_state) AS unique_patient_count,
     sum(total_medical_fee) AS total_fee
 FROM analytics_treatment_daily
 WHERE metric_date = %(target_date)s
@@ -73,18 +80,24 @@ def main() -> None:
     engine = create_mysql_engine(settings)
     mysql_treatment = fetch_rows(engine, MYSQL_TREATMENT_SQL, {"target_date": args.target_date})
     mysql_payment = fetch_rows(engine, MYSQL_PAYMENT_SQL, {"target_date": args.target_date})
-    mysql_t = mysql_treatment[0] if mysql_treatment else {"total_count": 0, "patient_count": 0, "total_fee": 0}
+    mysql_t = mysql_treatment[0] if mysql_treatment else {
+        "total_count": 0,
+        "visit_patient_count": 0,
+        "unique_patient_count": 0,
+        "total_fee": 0,
+    }
     mysql_p = mysql_payment[0] if mysql_payment else {"payment_count": 0, "total_amount": 0, "unpaid_amount": 0}
 
     ch_client = create_clickhouse_client(settings)
     ch_t_result = ch_client.query(CLICKHOUSE_TREATMENT_SQL, parameters={"target_date": args.target_date})
     ch_p_result = ch_client.query(CLICKHOUSE_PAYMENT_SQL, parameters={"target_date": args.target_date})
-    ch_t_row = ch_t_result.first_row if ch_t_result.row_count > 0 else (0, 0, 0)
+    ch_t_row = ch_t_result.first_row if ch_t_result.row_count > 0 else (0, 0, 0, 0)
     ch_p_row = ch_p_result.first_row if ch_p_result.row_count > 0 else (0, 0, 0)
     ch_t = {
         "total_count": ch_t_row[0] or 0,
-        "patient_count": ch_t_row[1] or 0,
-        "total_fee": ch_t_row[2] or 0,
+        "visit_patient_count": ch_t_row[1] or 0,
+        "unique_patient_count": ch_t_row[2] or 0,
+        "total_fee": ch_t_row[3] or 0,
     }
     ch_p = {
         "payment_count": ch_p_row[0] or 0,
@@ -93,7 +106,7 @@ def main() -> None:
     }
 
     mismatches = []
-    for key in ("total_count", "patient_count", "total_fee"):
+    for key in ("total_count", "visit_patient_count", "unique_patient_count", "total_fee"):
         mysql_val = int(mysql_t[key] or 0)
         ch_val = int(ch_t[key] or 0)
         if mysql_val != ch_val:
@@ -109,10 +122,11 @@ def main() -> None:
         sys.exit(1)
 
     logger.info(
-        "정합성 검증 통과: %s (진료=%s, 환자합=%s, 진료비=%s, 결제=%s, 결제액=%s, 미수=%s)",
+        "정합성 검증 통과: %s (진료=%s, 연환자=%s, 실환자=%s, 진료비=%s, 결제=%s, 결제액=%s, 미수=%s)",
         args.target_date,
         mysql_t["total_count"],
-        mysql_t["patient_count"],
+        mysql_t["visit_patient_count"],
+        mysql_t["unique_patient_count"],
         mysql_t["total_fee"],
         mysql_p["payment_count"],
         mysql_p["total_amount"],
