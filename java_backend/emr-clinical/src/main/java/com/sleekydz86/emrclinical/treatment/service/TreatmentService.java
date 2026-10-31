@@ -89,7 +89,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
             throw new BusinessException("접수 환자와 요청 환자가 다릅니다.");
         }
 
-        UserEntity doctor = userService.getUserById(request.getDoctorId());
+        UserEntity doctor = resolveDoctor(request.getDoctorId());
 
         DepartmentEntity department = null;
         if (request.getDepartmentId() != null) {
@@ -305,15 +305,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
                 .findFirst()
                 .orElseThrow(() -> new BusinessException("진료과가 설정되지 않았습니다."));
 
-        UserEntity defaultDoctor = checkIn.getUserEntity();
-        if (defaultDoctor.getRole() != RoleType.DOCTOR) {
-
-            List<UserEntity> doctors = userService.getUsersByRole(
-                   RoleType.DOCTOR);
-            defaultDoctor = doctors.stream()
-                    .findFirst()
-                    .orElseThrow(() -> new BusinessException("진료 의사가 설정되지 않았습니다."));
-        }
+        UserEntity defaultDoctor = resolveDoctor(checkIn.getUserEntity().getId());
 
         TreatmentEntity treatment = TreatmentEntity.builder()
                 .checkInEntity(checkIn)
@@ -350,5 +342,15 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
             return treatmentRepository.findStoredPatientNo(treatment.getTreatmentId());
         }
         return null;
+    }
+
+    private UserEntity resolveDoctor(Long userId) {
+        UserEntity user = userService.getUserById(userId);
+        if (user.getRole() == RoleType.DOCTOR) {
+            return user;
+        }
+        return userService.getUsersByRole(RoleType.DOCTOR).stream()
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("진료 의사가 설정되지 않았습니다."));
     }
 }

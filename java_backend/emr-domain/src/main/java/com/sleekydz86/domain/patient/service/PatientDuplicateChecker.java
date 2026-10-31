@@ -1,5 +1,6 @@
 package com.sleekydz86.domain.patient.service;
 
+import com.sleekydz86.core.security.encryption.BlindIndexService;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,37 +15,51 @@ import java.util.List;
 public class PatientDuplicateChecker {
 
     private final PatientRepository patientRepository;
+    private final BlindIndexService blindIndexService;
 
     public List<PatientEntity> checkDuplicateByRrn(String patientRrn) {
-        return patientRepository.findByPatientRrn(patientRrn)
-                .map(List::of)
-                .orElse(List.of());
+        String rrnHmac = blindIndexService.hmacRrn(patientRrn);
+        if (rrnHmac == null) {
+            return List.of();
+        }
+        return patientRepository.findByRrnHmac(rrnHmac);
     }
 
     public List<PatientEntity> checkDuplicateByEmail(String email) {
-        return patientRepository.findByPatientEmail(email)
-                .map(List::of)
-                .orElse(List.of());
+        String emailHmac = blindIndexService.hmacEmail(email);
+        if (emailHmac == null) {
+            return List.of();
+        }
+        return patientRepository.findByEmailHmac(emailHmac);
     }
 
     public List<PatientEntity> checkDuplicateByTel(String tel) {
-        return patientRepository.findByPatientTel(tel)
-                .map(List::of)
-                .orElse(List.of());
+        String telHmac = blindIndexService.hmacPhone(tel);
+        if (telHmac == null) {
+            return List.of();
+        }
+        return patientRepository.findByTelHmac(telHmac);
     }
 
     public List<PatientEntity> checkDuplicate(String patientRrn, String email, String tel) {
-
-        if (patientRrn != null && patientRepository.existsByPatientRrn(patientRrn)) {
-            return checkDuplicateByRrn(patientRrn);
+        if (patientRrn != null) {
+            List<PatientEntity> byRrn = checkDuplicateByRrn(patientRrn);
+            if (!byRrn.isEmpty()) {
+                return byRrn;
+            }
         }
-        if (email != null && patientRepository.existsByPatientEmail(email)) {
-            return checkDuplicateByEmail(email);
+        if (email != null) {
+            List<PatientEntity> byEmail = checkDuplicateByEmail(email);
+            if (!byEmail.isEmpty()) {
+                return byEmail;
+            }
         }
-        if (tel != null && patientRepository.existsByPatientTel(tel)) {
-            return checkDuplicateByTel(tel);
+        if (tel != null) {
+            List<PatientEntity> byTel = checkDuplicateByTel(tel);
+            if (!byTel.isEmpty()) {
+                return byTel;
+            }
         }
         return List.of();
     }
 }
-

@@ -55,7 +55,7 @@ public class PaymentController {
     private final PaymentRepository paymentRepository;
 
     @PostMapping("/register")
-    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> registerPayment(
             @Valid @RequestBody PaymentRegisterRequest request,
             @AuthUser Long userId) {
@@ -161,7 +161,7 @@ public class PaymentController {
     }
 
     @PostMapping("/{paymentId}/complete")
-    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
+    @AuthRole({ "STAFF", "ADMIN" })
     public ResponseEntity<Map<String, Object>> completePayment(
             @PathVariable Long paymentId,
             @Valid @RequestBody PaymentCompleteRequest request) {

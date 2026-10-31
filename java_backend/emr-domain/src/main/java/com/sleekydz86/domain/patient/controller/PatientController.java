@@ -24,7 +24,7 @@ public class PatientController {
     private final PatientService patientService;
 
     @PostMapping("/register")
-    @AuthRole(roles = {"DOCTOR", "NURSE", "ADMIN"})
+    @AuthRole(roles = {"STAFF", "DOCTOR", "NURSE", "ADMIN"})
     public ResponseEntity<PatientDetailResponse> registerPatient(
             @Valid @RequestBody PatientRegisterRequest request) {
         PatientEntity patient = patientService.registerPatient(request);

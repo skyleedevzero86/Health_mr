@@ -25,17 +25,17 @@ public class PatientRepositoryImpl implements PatientRepositoryCustom {
     }
 
     @Override
-    public List<PatientEntity> searchPatients(String name, String tel, String email) {
+    public List<PatientEntity> searchPatients(String name, String telHmac, String emailHmac) {
         BooleanBuilder builder = new BooleanBuilder();
 
         if (StringUtils.hasText(name)) {
             builder.and(patient.patientName.containsIgnoreCase(name));
         }
-        if (StringUtils.hasText(tel)) {
-            builder.and(patient.patientTel.value.containsIgnoreCase(tel));
+        if (StringUtils.hasText(telHmac)) {
+            builder.and(patient.telHmac.eq(telHmac));
         }
-        if (StringUtils.hasText(email)) {
-            builder.and(patient.patientEmail.value.containsIgnoreCase(email));
+        if (StringUtils.hasText(emailHmac)) {
+            builder.and(patient.emailHmac.eq(emailHmac));
         }
 
         return queryFactory
@@ -45,17 +45,17 @@ public class PatientRepositoryImpl implements PatientRepositoryCustom {
     }
 
     @Override
-    public Page<PatientEntity> searchPatientsWithPaging(String name, String tel, String email, Pageable pageable) {
+    public Page<PatientEntity> searchPatientsWithPaging(String name, String telHmac, String emailHmac, Pageable pageable) {
         BooleanBuilder builder = new BooleanBuilder();
 
         if (StringUtils.hasText(name)) {
             builder.and(patient.patientName.containsIgnoreCase(name));
         }
-        if (StringUtils.hasText(tel)) {
-            builder.and(patient.patientTel.value.containsIgnoreCase(tel));
+        if (StringUtils.hasText(telHmac)) {
+            builder.and(patient.telHmac.eq(telHmac));
         }
-        if (StringUtils.hasText(email)) {
-            builder.and(patient.patientEmail.value.containsIgnoreCase(email));
+        if (StringUtils.hasText(emailHmac)) {
+            builder.and(patient.emailHmac.eq(emailHmac));
         }
 
         JPAQuery<PatientEntity> query = queryFactory

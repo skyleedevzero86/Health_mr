@@ -1,13 +1,17 @@
 package com.sleekydz86.emrclinical;
 
+import com.sleekydz86.core.common.exception.custom.DuplicateException;
+import com.sleekydz86.core.security.encryption.BlindIndexService;
 import com.sleekydz86.core.security.encryption.EncryptionService;
 import com.sleekydz86.domain.common.valueobject.Email;
 import com.sleekydz86.domain.common.valueobject.PatientNumber;
 import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.common.valueobject.ResidentRegistrationNumber;
+import com.sleekydz86.domain.patient.dto.PatientRegisterRequest;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.repository.PatientRepository;
 import com.sleekydz86.domain.patient.service.PatientDuplicateChecker;
+import com.sleekydz86.domain.patient.service.PatientService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,16 +34,23 @@ class PatientEncryptedLookupIntegrationTest {
 
     private static final AtomicLong SEQ = new AtomicLong(9100001);
     private static final String SHARED_RRN = "900101-1234567";
+    private static final String SHARED_RRN_DIGITS = "9001011234567";
     private static final String SHARED_TEL = "01033334444";
 
     @Autowired
     private EncryptionService encryptionService;
 
     @Autowired
+    private BlindIndexService blindIndexService;
+
+    @Autowired
     private PatientRepository patientRepository;
 
     @Autowired
     private PatientDuplicateChecker patientDuplicateChecker;
+
+    @Autowired
+    private PatientService patientService;
 
     @Autowired
     private EntityManager entityManager;
@@ -63,56 +74,43 @@ class PatientEncryptedLookupIntegrationTest {
     }
 
     @Test
-    @DisplayName("주민번호와 전화번호 평문 조회·중복 검사는 저장된 환자를 찾지 못한다")
-    void plaintextRrnAndTelLookupDoesNotFindSavedPatient() {
+    @DisplayName("같은 주민번호는 하이픈 유무와 관계없이 조회되고 중복 등록은 거절된다")
+    void sameRrnIsFoundRegardlessOfHyphenAndDuplicateRegisterIsRejected() {
         // given
         PatientEntity saved = savePatient("암호환자", SHARED_RRN, "p-enc-1@example.com", "010-3333-4444");
         entityManager.flush();
+        entityManager.clear();
 
         // when
-        boolean rrnExists = patientRepository.existsByPatientRrn(SHARED_RRN);
-        var byRrn = patientRepository.findByPatientRrn(SHARED_RRN);
-        var byTel = patientRepository.findByPatientTel(SHARED_TEL);
+        List<PatientEntity> byHyphen = patientRepository.findByRrnHmac(blindIndexService.hmacRrn(SHARED_RRN));
+        List<PatientEntity> byDigits = patientRepository.findByRrnHmac(blindIndexService.hmacRrn(SHARED_RRN_DIGITS));
+        List<PatientEntity> byTel = patientRepository.findByTelHmac(blindIndexService.hmacPhone(SHARED_TEL));
         List<PatientEntity> duplicates = patientDuplicateChecker.checkDuplicate(
-                SHARED_RRN, "p-enc-1@example.com", SHARED_TEL);
+                SHARED_RRN_DIGITS, "p-enc-1@example.com", SHARED_TEL);
+        Throwable thrown = catchThrowable(() -> patientService.registerPatient(
+                PatientRegisterRequest.of(
+                        "둘째환자",
+                        SHARED_RRN,
+                        "M",
+                        LocalDate.of(1990, 1, 1),
+                        "p-dup-2@example.com",
+                        "010-5555-6666",
+                        "N",
+                        null)));
 
         // then
         assertThat(saved.getPatientRrnValue()).isEqualTo(SHARED_RRN);
         assertThat(saved.getPatientTelValue()).isEqualTo(SHARED_TEL);
-        assertThat(rrnExists).isFalse();
-        assertThat(byRrn).isEmpty();
-        assertThat(byTel).isEmpty();
-        assertThat(duplicates).isEmpty();
-        assertThat(patientDuplicateChecker.checkDuplicateByRrn(SHARED_RRN)).isEmpty();
-        assertThat(patientDuplicateChecker.checkDuplicateByTel(SHARED_TEL)).isEmpty();
-    }
-
-    @Test
-    @DisplayName("같은 주민번호로 두 환자를 저장해도 unique 제약이 막지 못한다")
-    void uniqueConstraintDoesNotBlockDuplicateRrn() {
-        // given
-        PatientEntity first = savePatient("첫째환자", SHARED_RRN, "p-dup-1@example.com", "010-1111-2222");
-        entityManager.flush();
-        PatientEntity[] second = new PatientEntity[1];
-
-        // when
-        Throwable thrown = catchThrowable(() -> {
-            second[0] = savePatient("둘째환자", SHARED_RRN, "p-dup-2@example.com", "010-5555-6666");
-            entityManager.flush();
-        });
-        List<?> ciphertexts = second[0] == null
-                ? List.of()
-                : entityManager.createNativeQuery(
-                        "select patient_rrn from patient where patient_no in (:firstNo, :secondNo)")
-                .setParameter("firstNo", first.getPatientNoValue())
-                .setParameter("secondNo", second[0].getPatientNoValue())
-                .getResultList();
-
-        // then
-        assertThat(thrown).isNull();
-        assertThat(patientRepository.findByPatientRrn(SHARED_RRN)).isEmpty();
-        assertThat(ciphertexts).hasSizeGreaterThanOrEqualTo(2);
-        assertThat(String.valueOf(ciphertexts.get(0))).isNotEqualTo(String.valueOf(ciphertexts.get(1)));
+        assertThat(saved.getRrnHmac()).isEqualTo(blindIndexService.hmacRrn(SHARED_RRN_DIGITS));
+        assertThat(byHyphen).extracting(PatientEntity::getPatientNoValue).containsExactly(saved.getPatientNoValue());
+        assertThat(byDigits).extracting(PatientEntity::getPatientNoValue).containsExactly(saved.getPatientNoValue());
+        assertThat(byTel).extracting(PatientEntity::getPatientNoValue).containsExactly(saved.getPatientNoValue());
+        assertThat(duplicates).extracting(PatientEntity::getPatientNoValue).containsExactly(saved.getPatientNoValue());
+        assertThat(patientDuplicateChecker.checkDuplicateByRrn(SHARED_RRN_DIGITS))
+                .extracting(PatientEntity::getPatientNoValue)
+                .containsExactly(saved.getPatientNoValue());
+        assertThat(thrown).isInstanceOf(DuplicateException.class)
+                .hasMessageContaining("이미 등록된 주민등록번호입니다.");
     }
 
     private PatientEntity savePatient(String name, String rrn, String email, String tel) {

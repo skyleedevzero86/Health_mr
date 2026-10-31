@@ -320,7 +320,8 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
             if (cached instanceof PaymentResponse paymentResponse) {
                 return paymentResponse;
             }
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException exception) {
+            log.warn("수납 캐시 조회에 실패했습니다", exception);
         }
         return null;
     }
@@ -328,7 +329,8 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
     private void writeCachedPayment(String cacheKey, PaymentResponse response) {
         try {
             redisTemplate.opsForValue().set(cacheKey, response, CACHE_TTL_HOURS, TimeUnit.HOURS);
-        } catch (RuntimeException ignored) {
+        } catch (RuntimeException exception) {
+            log.warn("수납 캐시 저장에 실패했습니다", exception);
         }
     }
 

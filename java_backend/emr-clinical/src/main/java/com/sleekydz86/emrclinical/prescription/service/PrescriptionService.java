@@ -7,6 +7,7 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import com.sleekydz86.domain.patient.service.PatientService;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.service.UserService;
+import com.sleekydz86.domain.user.type.RoleType;
 import com.sleekydz86.emrclinical.prescription.api.dto.AdministrativeActionItemResponse;
 import com.sleekydz86.emrclinical.prescription.api.dto.AdministrativeActionResponse;
 import com.sleekydz86.emrclinical.prescription.api.dto.DrugInfoItemResponse;
@@ -106,7 +107,7 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
         if (!treatmentPatientNo.equals(patient.getPatientNoValue())) {
             throw new BusinessException("처방 환자는 진료 환자와 같아야 합니다.");
         }
-        UserEntity doctor = userService.getUserById(request.getPrescriptionDocId());
+        UserEntity doctor = resolveDoctor(request.getPrescriptionDocId());
 
         PrescriptionEntity prescription = PrescriptionEntity.builder()
                 .treatmentEntity(treatment)
@@ -289,5 +290,15 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
         PrescriptionEntity prescription = getPrescriptionById(prescriptionId);
         prescription.cancel(cancelReason);
         prescriptionRepository.save(prescription);
+    }
+
+    private UserEntity resolveDoctor(Long userId) {
+        UserEntity user = userService.getUserById(userId);
+        if (user.getRole() == RoleType.DOCTOR) {
+            return user;
+        }
+        return userService.getUsersByRole(RoleType.DOCTOR).stream()
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("진료 의사가 설정되지 않았습니다."));
     }
 }

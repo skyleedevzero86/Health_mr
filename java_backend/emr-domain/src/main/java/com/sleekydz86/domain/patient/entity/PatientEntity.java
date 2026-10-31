@@ -15,6 +15,11 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity(name = "Patient")
+@EntityListeners(PatientBlindIndexListener.class)
+@Table(indexes = {
+        @Index(name = "idx_patient_tel_hmac", columnList = "tel_hmac"),
+        @Index(name = "idx_patient_email_hmac", columnList = "email_hmac")
+})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PatientEntity extends BaseEntity {
@@ -30,7 +35,7 @@ public class PatientEntity extends BaseEntity {
     private String patientName;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "patient_rrn", nullable = false, unique = true, length = 500))
+    @AttributeOverride(name = "value", column = @Column(name = "patient_rrn", nullable = false, length = 500))
     private ResidentRegistrationNumber patientRrn;
 
     @Column(name = "patient_gender", nullable = false)
@@ -46,19 +51,31 @@ public class PatientEntity extends BaseEntity {
     private String patientAddress;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "patient_email", nullable = false, unique = true, length = 500))
+    @AttributeOverride(name = "value", column = @Column(name = "patient_email", nullable = false, length = 500))
     private Email patientEmail;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "patient_tel", nullable = false, unique = true, length = 500))
+    @AttributeOverride(name = "value", column = @Column(name = "patient_tel", nullable = false, length = 500))
     private PhoneNumber patientTel;
 
     @Column(name = "patient_foreign", nullable = false, length = 1)
     private Boolean isForeign;
 
-    @Column(name = "patient_passport", unique = true, length = 50)
+    @Column(name = "patient_passport", length = 50)
     @Size(max = 50)
     private String patientPassport;
+
+    @Column(name = "rrn_hmac", length = 64)
+    private String rrnHmac;
+
+    @Column(name = "tel_hmac", length = 64)
+    private String telHmac;
+
+    @Column(name = "email_hmac", length = 64)
+    private String emailHmac;
+
+    @Column(name = "passport_hmac", length = 64)
+    private String passportHmac;
 
     @Column(name = "patient_hypass_YN", length = 1)
     private Boolean hasHypass;
@@ -102,6 +119,13 @@ public class PatientEntity extends BaseEntity {
 
     public void updateLastVisit() {
         this.patientLastVisit = LocalDate.now();
+    }
+
+    public void applyBlindIndexes(String rrnHmac, String telHmac, String emailHmac, String passportHmac) {
+        this.rrnHmac = rrnHmac;
+        this.telHmac = telHmac;
+        this.emailHmac = emailHmac;
+        this.passportHmac = passportHmac;
     }
 
     public void updateInfo(String name, String address, Email email, PhoneNumber tel) {
