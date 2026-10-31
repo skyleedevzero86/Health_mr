@@ -10,10 +10,10 @@ import lombok.NoArgsConstructor;
 
 @Entity(name = "DisabilityCareInstitution")
 @Table(name = "disability_care_institution", indexes = {
-        @Index(name = "idx_service_type", columnList = "service_type"),
-        @Index(name = "idx_sido", columnList = "sido"),
-        @Index(name = "idx_institution_type", columnList = "institution_type"),
-        @Index(name = "idx_is_active", columnList = "is_active")
+        @Index(name = "idx_disability_service_type", columnList = "service_type"),
+        @Index(name = "idx_disability_sido", columnList = "sido"),
+        @Index(name = "idx_disability_institution_type", columnList = "institution_type"),
+        @Index(name = "idx_disability_is_active", columnList = "is_active")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

@@ -9,11 +9,12 @@ application {
     mainClass.set("com.sleekydz86.emrclinical.EmrClinicalApplication")
 }
 
-tasks.named("bootJar") {
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     enabled = true
+    archiveClassifier.set("boot")
 }
 
-tasks.named("jar") {
+tasks.named<Jar>("jar") {
     enabled = true
 }
 
@@ -22,4 +23,5 @@ dependencies {
     implementation(project(":emr-domain"))
     implementation("org.modelmapper:modelmapper:3.1.1")
     implementation("com.clickhouse:clickhouse-jdbc:0.8.6")
+    testRuntimeOnly("com.h2database:h2")
 }

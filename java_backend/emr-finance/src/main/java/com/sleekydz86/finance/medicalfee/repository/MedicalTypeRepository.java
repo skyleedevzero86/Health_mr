@@ -30,7 +30,7 @@ public interface MedicalTypeRepository extends BaseRepository<MedicalTypeEntity,
 
     List<MedicalTypeEntity> findAllByOrderByMedicalTypeNameAsc();
 
-    @Query("SELECT mt FROM MedicalTypeEntity mt " +
+    @Query("SELECT mt FROM medical_type mt " +
             "WHERE mt.isActive = true AND " +
             "(mt.medicalTypeName LIKE %:keyword% OR mt.medicalTypeCode LIKE %:keyword%)")
     List<MedicalTypeEntity> searchMedicalTypes(@Param("keyword") String keyword);

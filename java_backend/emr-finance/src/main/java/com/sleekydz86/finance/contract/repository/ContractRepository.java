@@ -30,7 +30,7 @@ public interface ContractRepository extends BaseRepository<ContractEntity, Long>
 
     List<ContractEntity> findAllByOrderByContractNameAsc();
 
-    @Query("SELECT c FROM ContractEntity c " +
+    @Query("SELECT c FROM Contract c " +
             "WHERE c.contractStatus = :status AND " +
             "(c.contractName LIKE %:keyword% OR c.contractRelationship LIKE %:keyword%)")
     List<ContractEntity> searchContracts(@Param("keyword") String keyword,

@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -84,11 +85,11 @@ public class AIReportService {
         Set<Long> patientNos = treatments.stream()
                 .filter(treatment -> treatment.getCheckInEntity() != null)
                 .map(treatment -> treatment.getCheckInEntity().getPatientEntity().getPatientNoValue())
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
         Set<String> doctorNames = treatments.stream()
                 .filter(treatment -> treatment.getTreatmentDoc() != null)
                 .map(treatment -> treatment.getTreatmentDoc().getName())
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
 
         Map<String, Integer> doctorCounts = countBy(
                 treatments.stream()

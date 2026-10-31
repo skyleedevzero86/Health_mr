@@ -12,10 +12,10 @@ import java.time.LocalDate;
 
 @Entity(name = "InpatientStatistics")
 @Table(name = "inpatient_statistics", indexes = {
-    @Index(name = "idx_statistics_year", columnList = "statistics_year"),
-    @Index(name = "idx_institution_type", columnList = "institution_type"),
-    @Index(name = "idx_region_code", columnList = "region_code"),
-    @Index(name = "idx_year_region", columnList = "statistics_year, region_code")
+    @Index(name = "idx_inpatient_statistics_year", columnList = "statistics_year"),
+    @Index(name = "idx_inpatient_institution_type", columnList = "institution_type"),
+    @Index(name = "idx_inpatient_region_code", columnList = "region_code"),
+    @Index(name = "idx_inpatient_year_region", columnList = "statistics_year, region_code")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

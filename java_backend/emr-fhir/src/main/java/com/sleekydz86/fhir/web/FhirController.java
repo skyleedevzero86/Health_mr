@@ -3,6 +3,7 @@ package com.sleekydz86.fhir.web;
 import ca.uhn.fhir.context.FhirContext;
 import com.sleekydz86.fhir.service.FhirReadService;
 import org.hl7.fhir.instance.model.api.IBaseResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,7 +62,7 @@ public class FhirController {
     public ResponseEntity<String> medicationRequests(@RequestParam String subject) { return response(service.medicationRequests(subject)); }
 
     private ResponseEntity<String> response(IBaseResource resource) {
-        return ResponseEntity.ok().contentType(org.springframework.http.MediaType.parseMediaType(FHIR_JSON))
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(FHIR_JSON))
                 .body(context.newJsonParser().encodeResourceToString(resource));
     }
 }

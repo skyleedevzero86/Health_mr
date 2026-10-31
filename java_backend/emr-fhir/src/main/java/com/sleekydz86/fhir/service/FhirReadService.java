@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 @Service
@@ -34,11 +35,11 @@ public class FhirReadService {
     private final MedicationRequestFhirMapper medicationMapper;
 
     public FhirReadService(PatientRepository patients, UserRepository users, TreatmentRepository treatments,
-                           ExaminationResultRepository observations, DiagnosisCertificateRepository conditions,
-                           PrescriptionItemRepository medicationRequests, PatientFhirMapper patientMapper,
-                           PractitionerFhirMapper practitionerMapper, EncounterFhirMapper encounterMapper,
-                           ObservationFhirMapper observationMapper, ConditionFhirMapper conditionMapper,
-                           MedicationRequestFhirMapper medicationMapper) {
+            ExaminationResultRepository observations, DiagnosisCertificateRepository conditions,
+            PrescriptionItemRepository medicationRequests, PatientFhirMapper patientMapper,
+            PractitionerFhirMapper practitionerMapper, EncounterFhirMapper encounterMapper,
+            ObservationFhirMapper observationMapper, ConditionFhirMapper conditionMapper,
+            MedicationRequestFhirMapper medicationMapper) {
         this.patients = patients;
         this.users = users;
         this.treatments = treatments;
@@ -54,27 +55,33 @@ public class FhirReadService {
     }
 
     public Patient patient(Long id) {
-        return patientMapper.toFhir(patients.findByPatientNo(id).orElseThrow(() -> new FhirResourceNotFoundException("Patient", id)));
+        return patientMapper.toFhir(
+                patients.findByPatientNo(id).orElseThrow(() -> new FhirResourceNotFoundException("Patient", id)));
     }
 
     public Practitioner practitioner(Long id) {
-        return practitionerMapper.toFhir(users.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Practitioner", id)));
+        return practitionerMapper
+                .toFhir(users.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Practitioner", id)));
     }
 
     public Encounter encounter(Long id) {
-        return encounterMapper.toFhir(treatments.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Encounter", id)));
+        return encounterMapper
+                .toFhir(treatments.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Encounter", id)));
     }
 
     public Observation observation(Long id) {
-        return observationMapper.toFhir(observations.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Observation", id)));
+        return observationMapper.toFhir(
+                observations.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Observation", id)));
     }
 
     public Condition condition(Long id) {
-        return conditionMapper.toFhir(conditions.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Condition", id)));
+        return conditionMapper
+                .toFhir(conditions.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("Condition", id)));
     }
 
     public MedicationRequest medicationRequest(Long id) {
-        return medicationMapper.toFhir(medicationRequests.findById(id).orElseThrow(() -> new FhirResourceNotFoundException("MedicationRequest", id)));
+        return medicationMapper.toFhir(medicationRequests.findById(id)
+                .orElseThrow(() -> new FhirResourceNotFoundException("MedicationRequest", id)));
     }
 
     public Bundle patients(String name) {
@@ -87,8 +94,8 @@ public class FhirReadService {
     public Bundle practitioners(String name) {
         var sources = users.findByRoleIn(List.of(RoleType.DOCTOR, RoleType.NURSE)).stream()
                 .filter(user -> name == null || name.isBlank()
-                        || user.getName().toLowerCase(java.util.Locale.ROOT)
-                        .contains(name.toLowerCase(java.util.Locale.ROOT)))
+                        || user.getName().toLowerCase(Locale.ROOT)
+                                .contains(name.toLowerCase(Locale.ROOT)))
                 .toList();
         return bundle("Practitioner", sources, practitionerMapper::toFhir);
     }
@@ -114,18 +121,21 @@ public class FhirReadService {
 
     public Bundle medicationRequests(String subject) {
         Long patientNo = patientNo(subject);
-        return bundle("MedicationRequest", medicationRequests.findByPrescriptionEntity_PatientEntity_PatientNo(patientNo), medicationMapper::toFhir);
+        return bundle("MedicationRequest",
+                medicationRequests.findByPrescriptionEntity_PatientEntity_PatientNo(patientNo),
+                medicationMapper::toFhir);
     }
 
     private Long patientNo(String subject) {
         if (subject == null || !subject.matches("Patient/\\d+")) {
-            throw new InvalidFhirSearchException("subject must use the form Patient/{id}");
+            throw new InvalidFhirSearchException("조회 조건은 Patient/{id} 형식이어야 합니다.");
         }
         return Long.valueOf(subject.substring("Patient/".length()));
     }
 
     private boolean matchesCode(CodeableConcept concept, String requested) {
-        if (requested == null || requested.isBlank()) return true;
+        if (requested == null || requested.isBlank())
+            return true;
         String code = requested.contains("|") ? requested.substring(requested.lastIndexOf('|') + 1) : requested;
         return concept.getCoding().stream().anyMatch(coding -> code.equals(coding.getCode()));
     }
@@ -136,7 +146,8 @@ public class FhirReadService {
 
     private Bundle bundleResources(String type, List<? extends Resource> resources) {
         Bundle bundle = new Bundle().setType(Bundle.BundleType.SEARCHSET).setTotal(resources.size());
-        resources.forEach(resource -> bundle.addEntry().setFullUrl(type + "/" + resource.getIdElement().getIdPart()).setResource(resource));
+        resources.forEach(resource -> bundle.addEntry().setFullUrl(type + "/" + resource.getIdElement().getIdPart())
+                .setResource(resource));
         return bundle;
     }
 }

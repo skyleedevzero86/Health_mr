@@ -1,5 +1,6 @@
 package com.sleekydz86.domain.auth.service;
 
+import com.sleekydz86.core.common.exception.custom.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,7 +27,7 @@ public class AccountLockService {
         String lockKey = LOCKED_ACCOUNT_PREFIX + loginId;
 
         if (Boolean.TRUE.equals(redisTemplate.hasKey(lockKey))) {
-            throw new com.sleekydz86.core.common.exception.custom.UnauthorizedException(
+            throw new UnauthorizedException(
                     "계정이 잠겼습니다. 잠시 후 다시 시도해주세요.");
         }
     }

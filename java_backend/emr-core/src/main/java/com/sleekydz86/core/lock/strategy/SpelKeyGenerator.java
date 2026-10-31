@@ -35,7 +35,7 @@ public class SpelKeyGenerator implements LockKeyGenerator {
 
             return value != null ? value.toString() : expression;
         } catch (Exception e) {
-            log.error("SpEL 표현식 파싱 실패: expression={}", expression, e);
+            log.error("키 표현식 해석에 실패했습니다: 표현식={}", expression, e);
             return expression;
         }
     }

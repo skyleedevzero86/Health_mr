@@ -27,7 +27,7 @@ public interface PaymentRepository extends BaseRepository<PaymentEntity, Long> {
 
     List<PaymentEntity> findByPaymentDateBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT p FROM Payment p WHERE DATE(p.paymentDate) = :date")
+    @Query("SELECT p FROM Payment p WHERE CAST(p.paymentDate AS localdate) = :date")
     List<PaymentEntity> findByPaymentDate(@Param("date") LocalDate date);
 
     Optional<PaymentEntity> findByTreatmentEntity_TreatmentIdAndPaymentStatus(Long treatmentId, PaymentStatus status);
@@ -42,15 +42,15 @@ public interface PaymentRepository extends BaseRepository<PaymentEntity, Long> {
 
     List<PaymentEntity> findAllByOrderByPaymentDateDesc();
 
-    @Query("SELECT p FROM Payment p WHERE DATE(p.paymentDate) = CURRENT_DATE")
+    @Query("SELECT p FROM Payment p WHERE CAST(p.paymentDate AS localdate) = CURRENT_DATE")
     List<PaymentEntity> findTodayPayments();
 
-    @Query("SELECT COUNT(p), SUM(p.paymentTotalAmount), SUM(p.paymentCurrentMoney) " +
+    @Query("SELECT COUNT(p), SUM(p.paymentTotalAmount.value), SUM(p.paymentCurrentMoney.value) " +
             "FROM Payment p WHERE p.paymentDate BETWEEN :start AND :end")
     Object[] getPaymentStatisticsByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 
-    @Query("SELECT SUM(p.paymentRemainMoney) FROM Payment p " +
-            "WHERE p.patientEntity.patientNo = :patientNo AND p.paymentStatus IN :statuses")
+    @Query("SELECT SUM(p.paymentRemainMoney.value) FROM Payment p " +
+            "WHERE p.patientEntity.patientNo.value = :patientNo AND p.paymentStatus IN :statuses")
     Long getUnpaidAmountByPatientNo(@Param("patientNo") Long patientNo,
                                     @Param("statuses") List<PaymentStatus> statuses);
 

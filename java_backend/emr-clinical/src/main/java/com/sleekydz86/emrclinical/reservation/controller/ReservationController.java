@@ -184,11 +184,11 @@ public class ReservationController {
 
         List<ReservationEntity> reservations;
         if (patientNo != null) {
-            reservations = reservationService.getReservationsByPatientNo(patientNo, org.springframework.data.domain.Pageable.unpaged()).getContent();
+            reservations = reservationService.getReservationsByPatientNo(patientNo, Pageable.unpaged()).getContent();
         } else if (startDate != null && endDate != null) {
             reservations = reservationService.getReservationsByDateRange(startDate, endDate);
         } else {
-            reservations = reservationService.getAllReservations(org.springframework.data.domain.Pageable.unpaged()).getContent();
+            reservations = reservationService.getAllReservations(Pageable.unpaged()).getContent();
         }
 
         List<String> headers = List.of("예약 ID", "환자 번호", "환자 이름", "예약 일시", "예약 상태", "담당 직원");

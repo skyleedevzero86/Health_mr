@@ -26,13 +26,13 @@ public interface MedicalFeeRepository extends BaseRepository<MedicalFeeEntity, L
 
     List<MedicalFeeEntity> findAllByOrderByCreatedDateDesc();
 
-    @Query("SELECT COALESCE(SUM(mf.medicalFeeAmount * mf.quantity), 0) " +
-            "FROM MedicalFeeEntity mf WHERE mf.treatmentEntity.treatmentId = :treatmentId")
+    @Query("SELECT COALESCE(SUM(mf.medicalFeeAmount.value * mf.quantity), 0) " +
+            "FROM medical_fee mf WHERE mf.treatmentEntity.treatmentId = :treatmentId")
     Long getTotalMedicalFeeByTreatmentId(@Param("treatmentId") Long treatmentId);
 
     @Query("SELECT mf.medicalTypeEntity.medicalTypeId, mf.medicalTypeEntity.medicalTypeName, " +
-            "COUNT(mf), SUM(mf.medicalFeeAmount * mf.quantity) " +
-            "FROM MedicalFeeEntity mf GROUP BY mf.medicalTypeEntity.medicalTypeId, mf.medicalTypeEntity.medicalTypeName")
+            "COUNT(mf), SUM(mf.medicalFeeAmount.value * mf.quantity) " +
+            "FROM medical_fee mf GROUP BY mf.medicalTypeEntity.medicalTypeId, mf.medicalTypeEntity.medicalTypeName")
     List<Object[]> getMedicalFeeStatisticsByType();
 }
 

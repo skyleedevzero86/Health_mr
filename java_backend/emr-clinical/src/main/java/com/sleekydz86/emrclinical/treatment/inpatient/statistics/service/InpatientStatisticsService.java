@@ -1,5 +1,6 @@
 package com.sleekydz86.emrclinical.treatment.inpatient.statistics.service;
 
+import com.sleekydz86.emrclinical.prescription.entity.PrescriptionEntity;
 import com.sleekydz86.emrclinical.prescription.repository.PrescriptionRepository;
 import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.*;
@@ -174,7 +175,7 @@ public class InpatientStatisticsService {
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.atTime(LocalTime.MAX);
 
-        List<com.sleekydz86.emrclinical.prescription.entity.PrescriptionEntity> prescriptions =
+        List<PrescriptionEntity> prescriptions =
                 prescriptionRepository.findByPrescriptionDateBetween(start, end);
 
         long prescriptionCount = prescriptions.size();

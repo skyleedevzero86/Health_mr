@@ -279,7 +279,7 @@ public class NonCoveredMedicalFeeApiClient {
         try {
             return URLEncoder.encode(key, StandardCharsets.UTF_8.toString());
         } catch (Exception e) {
-            log.error("ServiceKey 인코딩 실패", e);
+            log.error("서비스키 인코딩에 실패했습니다", e);
             return key;
         }
     }

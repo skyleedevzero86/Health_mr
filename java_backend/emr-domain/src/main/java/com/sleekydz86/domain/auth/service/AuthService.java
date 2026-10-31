@@ -3,6 +3,11 @@ package com.sleekydz86.domain.auth.service;
 import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.common.exception.custom.UnauthorizedException;
+import com.sleekydz86.core.event.domain.PasswordResetCompletedEvent;
+import com.sleekydz86.core.event.domain.PasswordResetRequestedEvent;
+import com.sleekydz86.core.event.domain.UserLoggedInEvent;
+import com.sleekydz86.core.event.domain.UserLoggedOutEvent;
+import com.sleekydz86.core.event.domain.UserRegisteredEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.core.security.jwt.JwtUtil;
 import com.sleekydz86.core.security.jwt.TokenPair;
@@ -24,6 +29,7 @@ import com.sleekydz86.domain.user.entity.UserInstitution;
 import com.sleekydz86.domain.user.repository.EmploymentHistoryRepository;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
+import com.sleekydz86.domain.user.type.RoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -74,7 +80,7 @@ public class AuthService {
         PhoneNumber telNum = request.getTelNum() != null ? PhoneNumber.of(request.getTelNum()) : null;
 
         UserEntity user = UserEntity.builder()
-                .role(com.sleekydz86.domain.user.type.RoleType.WAIT)
+                .role(RoleType.WAIT)
                 .accountStatus(AccountStatus.WAITING_APPROVAL)
                 .employeeNo(employeeNo)
                 .loginId(loginId)
@@ -107,7 +113,7 @@ public class AuthService {
             employmentHistoryRepository.save(initialHistory);
         }
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserRegisteredEvent(
+        eventPublisher.publish(new UserRegisteredEvent(
                 savedUser.getId(),
                 savedUser.getLoginIdValue(),
                 savedUser.getRole().name()));
@@ -160,7 +166,7 @@ public class AuthService {
 
         refreshTokenService.saveRefreshToken(user.getId(), tokenResponse.refreshToken());
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserLoggedInEvent(
+        eventPublisher.publish(new UserLoggedInEvent(
                 user.getId(),
                 user.getLoginIdValue()));
 
@@ -176,7 +182,7 @@ public class AuthService {
 
         tokenBlacklistService.blacklistToken(token);
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserLoggedOutEvent(userId));
+        eventPublisher.publish(new UserLoggedOutEvent(userId));
     }
 
     @Transactional
@@ -207,7 +213,7 @@ public class AuthService {
 
         emailVerificationService.sendVerificationCode(email);
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.PasswordResetRequestedEvent(
+        eventPublisher.publish(new PasswordResetRequestedEvent(
                 user.getId(),
                 user.getEmailValue()));
     }
@@ -225,7 +231,7 @@ public class AuthService {
         user.changePassword(newPassword, passwordEncoder);
         userRepository.save(user);
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.PasswordResetCompletedEvent(
+        eventPublisher.publish(new PasswordResetCompletedEvent(
                 user.getId(),
                 user.getEmailValue()));
     }

@@ -82,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         }
                     }
 
-                    log.debug("Security Context에 인증 정보를 저장 성공. 인증된 사용자: {}, 권한: {}, 기본기관코드: {}, 소속기관코드: {}, 관리자: {}",
+                    log.debug("보안 컨텍스트에 인증 정보를 저장했습니다. 인증된 사용자: {}, 권한: {}, 기본기관코드: {}, 소속기관코드: {}, 관리자: {}",
                             authentication.getPrincipal(), authentication.getAuthorities(),
                             primaryInttCd, TenantContext.getTenantIds(), isAdmin);
                 } else {

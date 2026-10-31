@@ -9,12 +9,13 @@ application {
     mainClass.set("com.sleekydz86.finance.EmrFinanceApplication")
 }
 
-tasks.named("bootJar") {
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     enabled = true
+    archiveClassifier.set("boot")
 }
 
-tasks.named("jar") {
-    enabled = false
+tasks.named<Jar>("jar") {
+    enabled = true
 }
 
 dependencies {
@@ -24,4 +25,5 @@ dependencies {
     implementation("org.modelmapper:modelmapper:3.1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
     implementation("com.clickhouse:clickhouse-jdbc:0.8.6")
+    testRuntimeOnly("com.h2database:h2")
 }

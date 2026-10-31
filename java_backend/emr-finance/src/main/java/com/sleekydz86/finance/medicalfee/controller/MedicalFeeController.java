@@ -191,7 +191,7 @@ public class MedicalFeeController {
             data.add(row);
         }
 
-        String filename = "진료비목록_" + java.time.LocalDate.now() + ".xlsx";
+        String filename = "진료비목록_" + LocalDate.now() + ".xlsx";
 
         excelExportService.exportToExcel(headers, data, filename, response);
     }

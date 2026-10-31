@@ -12,6 +12,7 @@ import com.sleekydz86.domain.user.repository.EmploymentHistoryRepository;
 import com.sleekydz86.domain.user.repository.UserInstitutionRepository;
 import com.sleekydz86.domain.user.repository.UserRepository;
 import com.sleekydz86.domain.user.type.AccountStatus;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,7 +42,9 @@ class AuthServiceAccountStatusTest {
     @InjectMocks AuthService authService;
 
     @Test
+    @DisplayName("승인 대기 계정은 로그인할 수 없다")
     void waitingApprovalAccountCannotLogin() {
+        // given
         LoginRequest request = mock(LoginRequest.class);
         UserEntity user = mock(UserEntity.class);
         when(request.getLoginId()).thenReturn("waiting-user");
@@ -51,10 +54,11 @@ class AuthServiceAccountStatusTest {
         when(user.canLogin()).thenReturn(false);
         when(user.getAccountStatus()).thenReturn(AccountStatus.WAITING_APPROVAL);
 
+        // when
+        // then
         assertThatThrownBy(() -> authService.login(request))
                 .isInstanceOf(UnauthorizedException.class)
                 .hasMessageContaining("승인 대기");
-
         verify(jwtUtil, never()).generateTokens(any(), any());
     }
 }

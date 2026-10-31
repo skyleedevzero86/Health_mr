@@ -3,6 +3,7 @@ package com.sleekydz86.support.board.factory;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.support.board.entity.BoardEntity;
+import com.sleekydz86.support.board.strategy.BoardPermissionStrategy;
 import com.sleekydz86.support.board.type.BoardType;
 import com.sleekydz86.support.board.type.NoticeType;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BoardFactory {
 
-    private final List<com.sleekydz86.support.board.strategy.BoardPermissionStrategy> permissionStrategies;
+    private final List<BoardPermissionStrategy> permissionStrategies;
 
     public BoardEntity create(
             UserEntity author,
@@ -23,7 +24,7 @@ public class BoardFactory {
             String title,
             String content
     ) {
-        com.sleekydz86.support.board.strategy.BoardPermissionStrategy strategy = findStrategy(boardType);
+        BoardPermissionStrategy strategy = findStrategy(boardType);
         
         Long departmentId = department != null ? department.getId() : null;
         if (!strategy.canCreate(author, departmentId)) {
@@ -40,7 +41,7 @@ public class BoardFactory {
                 .build();
     }
 
-    private com.sleekydz86.support.board.strategy.BoardPermissionStrategy findStrategy(BoardType boardType) {
+    private BoardPermissionStrategy findStrategy(BoardType boardType) {
         return permissionStrategies.stream()
                 .filter(strategy -> strategy.supports(boardType))
                 .findFirst()

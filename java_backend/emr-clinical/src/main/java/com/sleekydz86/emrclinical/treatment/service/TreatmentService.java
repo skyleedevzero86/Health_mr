@@ -155,7 +155,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
     public Page<TreatmentEntity> getTreatmentsByPatientNo(Long patientNo, Pageable pageable) {
 
         patientService.getPatientByNo(patientNo);
-        return treatmentRepository.findByPatientNo(patientNo, pageable);
+        return treatmentRepository.findByPatientEntity_PatientNo(patientNo, pageable);
     }
 
     public Page<TreatmentEntity> getTreatmentsByDoctor(Long doctorId, Pageable pageable) {

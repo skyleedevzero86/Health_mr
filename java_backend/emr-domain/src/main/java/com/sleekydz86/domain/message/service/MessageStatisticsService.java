@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -78,7 +80,7 @@ public class MessageStatisticsService {
                 .filter(msg -> !msg.isDeleted())
                 .collect(Collectors.toList());
 
-        List<MessageEntity> allMessages = new java.util.ArrayList<>(sentMessages);
+        List<MessageEntity> allMessages = new ArrayList<>(sentMessages);
         allMessages.addAll(receivedMessages);
 
         return buildStatisticsResponse(allMessages, null,
@@ -123,7 +125,7 @@ public class MessageStatisticsService {
         long totalUnread = totalMessages - totalRead;
 
         long uniqueUsers = messages.stream()
-                .flatMap(msg -> java.util.stream.Stream.of(msg.getSender().getId(), msg.getReceiver().getId()))
+                .flatMap(msg -> Stream.of(msg.getSender().getId(), msg.getReceiver().getId()))
                 .distinct()
                 .count();
         long avgMessagesPerUser = uniqueUsers > 0 ? totalMessages / uniqueUsers : 0;

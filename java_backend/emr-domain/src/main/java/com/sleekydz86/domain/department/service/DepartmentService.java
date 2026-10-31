@@ -1,6 +1,8 @@
 package com.sleekydz86.domain.department.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
+import com.sleekydz86.core.event.domain.DepartmentCreatedEvent;
+import com.sleekydz86.core.event.domain.DepartmentUpdatedEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.department.dto.DepartmentCreateRequest;
@@ -58,7 +60,7 @@ public class DepartmentService implements BaseService<DepartmentEntity, Long> {
         DepartmentEntity savedDepartment = departmentRepository.save(department);
 
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.DepartmentCreatedEvent(
+        eventPublisher.publish(new DepartmentCreatedEvent(
                 savedDepartment.getId(),
                 savedDepartment.getCode(),
                 savedDepartment.getName()
@@ -84,7 +86,7 @@ public class DepartmentService implements BaseService<DepartmentEntity, Long> {
         DepartmentEntity updatedDepartment = departmentRepository.save(department);
 
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.DepartmentUpdatedEvent(
+        eventPublisher.publish(new DepartmentUpdatedEvent(
                 updatedDepartment.getId(),
                 updatedDepartment.getCode(),
                 updatedDepartment.getName()

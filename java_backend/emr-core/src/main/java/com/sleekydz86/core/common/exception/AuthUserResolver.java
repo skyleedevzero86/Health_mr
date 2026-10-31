@@ -1,6 +1,7 @@
 package com.sleekydz86.core.common.exception;
 
 import com.sleekydz86.core.common.annotation.AuthUser;
+import com.sleekydz86.core.security.jwt.CustomAuthenticationException;
 import com.sleekydz86.core.security.jwt.JwtUtil;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class AuthUserResolver implements HandlerMethodArgumentResolver {
         String token = jwtUtil.resolveToken(header);
 
         if (token == null) {
-            throw new com.sleekydz86.core.security.jwt.CustomAuthenticationException("JWT 토큰이 없습니다.");
+            throw new CustomAuthenticationException("JWT 토큰이 없습니다.");
         }
 
         Long userId = jwtUtil.getUserIdFromToken(token);

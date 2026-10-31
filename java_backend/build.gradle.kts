@@ -30,26 +30,21 @@ subprojects {
     }
 
     dependencies {
-        // Spring 기본
         implementation("org.springframework.boot:spring-boot-starter-web")
         implementation("org.springframework.boot:spring-boot-starter-webflux")
 
-        // Lombok
         compileOnly("org.projectlombok:lombok")
         annotationProcessor("org.projectlombok:lombok")
         annotationProcessor("com.querydsl:querydsl-apt:5.1.0:jakarta")
         annotationProcessor("jakarta.annotation:jakarta.annotation-api")
         annotationProcessor("jakarta.persistence:jakarta.persistence-api")
 
-        // 테스트
         testImplementation("org.springframework.boot:spring-boot-starter-test")
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-        // Mockito
         testImplementation("org.mockito:mockito-core:5.11.0")
         testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
 
-        // RestAssured
         testImplementation("io.rest-assured:rest-assured:5.5.0")
     }
 }

@@ -42,7 +42,7 @@ public class DrugInfoService {
                 List<DrugInfoItemResponse> cached = (List<DrugInfoItemResponse>) redisTemplate.opsForValue()
                         .get(cacheKey);
                 if (cached != null) {
-                    log.debug("Drug Info 캐시 히트: key={}", cacheKey);
+                    log.debug("의약품 정보 캐시 적중: 키={}", cacheKey);
                     return cached;
                 }
             }
@@ -50,7 +50,7 @@ public class DrugInfoService {
             DrugInfoApiResponse apiResponse = apiClient.searchDrugInfo(request).block();
 
             if (apiResponse == null || apiResponse.getResponse() == null) {
-                log.warn("Drug Info API 응답이 null입니다.");
+                log.warn("의약품 정보 API 응답이 없습니다.");
                 return Collections.emptyList();
             }
 
@@ -58,7 +58,7 @@ public class DrugInfoService {
                 String errorMsg = apiResponse.getResponse().getHeader() != null
                         ? apiResponse.getResponse().getHeader().getResultMsg()
                         : "알 수 없는 오류";
-                log.error("Drug Info API 오류: {}", errorMsg);
+                log.error("의약품 정보 API 오류: {}", errorMsg);
                 throw new DrugInfoApiException("의약품 정보 조회 실패: " + errorMsg);
             }
 
@@ -66,13 +66,13 @@ public class DrugInfoService {
 
             if (cacheEnabled && items != null && !items.isEmpty()) {
                 redisTemplate.opsForValue().set(cacheKey, items, Duration.ofSeconds(cacheTtl));
-                log.debug("Drug Info 캐시 저장: key={}, count={}", cacheKey, items.size());
+                log.debug("의약품 정보 캐시 저장: 키={}, 건수={}", cacheKey, items.size());
             }
 
             return items != null ? items : Collections.emptyList();
 
         } catch (Exception e) {
-            log.error("Drug Info 검색 실패", e);
+            log.error("의약품 정보 검색에 실패했습니다", e);
             if (e instanceof DrugInfoApiException) {
                 throw e;
             }
@@ -91,7 +91,7 @@ public class DrugInfoService {
             @SuppressWarnings("unchecked")
             DrugInfoItemResponse cached = (DrugInfoItemResponse) redisTemplate.opsForValue().get(cacheKey);
             if (cached != null) {
-                log.debug("Drug Info 캐시 히트: key={}", cacheKey);
+                log.debug("의약품 정보 캐시 적중: 키={}", cacheKey);
                 return cached;
             }
         }
@@ -99,7 +99,7 @@ public class DrugInfoService {
         DrugInfoApiResponse apiResponse = apiClient.getDrugInfoByItemSeq(itemSeq).block();
 
         if (apiResponse == null || apiResponse.getResponse() == null) {
-            log.warn("Drug Info API 응답이 null입니다. itemSeq={}", itemSeq);
+            log.warn("의약품 정보 API 응답이 없습니다. 품목기준코드={}", itemSeq);
             return null;
         }
 
@@ -107,7 +107,7 @@ public class DrugInfoService {
             String errorMsg = apiResponse.getResponse().getHeader() != null
                     ? apiResponse.getResponse().getHeader().getResultMsg()
                     : "알 수 없는 오류";
-            log.error("Drug Info API 오류: itemSeq={}, error={}", itemSeq, errorMsg);
+            log.error("의약품 정보 API 오류: 품목기준코드={}, 오류={}", itemSeq, errorMsg);
 
             if ("03".equals(apiResponse.getResponse().getHeader().getResultCode())) {
                 return null;
@@ -121,7 +121,7 @@ public class DrugInfoService {
 
         if (cacheEnabled && item != null) {
             redisTemplate.opsForValue().set(cacheKey, item, Duration.ofSeconds(cacheTtl));
-            log.debug("Drug Info 캐시 저장: key={}", cacheKey);
+            log.debug("의약품 정보 캐시 저장: 키={}", cacheKey);
         }
 
         return item;

@@ -40,8 +40,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     List<UserEntity> findByRoleIn(List<RoleType> roles);
 
-    List<UserEntity> findByDepartmentId(Long departmentId);
+    @Query("SELECT u FROM User u WHERE u.department.id = :departmentId")
+    List<UserEntity> findByDepartmentId(@Param("departmentId") Long departmentId);
 
+    @Query("SELECT u FROM User u ORDER BY u.createdDate DESC")
     List<UserEntity> findAllByOrderByRegisterDateDesc();
 
     @Query("SELECT u FROM User u WHERE u.name LIKE %:name%")

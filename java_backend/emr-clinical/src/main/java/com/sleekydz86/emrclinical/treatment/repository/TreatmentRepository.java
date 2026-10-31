@@ -18,7 +18,7 @@ public interface TreatmentRepository extends BaseRepository<TreatmentEntity, Lon
 
     List<TreatmentEntity> findByPatientEntity_PatientNo(Long patientNo);
 
-    Page<TreatmentEntity> findByPatientNo(Long patientNo, Pageable pageable);
+    Page<TreatmentEntity> findByPatientEntity_PatientNo(Long patientNo, Pageable pageable);
 
     List<TreatmentEntity> findByTreatmentDoc_Id(Long doctorId);
 

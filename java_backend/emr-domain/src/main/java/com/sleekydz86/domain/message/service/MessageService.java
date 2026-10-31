@@ -1,6 +1,8 @@
 package com.sleekydz86.domain.message.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
+import com.sleekydz86.core.event.domain.MessageReadEvent;
+import com.sleekydz86.core.event.domain.MessageSentEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.message.domain.service.MessageDomainService;
@@ -51,7 +53,7 @@ public class MessageService implements BaseService<MessageEntity, Long> {
 
         MessageEntity saved = messageRepository.save(message);
 
-        eventPublisher.publish(new com.sleekydz86.core.event.domain.MessageSentEvent(
+        eventPublisher.publish(new MessageSentEvent(
                 saved.getMessageId(),
                 saved.getSender().getId(),
                 saved.getSender().getName(),
@@ -87,7 +89,7 @@ public class MessageService implements BaseService<MessageEntity, Long> {
                     .build();
             messageReadRepository.save(messageRead);
 
-            eventPublisher.publish(new com.sleekydz86.core.event.domain.MessageReadEvent(
+            eventPublisher.publish(new MessageReadEvent(
                     message.getMessageId(),
                     userId,
                     userRepository.findById(userId).orElseThrow().getName(),

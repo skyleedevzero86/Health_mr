@@ -64,13 +64,13 @@ public class DrugInfoApiClientImpl implements DrugInfoApiClient {
                     })
                     .retrieve()
                     .onStatus(status -> status.is4xxClientError(), response -> {
-                        log.error("Drug Info API 4xx Error: {}", response.statusCode());
+                        log.error("의약품 정보 API 요청 오류입니다: {}", response.statusCode());
                         return response.bodyToMono(String.class)
                                 .flatMap(body -> Mono.error(new DrugInfoApiException(
                                         "의약품 정보 API 요청 실패: " + response.statusCode() + " - " + body)));
                     })
                     .onStatus(status -> status.is5xxServerError(), response -> {
-                        log.error("Drug Info API 5xx Error: {}", response.statusCode());
+                        log.error("의약품 정보 API 서버 오류입니다: {}", response.statusCode());
                         return response.bodyToMono(String.class)
                                 .flatMap(body -> Mono.error(new DrugInfoApiException(
                                         "의약품 정보 API 서버 오류: " + response.statusCode() + " - " + body)));
@@ -80,16 +80,16 @@ public class DrugInfoApiClientImpl implements DrugInfoApiClient {
                     .retryWhen(Retry.fixedDelay(maxRetryAttempts, Duration.ofMillis(retryDelay))
                             .filter(throwable -> throwable instanceof WebClientResponseException
                                     && ((WebClientResponseException) throwable).getStatusCode().is5xxServerError()))
-                    .doOnError(error -> log.error("Drug Info API 호출 실패", error))
+                    .doOnError(error -> log.error("의약품 정보 API 호출에 실패했습니다", error))
                     .doOnSuccess(response -> {
                         if (response != null && response.getResponse() != null) {
-                            log.debug("Drug Info API 호출 성공: resultCode={}", 
+                            log.debug("의약품 정보 API 호출에 성공했습니다. 결과코드={}", 
                                     response.getResponse().getHeader() != null ? 
                                     response.getResponse().getHeader().getResultCode() : "N/A");
                         }
                     });
         } catch (Exception e) {
-            log.error("Drug Info API 요청 생성 실패", e);
+            log.error("의약품 정보 API 요청을 만들지 못했습니다", e);
             return Mono.error(new DrugInfoApiException("의약품 정보 API 요청 생성 실패: " + e.getMessage(), e));
         }
     }

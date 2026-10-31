@@ -85,7 +85,7 @@ public class EncryptionService {
 
     private SecretKey getSecretKey() {
         if (secretKeyString == null || secretKeyString.isEmpty()) {
-            throw new IllegalStateException("암호화 키가 설정되지 않았습니다. application.yml에 encryption.secret-key를 설정해주세요.");
+            throw new IllegalStateException("암호화 키가 설정되지 않았습니다. application-secret.yml에 encryption.secret-key를 설정해주세요.");
         }
 
         try {
