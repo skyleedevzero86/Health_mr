@@ -1,7 +1,6 @@
 package com.sleekydz86.domain.common.service;
 
 
-import com.sleekydz86.core.common.exception.custom.DuplicateException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -18,7 +17,7 @@ public interface BaseService<T, ID> {
 
     default void validateNotDuplicate(boolean condition, String errorMessage) {
         if (condition) {
-            throw new DuplicateException(errorMessage);
+            throw new com.sleekydz86.core.common.exception.custom.DuplicateException(errorMessage);
         }
     }
 }

@@ -217,13 +217,13 @@ public class PrescriptionController {
 
         List<PrescriptionEntity> prescriptions;
         if (patientNo != null) {
-            prescriptions = prescriptionService.getPrescriptionsByPatientNo(patientNo, Pageable.unpaged()).getContent();
+            prescriptions = prescriptionService.getPrescriptionsByPatientNo(patientNo, org.springframework.data.domain.Pageable.unpaged()).getContent();
         } else if (doctorId != null) {
-            prescriptions = prescriptionService.getPrescriptionsByDoctor(doctorId, Pageable.unpaged()).getContent();
+            prescriptions = prescriptionService.getPrescriptionsByDoctor(doctorId, org.springframework.data.domain.Pageable.unpaged()).getContent();
         } else if (startDate != null && endDate != null) {
             prescriptions = prescriptionService.getPrescriptionsByDateRange(startDate, endDate);
         } else {
-            prescriptions = prescriptionService.getAllPrescriptions(Pageable.unpaged()).getContent();
+            prescriptions = prescriptionService.getAllPrescriptions(org.springframework.data.domain.Pageable.unpaged()).getContent();
         }
 
         List<String> headers = List.of("처방 ID", "환자 번호", "환자 이름", "처방 의사", "처방 일시", "처방 상태", "처방 유형", "메모");

@@ -18,7 +18,7 @@ public class ConverterUtil {
         try {
             return objectMapper.convertValue(map, clazz);
         } catch (Exception e) {
-            log.error("맵을 객체로 변환하지 못했습니다", e);
+            log.error("Map to Object 변환 실패", e);
             return null;
         }
     }
@@ -30,7 +30,7 @@ public class ConverterUtil {
         try {
             return objectMapper.convertValue(obj, Map.class);
         } catch (Exception e) {
-            log.error("객체를 맵으로 변환하지 못했습니다", e);
+            log.error("Object to Map 변환 실패", e);
             return null;
         }
     }
@@ -42,7 +42,7 @@ public class ConverterUtil {
         try {
             return objectMapper.readValue(json, clazz);
         } catch (Exception e) {
-            log.error("JSON을 객체로 변환하지 못했습니다", e);
+            log.error("JSON to Object 변환 실패", e);
             return null;
         }
     }
@@ -54,7 +54,7 @@ public class ConverterUtil {
         try {
             return objectMapper.writeValueAsString(obj);
         } catch (Exception e) {
-            log.error("객체를 JSON으로 변환하지 못했습니다", e);
+            log.error("Object to JSON 변환 실패", e);
             return null;
         }
     }

@@ -1,9 +1,6 @@
 package com.sleekydz86.domain.user.service;
 
-import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.core.file.upload.FileUploadService;
-import com.sleekydz86.domain.common.valueobject.Email;
-import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.user.entity.UserEntity;
 import com.sleekydz86.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +20,7 @@ public class UserProfileService {
     @Transactional
     public String uploadProfileImage(Long userId, MultipartFile file) throws IOException {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(
+                .orElseThrow(() -> new com.sleekydz86.core.common.exception.custom.NotFoundException(
                         "사용자를 찾을 수 없습니다. ID: " + userId));
 
         String imagePath = fileUploadService.uploadFile(file);
@@ -34,17 +31,17 @@ public class UserProfileService {
     @Transactional
     public void updateProfile(Long userId, String name, String email, String telNum) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(
+                .orElseThrow(() -> new com.sleekydz86.core.common.exception.custom.NotFoundException(
                         "사용자를 찾을 수 없습니다. ID: " + userId));
 
         if (name != null && !name.isBlank()) {
             user.updateProfile(name, user.getGender(), user.getAddress());
         }
         if (email != null && !email.isBlank()) {
-            user.changeEmail(Email.of(email));
+            user.changeEmail(com.sleekydz86.domain.common.valueobject.Email.of(email));
         }
         if (telNum != null && !telNum.isBlank()) {
-            user.changePhoneNumber(PhoneNumber.of(telNum));
+            user.changePhoneNumber(com.sleekydz86.domain.common.valueobject.PhoneNumber.of(telNum));
         }
 
         userRepository.save(user);

@@ -1,7 +1,6 @@
 package com.sleekydz86.support.attendance.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
-import com.sleekydz86.core.event.domain.AttendanceRegisteredEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.core.tenant.TenantContext;
 import com.sleekydz86.domain.common.service.BaseService;
@@ -73,7 +72,7 @@ public class AttendanceService implements BaseService<AttendanceEntity, Long> {
 
         AttendanceEntity saved = attendanceRepository.save(attendance);
         
-        eventPublisher.publish(new AttendanceRegisteredEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.AttendanceRegisteredEvent(
                 saved.getAttendanceId(),
                 saved.getUserEntity().getId(),
                 saved.getUserEntity().getName(),

@@ -9,7 +9,6 @@ import com.sleekydz86.support.board.dto.response.BoardFileResponse;
 import com.sleekydz86.support.board.dto.response.BoardListResponse;
 import com.sleekydz86.support.board.dto.response.BoardResponse;
 import com.sleekydz86.support.board.dto.response.BoardViewerResponse;
-import com.sleekydz86.support.board.entity.BoardFileEntity;
 import com.sleekydz86.support.board.service.BoardService;
 import com.sleekydz86.support.board.type.BoardType;
 import jakarta.validation.Valid;
@@ -146,7 +145,7 @@ public class BoardController {
     @GetMapping("/files/{fileId}/download")
     @AuthRole
     public ResponseEntity<Resource> downloadFile(@PathVariable Long fileId) throws IOException {
-        BoardFileEntity boardFile = 
+        com.sleekydz86.support.board.entity.BoardFileEntity boardFile = 
                 boardService.getBoardFile(fileId);
         byte[] fileData = boardService.downloadFile(fileId);
         

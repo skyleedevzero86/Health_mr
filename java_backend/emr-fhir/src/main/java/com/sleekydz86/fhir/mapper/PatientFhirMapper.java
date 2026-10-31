@@ -4,8 +4,6 @@ import com.sleekydz86.domain.patient.entity.PatientEntity;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
 
-import java.sql.Date;
-
 @Component
 public class PatientFhirMapper {
     public Patient toFhir(PatientEntity source) {
@@ -14,7 +12,7 @@ public class PatientFhirMapper {
         target.addIdentifier().setSystem("urn:oid:kr-emr:patient-number").setValue(String.valueOf(source.getPatientNoValue()));
         target.addName().setText(source.getPatientName());
         target.setGender(toGender(source.getPatientGender()));
-        if (source.getPatientBirth() != null) target.setBirthDate(Date.valueOf(source.getPatientBirth()));
+        if (source.getPatientBirth() != null) target.setBirthDate(java.sql.Date.valueOf(source.getPatientBirth()));
         if (source.getPatientAddress() != null) target.addAddress(new Address().setText(source.getPatientAddress()));
         if (source.getPatientTelValue() != null) target.addTelecom(new ContactPoint().setSystem(ContactPoint.ContactPointSystem.PHONE).setValue(source.getPatientTelValue()));
         if (source.getPatientEmailValue() != null) target.addTelecom(new ContactPoint().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(source.getPatientEmailValue()));

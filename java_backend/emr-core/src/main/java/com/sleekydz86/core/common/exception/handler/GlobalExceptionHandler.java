@@ -15,8 +15,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -33,7 +31,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<CustomErrorResponse> handleBaseException(
             BaseException e, HttpServletRequest request) {
-        log.error("업무 예외가 발생했습니다: {}", e.getMessage(), e);
+        log.error("BaseException 발생: {}", e.getMessage(), e);
         CustomErrorResponse response = CustomErrorResponse.of(
                 e.getErrorCode().getStatus(),
                 e.getMessage(),
@@ -46,7 +44,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomAuthenticationException.class)
     public ResponseEntity<CustomErrorResponse> handleCustomAuthenticationException(
             CustomAuthenticationException e, HttpServletRequest request) {
-        log.error("인증 예외가 발생했습니다: {}", e.getMessage(), e);
+        log.error("CustomAuthenticationException 발생: {}", e.getMessage(), e);
         CustomErrorResponse response = CustomErrorResponse.of(
                 ErrorCode.UNAUTHORIZED.getStatus(),
                 e.getMessage(),
@@ -59,7 +57,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<CustomErrorResponse> handleAccessDeniedException(
             AccessDeniedException e, HttpServletRequest request) {
-        log.error("접근이 거부되었습니다: {}", e.getMessage(), e);
+        log.error("AccessDeniedException 발생: {}", e.getMessage(), e);
         CustomErrorResponse response = CustomErrorResponse.of(
                 ErrorCode.ACCESS_FORBIDDEN.getStatus(),
                 ErrorCode.ACCESS_FORBIDDEN.getMessage(),
@@ -72,7 +70,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CustomErrorResponse> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException e, HttpServletRequest request) {
-        log.error("입력값 검증에 실패했습니다: {}", e.getMessage(), e);
+        log.error("MethodArgumentNotValidException 발생: {}", e.getMessage(), e);
 
         Map<String, Object> details = e.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
@@ -94,7 +92,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<CustomErrorResponse> handleHttpRequestMethodNotSupportedException(
             HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
-        log.error("지원하지 않는 요청 방식입니다: {}", e.getMessage(), e);
+        log.error("HttpRequestMethodNotSupportedException 발생: {}", e.getMessage(), e);
         CustomErrorResponse response = CustomErrorResponse.of(
                 ErrorCode.BAD_REQUEST.getStatus(),
                 "지원하지 않는 HTTP 메서드입니다: " + e.getMethod(),
@@ -130,7 +128,7 @@ public class GlobalExceptionHandler {
             return true;
         }
         for (String profile : activeProfiles) {
-            if (profile.equals("dev") || profile.equals("test")) {
+            if (profile.equals("dev") || profile.equals("local")) {
                 return true;
             }
         }
@@ -138,8 +136,8 @@ public class GlobalExceptionHandler {
     }
 
     private String getStackTrace(Exception e) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
+        java.io.StringWriter sw = new java.io.StringWriter();
+        java.io.PrintWriter pw = new java.io.PrintWriter(sw);
         e.printStackTrace(pw);
         return sw.toString();
     }

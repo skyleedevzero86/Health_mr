@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -155,7 +154,7 @@ public class ContractController {
             data.add(row);
         }
 
-        String filename = "계약처목록_" + LocalDate.now() + ".xlsx";
+        String filename = "계약처목록_" + java.time.LocalDate.now() + ".xlsx";
 
         excelExportService.exportToExcel(headers, data, filename, response);
     }

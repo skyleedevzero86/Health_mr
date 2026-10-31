@@ -1,14 +1,11 @@
 package com.sleekydz86.domain.user.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
-import com.sleekydz86.core.event.domain.UserCreatedEvent;
-import com.sleekydz86.core.event.domain.UserPasswordChangedEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.core.security.jwt.TokenBlacklistService;
 import com.sleekydz86.domain.auth.service.RefreshTokenService;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
-import com.sleekydz86.domain.common.valueobject.LoginId;
 import com.sleekydz86.domain.common.valueobject.Password;
 import com.sleekydz86.domain.common.valueobject.PhoneNumber;
 import com.sleekydz86.domain.department.entity.DepartmentEntity;
@@ -64,7 +61,7 @@ public class UserService implements BaseService<UserEntity, Long> {
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다. LoginId: " + loginId));
     }
 
-    public UserEntity getUserByLoginId(LoginId loginId) {
+    public UserEntity getUserByLoginId(com.sleekydz86.domain.common.valueobject.LoginId loginId) {
         return getUserByLoginId(loginId.getValue());
     }
 
@@ -130,7 +127,7 @@ public class UserService implements BaseService<UserEntity, Long> {
             employmentHistoryRepository.save(initialHistory);
         }
 
-        eventPublisher.publish(new UserCreatedEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserCreatedEvent(
                 savedUser.getId(),
                 savedUser.getLoginIdValue(),
                 savedUser.getRole().name()
@@ -151,7 +148,7 @@ public class UserService implements BaseService<UserEntity, Long> {
         );
 
         if (request.getEmail() != null) {
-            Email newEmail = request.getEmailValueObject();
+            com.sleekydz86.domain.common.valueobject.Email newEmail = request.getEmailValueObject();
             validateNotDuplicate(
                     userRepository.existsByEmail(newEmail.getValue()) &&
                             (user.getEmail() == null || !user.getEmail().equals(newEmail)),
@@ -186,7 +183,7 @@ public class UserService implements BaseService<UserEntity, Long> {
         userRepository.save(user);
         tokenBlacklistService.revokeUserTokens(userId);
 
-        eventPublisher.publish(new UserPasswordChangedEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.UserPasswordChangedEvent(
                 user.getId(),
                 user.getLoginIdValue()
         ));

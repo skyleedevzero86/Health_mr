@@ -22,7 +22,6 @@ import com.sleekydz86.finance.medicalfee.repository.MedicalTypeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -147,7 +146,7 @@ public class MedicalFeeService implements BaseService<MedicalFeeEntity, Long> {
         Page<MedicalFeeEntity> medicalFees = medicalFeeRepository.findByMedicalTypeEntity_MedicalTypeId(medicalTypeId)
                 .stream()
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        list -> new PageImpl<>(list, pageable, list.size())));
+                        list -> new org.springframework.data.domain.PageImpl<>(list, pageable, list.size())));
         return medicalFees.map(MedicalFeeResponse::from);
     }
 

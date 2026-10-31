@@ -1,8 +1,6 @@
 package com.sleekydz86.domain.patient.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
-import com.sleekydz86.core.event.domain.PatientRegisteredEvent;
-import com.sleekydz86.core.event.domain.PatientUpdatedEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.common.valueobject.Email;
@@ -84,7 +82,7 @@ public class PatientService implements BaseService<PatientEntity, Long> {
 
         PatientEntity savedPatient = patientRepository.save(patient);
 
-        eventPublisher.publish(new PatientRegisteredEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.PatientRegisteredEvent(
                 savedPatient.getPatientNoValue(),
                 savedPatient.getPatientName(),
                 savedPatient.getPatientRrnValue()
@@ -132,7 +130,7 @@ public class PatientService implements BaseService<PatientEntity, Long> {
 
         PatientEntity updatedPatient = patientRepository.save(patient);
 
-        eventPublisher.publish(new PatientUpdatedEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.PatientUpdatedEvent(
                 updatedPatient.getPatientNoValue(),
                 updatedPatient.getPatientName()
         ));

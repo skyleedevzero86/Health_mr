@@ -4,7 +4,6 @@ import com.sleekydz86.emrclinical.treatment.entity.TreatmentEntity;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
@@ -34,7 +33,7 @@ public class EncounterFhirMapper {
         return target;
     }
 
-    private Date date(LocalDateTime value) {
+    private Date date(java.time.LocalDateTime value) {
         return Date.from(value.atZone(ZoneId.systemDefault()).toInstant());
     }
 }

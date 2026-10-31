@@ -1,13 +1,6 @@
 package com.sleekydz86.emrclinical.treatment.statistics;
 
-import com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.InpatientStatisticsByRegionResponse;
-import com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.InpatientStatisticsByYearResponse;
-import com.sleekydz86.emrclinical.treatment.inpatient.statistics.service.InpatientStatisticsService;
 import com.sleekydz86.emrclinical.treatment.repository.TreatmentRepository;
-import com.sleekydz86.emrclinical.treatment.statistics.department.dto.TreatmentDepartmentStatisticsByDepartmentResponse;
-import com.sleekydz86.emrclinical.treatment.statistics.department.dto.TreatmentDepartmentStatisticsByRegionResponse;
-import com.sleekydz86.emrclinical.treatment.statistics.department.dto.TreatmentDepartmentStatisticsByYearResponse;
-import com.sleekydz86.emrclinical.treatment.statistics.department.service.TreatmentDepartmentStatisticsService;
 import com.sleekydz86.emrclinical.types.TreatmentStatus;
 import com.sleekydz86.emrclinical.types.TreatmentType;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +17,8 @@ import java.util.Map;
 public class TreatmentStatisticsService {
 
     private final TreatmentRepository treatmentRepository;
-    private final InpatientStatisticsService inpatientStatisticsService;
-    private final TreatmentDepartmentStatisticsService departmentStatisticsService;
+    private final com.sleekydz86.emrclinical.treatment.inpatient.statistics.service.InpatientStatisticsService inpatientStatisticsService;
+    private final com.sleekydz86.emrclinical.treatment.statistics.department.service.TreatmentDepartmentStatisticsService departmentStatisticsService;
 
     public TreatmentStatisticsResponse getDailyStatistics(LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
@@ -147,7 +140,7 @@ public class TreatmentStatisticsService {
     }
 
     public Map<String, Object> getInpatientStatisticsByYear(String year) {
-        InpatientStatisticsByYearResponse response =
+        com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.InpatientStatisticsByYearResponse response =
                 inpatientStatisticsService.getStatisticsByYear(year);
         return Map.of(
                 "year", response.getYear(),
@@ -159,7 +152,7 @@ public class TreatmentStatisticsService {
     }
 
     public Map<String, Object> getInpatientStatisticsByRegion(String year, String regionCode) {
-        InpatientStatisticsByRegionResponse response =
+        com.sleekydz86.emrclinical.treatment.inpatient.statistics.dto.InpatientStatisticsByRegionResponse response =
                 inpatientStatisticsService.getStatisticsByRegion(year, regionCode);
         return Map.of(
                 "year", response.getYear(),
@@ -170,7 +163,7 @@ public class TreatmentStatisticsService {
     }
 
     public Map<String, Object> getDepartmentStatisticsByYear(String year) {
-        TreatmentDepartmentStatisticsByYearResponse response =
+        com.sleekydz86.emrclinical.treatment.statistics.department.dto.TreatmentDepartmentStatisticsByYearResponse response =
                 departmentStatisticsService.getStatisticsByYear(year);
         return Map.of(
                 "year", response.getYear(),
@@ -180,7 +173,7 @@ public class TreatmentStatisticsService {
     }
 
     public Map<String, Object> getDepartmentStatisticsByRegion(String year, String regionCode) {
-        TreatmentDepartmentStatisticsByRegionResponse response =
+        com.sleekydz86.emrclinical.treatment.statistics.department.dto.TreatmentDepartmentStatisticsByRegionResponse response =
                 departmentStatisticsService.getStatisticsByRegion(year, regionCode);
         return Map.of(
                 "year", response.getYear(),
@@ -191,7 +184,7 @@ public class TreatmentStatisticsService {
     }
 
     public Map<String, Object> getDepartmentStatisticsByDepartment(String year, String departmentName) {
-        TreatmentDepartmentStatisticsByDepartmentResponse response =
+        com.sleekydz86.emrclinical.treatment.statistics.department.dto.TreatmentDepartmentStatisticsByDepartmentResponse response =
                 departmentStatisticsService.getStatisticsByDepartment(year, departmentName);
         return Map.of(
                 "year", response.getYear(),

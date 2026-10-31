@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,7 +14,7 @@ import java.util.Optional;
 public interface CheckInRepository extends BaseRepository<CheckInEntity, Long>, CheckInRepositoryCustom {
 
     List<CheckInEntity> findByPatientEntity_PatientNo(Long patientNo);
-    List<CheckInEntity> findByCheckInDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+    List<CheckInEntity> findByCheckInDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
     List<CheckInEntity> findByCheckInStatus(CheckInStatus status);
 
     Optional<CheckInEntity> findByCheckInId(Long checkInId);

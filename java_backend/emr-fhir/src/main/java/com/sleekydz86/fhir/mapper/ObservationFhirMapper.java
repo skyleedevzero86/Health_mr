@@ -4,8 +4,6 @@ import com.sleekydz86.support.examination.entity.ExaminationResultEntity;
 import org.hl7.fhir.r4.model.*;
 import org.springframework.stereotype.Component;
 
-import java.sql.Date;
-import java.util.Comparator;
 import java.util.Map;
 
 @Component
@@ -27,7 +25,7 @@ public class ObservationFhirMapper {
         target.setCode(concept);
         target.setSubject(new Reference("Patient/" + source.getPatientEntity().getPatientNoValue()));
         target.setEncounter(new Reference("Encounter/" + source.getTreatmentEntity().getTreatmentId()));
-        if (source.getExaminationDate() != null) target.setEffective(new DateTimeType(Date.valueOf(source.getExaminationDate())));
+        if (source.getExaminationDate() != null) target.setEffective(new DateTimeType(java.sql.Date.valueOf(source.getExaminationDate())));
         if (source.getExaminationResult() != null) target.setValue(new StringType(source.getExaminationResult()));
         if (source.getExaminationNormal() != null) target.addInterpretation(new CodeableConcept(new Coding(
                 "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
@@ -42,7 +40,7 @@ public class ObservationFhirMapper {
         if (exact != null) return exact;
         return LOINC_CODES.entrySet().stream()
                 .filter(e -> name.contains(e.getKey()))
-                .max(Comparator.comparingInt(e -> e.getKey().length()))
+                .max(java.util.Comparator.comparingInt(e -> e.getKey().length()))
                 .map(Map.Entry::getValue)
                 .orElse(null);
     }

@@ -111,10 +111,10 @@ public class JwtUtil {
                 Object id = userEntity.getClass().getMethod("getId").invoke(userEntity);
                 return id instanceof Long ? (Long) id : Long.valueOf(id.toString());
             }
-            throw new IllegalArgumentException("사용자 정보에 번호 조회 메서드가 없습니다.");
+            throw new IllegalArgumentException("UserEntity에 getId() 메서드가 없습니다.");
         } catch (Exception e) {
-            log.error("사용자 번호 추출 실패", e);
-            throw new IllegalArgumentException("사용자 번호를 추출할 수 없습니다.", e);
+            log.error("userId 추출 실패", e);
+            throw new IllegalArgumentException("userId를 추출할 수 없습니다.", e);
         }
     }
 
@@ -126,8 +126,8 @@ public class JwtUtil {
             }
             return role.toString();
         } catch (Exception e) {
-            log.error("역할 추출 실패", e);
-            throw new IllegalArgumentException("역할을 추출할 수 없습니다.", e);
+            log.error("role 추출 실패", e);
+            throw new IllegalArgumentException("role을 추출할 수 없습니다.", e);
         }
     }
 
@@ -239,12 +239,12 @@ public class JwtUtil {
 
     private void validateSecret() {
         if (secret == null || secret.isBlank()) {
-            throw new IllegalStateException("JWT 비밀키가 설정되지 않았습니다. application-secret.yml에 jwt.secret을 설정해주세요.");
+            throw new IllegalStateException("JWT secret이 설정되지 않았습니다.");
         }
         try {
             Base64.getDecoder().decode(secret);
         } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("JWT 비밀키가 유효한 형식이 아닙니다.", e);
+            throw new IllegalStateException("JWT secret이 유효한 Base64 형식이 아닙니다.", e);
         }
     }
 

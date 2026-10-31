@@ -1,7 +1,6 @@
 package com.sleekydz86.support.board.service;
 
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
-import com.sleekydz86.core.event.domain.BoardCreatedEvent;
 import com.sleekydz86.core.event.publisher.EventPublisher;
 import com.sleekydz86.core.tenant.TenantContext;
 import com.sleekydz86.domain.common.service.BaseService;
@@ -18,11 +17,8 @@ import com.sleekydz86.support.board.dto.response.BoardFileResponse;
 import com.sleekydz86.support.board.dto.response.BoardListResponse;
 import com.sleekydz86.support.board.dto.response.BoardResponse;
 import com.sleekydz86.support.board.dto.response.BoardViewerResponse;
-import com.sleekydz86.support.board.dto.response.CommentResponse;
-import com.sleekydz86.support.board.entity.BoardCommentEntity;
 import com.sleekydz86.support.board.entity.BoardEntity;
 import com.sleekydz86.support.board.entity.BoardFileEntity;
-import com.sleekydz86.support.board.entity.BoardLikeEntity;
 import com.sleekydz86.support.board.entity.BoardHashtagEntity;
 import com.sleekydz86.support.board.entity.BoardViewEntity;
 import com.sleekydz86.support.board.factory.BoardFactory;
@@ -40,7 +36,6 @@ import com.sleekydz86.support.board.type.NoticeType;
 import com.sleekydz86.support.board.valueobject.Hashtag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -106,7 +101,7 @@ public class BoardService implements BaseService<BoardEntity, Long> {
             }
         }
 
-        eventPublisher.publish(new BoardCreatedEvent(
+        eventPublisher.publish(new com.sleekydz86.core.event.domain.BoardCreatedEvent(
                 saved.getBoardId(),
                 saved.getAuthor().getId(),
                 saved.getAuthor().getName(),
@@ -149,7 +144,7 @@ public class BoardService implements BaseService<BoardEntity, Long> {
         boardRepository.save(board);
 
         List<String> hashtags = getHashtags(boardId);
-        List<CommentResponse> comments = getComments(boardId);
+        List<com.sleekydz86.support.board.dto.response.CommentResponse> comments = getComments(boardId);
         List<BoardFileResponse> files = getFiles(boardId);
         Boolean isLiked = boardLikeRepository.existsByBoard_BoardIdAndUser_Id(boardId, userId);
 
@@ -249,7 +244,7 @@ public class BoardService implements BaseService<BoardEntity, Long> {
                             board.decreaseLikeCount();
                         },
                         () -> {
-                            BoardLikeEntity newLike = BoardLikeEntity.builder()
+                            com.sleekydz86.support.board.entity.BoardLikeEntity newLike = com.sleekydz86.support.board.entity.BoardLikeEntity.builder()
                                     .board(board)
                                     .user(user)
                                     .build();
@@ -267,20 +262,20 @@ public class BoardService implements BaseService<BoardEntity, Long> {
                 .collect(Collectors.toList());
     }
 
-    private List<CommentResponse> getComments(Long boardId) {
-        List<BoardCommentEntity> comments = 
+    private List<com.sleekydz86.support.board.dto.response.CommentResponse> getComments(Long boardId) {
+        List<com.sleekydz86.support.board.entity.BoardCommentEntity> comments = 
                 boardCommentRepository.findByBoard_BoardIdAndDeletedFalseOrderByCreatedAtAsc(boardId);
         
         return comments.stream()
                 .filter(comment -> !comment.isReply())
                 .map(comment -> {
-                    List<CommentResponse> replies = comments.stream()
+                    List<com.sleekydz86.support.board.dto.response.CommentResponse> replies = comments.stream()
                             .filter(reply -> reply.isReply() && 
                                     reply.getParentComment() != null && 
                                     reply.getParentComment().getCommentId().equals(comment.getCommentId()))
-                            .map(CommentResponse::from)
+                            .map(com.sleekydz86.support.board.dto.response.CommentResponse::from)
                             .collect(Collectors.toList());
-                    return CommentResponse.from(comment, replies);
+                    return com.sleekydz86.support.board.dto.response.CommentResponse.from(comment, replies);
                 })
                 .collect(Collectors.toList());
     }
@@ -309,7 +304,7 @@ public class BoardService implements BaseService<BoardEntity, Long> {
     public List<BoardResponse> getAlertNotices() {
         List<BoardEntity> alertBoards = boardRepository.findByBoardTypeAndDeletedFalse(
                 BoardType.NOTICE, 
-                PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"))
+                org.springframework.data.domain.PageRequest.of(0, 100, Sort.by(Sort.Direction.DESC, "createdAt"))
         ).getContent().stream()
                 .filter(board -> board.getNoticeType() == NoticeType.ALERT)
                 .limit(3)

@@ -11,9 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.Comparator;
-import java.util.regex.Pattern;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,7 +42,7 @@ public class InpatientStatisticsImportScheduler {
                 return;
             }
 
-            Pattern pattern = Pattern.compile(filePattern);
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(filePattern);
 
             try (Stream<Path> paths = Files.list(dir)) {
                 List<Path> matchingFiles = paths
@@ -54,7 +52,7 @@ public class InpatientStatisticsImportScheduler {
                             try {
                                 return Files.getLastModifiedTime(path).toInstant();
                             } catch (IOException e) {
-                                return Instant.MIN;
+                                return java.time.Instant.MIN;
                             }
                         }).reversed())
                         .collect(Collectors.toList());

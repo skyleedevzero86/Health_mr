@@ -19,7 +19,7 @@ public class EncryptedStringConverter implements AttributeConverter<String, Stri
 
     private EncryptionService getEncryptionService() {
         if (applicationContext == null) {
-            throw new IllegalStateException("애플리케이션 컨텍스트가 초기화되지 않았습니다.");
+            throw new IllegalStateException("ApplicationContext가 초기화되지 않았습니다.");
         }
         return applicationContext.getBean(EncryptionService.class);
     }

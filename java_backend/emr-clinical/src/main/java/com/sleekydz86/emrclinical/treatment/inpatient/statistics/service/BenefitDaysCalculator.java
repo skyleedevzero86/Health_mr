@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class BenefitDaysCalculator {
 
         Set<LocalDate> visitDates = treatments.stream()
                 .map(t -> t.getTreatmentDate().toLocalDate())
-                .collect(Collectors.toSet());
+                .collect(java.util.stream.Collectors.toSet());
 
         Set<LocalDate> prescriptionDates = new HashSet<>();
         for (TreatmentEntity treatment : treatments) {

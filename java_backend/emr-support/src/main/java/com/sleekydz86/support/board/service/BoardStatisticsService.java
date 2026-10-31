@@ -12,7 +12,6 @@ import com.sleekydz86.support.board.repository.BoardViewRepository;
 import com.sleekydz86.support.board.type.BoardType;
 import com.sleekydz86.support.board.type.NoticeType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -39,7 +38,7 @@ public class BoardStatisticsService {
         LocalDateTime end = date.atTime(23, 59, 59);
 
         List<BoardEntity> boards = boardRepository.findByDeletedFalse(
-                PageRequest.of(0, Integer.MAX_VALUE)
+                org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE)
         ).getContent().stream()
                 .filter(board -> !board.getCreatedAt().isBefore(start) && !board.getCreatedAt().isAfter(end))
                 .collect(Collectors.toList());
@@ -52,7 +51,7 @@ public class BoardStatisticsService {
         LocalDateTime end = endDate.atTime(23, 59, 59);
 
         List<BoardEntity> boards = boardRepository.findByDeletedFalse(
-                PageRequest.of(0, Integer.MAX_VALUE)
+                org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE)
         ).getContent().stream()
                 .filter(board -> !board.getCreatedAt().isBefore(start) && !board.getCreatedAt().isAfter(end))
                 .collect(Collectors.toList());
@@ -67,7 +66,7 @@ public class BoardStatisticsService {
         LocalDateTime end = endDate.atTime(23, 59, 59);
 
         List<BoardEntity> boards = boardRepository.findByDeletedFalse(
-                PageRequest.of(0, Integer.MAX_VALUE)
+                org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE)
         ).getContent().stream()
                 .filter(board -> !board.getCreatedAt().isBefore(start) && !board.getCreatedAt().isAfter(end))
                 .collect(Collectors.toList());
@@ -101,7 +100,7 @@ public class BoardStatisticsService {
         LocalDateTime end = endDate != null ? endDate.atTime(23, 59, 59) : LocalDateTime.now();
 
         List<BoardEntity> boards = boardRepository.findByDeletedFalse(
-                PageRequest.of(0, Integer.MAX_VALUE)
+                org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE)
         ).getContent().stream()
                 .filter(board -> !board.getCreatedAt().isBefore(start) && !board.getCreatedAt().isAfter(end))
                 .collect(Collectors.toList());

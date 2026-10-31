@@ -12,7 +12,6 @@ import com.sleekydz86.support.attendance.type.AttendanceType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -119,7 +118,7 @@ public class AttendanceStatisticsService {
             AttendanceEntity checkIn = checkIns.get(i);
             AttendanceEntity checkOut = checkOuts.get(i);
             if (checkIn.getEndTime() != null) {
-                totalWorkingMinutes += Duration.between(
+                totalWorkingMinutes += java.time.Duration.between(
                         checkIn.getAttendanceTime().getValue(),
                         checkIn.getEndTime()
                 ).toMinutes();
