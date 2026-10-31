@@ -39,11 +39,29 @@ qualification:
   mock-api-url: http://127.0.0.1:1
 
 encryption:
+  secret-key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
   hmac-key: ${ENCRYPTION_HMAC_KEY:test-hmac-key-not-for-production}
+
+jwt:
+  secret: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 
 patient:
   blind-index:
     backfill-enabled: false
+
+drug-info:
+  api:
+    base-url: http://127.0.0.1:1
+    service-key: test
+    validation:
+      enabled: false
+
+drug-administrative-action:
+  api:
+    base-url: http://127.0.0.1:1
+    service-key: test
+  validation:
+    check-on-prescription: false
 
 treatment:
   inpatient-statistics:

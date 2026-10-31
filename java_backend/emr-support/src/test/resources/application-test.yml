@@ -41,7 +41,11 @@ health-checkup:
       auto-import: false
 
 encryption:
+  secret-key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
   hmac-key: ${ENCRYPTION_HMAC_KEY:test-hmac-key-not-for-production}
+
+jwt:
+  secret: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
 
 patient:
   blind-index:
@@ -50,7 +54,9 @@ patient:
 drug-info:
   api:
     base-url: http://localhost
+    service-key: test
 
 drug-administrative-action:
   api:
     base-url: http://localhost
+    service-key: test
