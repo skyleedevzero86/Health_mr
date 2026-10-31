@@ -1,5 +1,6 @@
 package com.sleekydz86.emrclinical.checkin.service;
 
+import com.sleekydz86.core.common.exception.custom.BusinessException;
 import com.sleekydz86.core.common.exception.custom.NotFoundException;
 import com.sleekydz86.domain.common.service.BaseService;
 import com.sleekydz86.domain.patient.entity.PatientEntity;
@@ -13,7 +14,9 @@ import com.sleekydz86.emrclinical.types.CheckInStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +32,8 @@ public class CheckInService implements BaseService<CheckInEntity, Long> {
     }
 
     public CheckInEntity getCheckInById(Long checkInId) {
-        return checkInRepository.findByCheckInId(checkInId)
+        return checkInRepository.findDetailById(checkInId)
+                .or(() -> checkInRepository.findByCheckInId(checkInId))
                 .orElseThrow(() -> new NotFoundException("접수를 찾을 수 없습니다. ID: " + checkInId));
     }
 
@@ -64,18 +68,35 @@ public class CheckInService implements BaseService<CheckInEntity, Long> {
         return checkInRepository.save(checkIn);
     }
 
-    @Transactional
-    public void completeCheckIn(Long checkInId) {
-        CheckInEntity checkIn = getCheckInById(checkInId);
-        checkIn.complete();
-        checkInRepository.save(checkIn);
+    public List<CheckInEntity> getCheckInsByPatientNo(Long patientNo) {
+        patientService.getPatientByNo(patientNo);
+        return checkInRepository.findByPatientEntity_PatientNo(patientNo);
     }
 
     @Transactional
-    public void cancelCheckIn(Long checkInId) {
+    public CheckInEntity completeCheckIn(Long checkInId) {
         CheckInEntity checkIn = getCheckInById(checkInId);
+        if (checkIn.getCheckInStatus() == CheckInStatus.COMPLETED) {
+            throw new BusinessException("이미 완료된 접수입니다.");
+        }
+        if (checkIn.getCheckInStatus() == CheckInStatus.CANCELLED) {
+            throw new BusinessException("취소된 접수는 완료할 수 없습니다.");
+        }
+        checkIn.complete();
+        return checkInRepository.save(checkIn);
+    }
+
+    @Transactional
+    public CheckInEntity cancelCheckIn(Long checkInId) {
+        CheckInEntity checkIn = getCheckInById(checkInId);
+        if (checkIn.getCheckInStatus() == CheckInStatus.CANCELLED) {
+            throw new BusinessException("이미 취소된 접수입니다.");
+        }
+        if (checkIn.getCheckInStatus() == CheckInStatus.COMPLETED) {
+            throw new BusinessException("완료된 접수는 취소할 수 없습니다.");
+        }
         checkIn.cancel();
-        checkInRepository.save(checkIn);
+        return checkInRepository.save(checkIn);
     }
 }
 

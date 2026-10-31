@@ -15,6 +15,8 @@ public class TreatmentCreateRequest {
 
     @NotNull(message = "진료 의사는 필수입니다.")
     private Long doctorId;
+
+    @NotNull(message = "접수는 필수입니다.")
     private Long checkInId;
     private Long patientNo;
     private Long departmentId;

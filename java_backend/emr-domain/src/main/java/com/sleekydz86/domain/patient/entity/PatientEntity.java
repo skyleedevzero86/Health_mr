@@ -30,7 +30,7 @@ public class PatientEntity extends BaseEntity {
     private String patientName;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "patient_rrn", nullable = false, unique = true, length = 14))
+    @AttributeOverride(name = "value", column = @Column(name = "patient_rrn", nullable = false, unique = true, length = 500))
     private ResidentRegistrationNumber patientRrn;
 
     @Column(name = "patient_gender", nullable = false)
@@ -46,11 +46,11 @@ public class PatientEntity extends BaseEntity {
     private String patientAddress;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "patient_email", nullable = false, unique = true, length = 100))
+    @AttributeOverride(name = "value", column = @Column(name = "patient_email", nullable = false, unique = true, length = 500))
     private Email patientEmail;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "patient_tel", nullable = false, unique = true, length = 20))
+    @AttributeOverride(name = "value", column = @Column(name = "patient_tel", nullable = false, unique = true, length = 500))
     private PhoneNumber patientTel;
 
     @Column(name = "patient_foreign", nullable = false, length = 1)

@@ -66,22 +66,27 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
     @Transactional
     public TreatmentEntity createTreatment(TreatmentCreateRequest request) {
 
-        CheckInEntity checkIn = null;
-        if (request.getCheckInId() != null) {
-            checkIn = checkInService.getCheckInById(request.getCheckInId());
-
-            if (checkIn.getCheckInStatus() != CheckInStatus.COMPLETED) {
-                throw new BusinessException("완료된 접수만 진료를 생성할 수 있습니다.");
-            }
+        if (request.getCheckInId() == null) {
+            throw new BusinessException("접수는 필수입니다.");
         }
 
-        PatientEntity patient = null;
-        if (checkIn != null) {
-            patient = checkIn.getPatientEntity();
-        } else if (request.getPatientNo() != null) {
-            patient = patientService.getPatientByNo(request.getPatientNo());
-        } else {
+        CheckInEntity checkIn = checkInService.getCheckInById(request.getCheckInId());
+        if (checkIn.getCheckInStatus() != CheckInStatus.COMPLETED) {
+            throw new BusinessException("완료된 접수만 진료를 생성할 수 있습니다.");
+        }
+
+        List<TreatmentEntity> existingTreatments = treatmentRepository.findByCheckInEntity_CheckInId(
+                checkIn.getCheckInId());
+        if (!existingTreatments.isEmpty()) {
+            throw new BusinessException("이미 해당 접수로 생성된 진료가 있습니다.");
+        }
+
+        PatientEntity patient = checkIn.getPatientEntity();
+        if (patient == null) {
             throw new BusinessException("환자 정보는 필수입니다.");
+        }
+        if (request.getPatientNo() != null && !request.getPatientNo().equals(patient.getPatientNoValue())) {
+            throw new BusinessException("접수 환자와 요청 환자가 다릅니다.");
         }
 
         UserEntity doctor = userService.getUserById(request.getDoctorId());
@@ -99,9 +104,10 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
                 .departmentEntity(department)
                 .treatmentDept(department != null ? department.getName() : null)
                 .checkInEntity(checkIn)
+                .patientEntity(patient)
                 .build();
 
-        TreatmentEntity saved = treatmentRepository.save(treatment);
+        TreatmentEntity saved = treatmentRepository.saveAndFlush(treatment);
 
         createTreatmentTypeEntity(saved, request.getTreatmentType(), checkIn);
 
@@ -117,39 +123,35 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
     }
 
     private void createTreatmentTypeEntity(TreatmentEntity treatment, TreatmentType type, CheckInEntity checkIn) {
+        TreatmentEntity persisted = treatmentRepository.getReferenceById(treatment.getTreatmentId());
         switch (type) {
             case OUTPATIENT:
-                OutTreatmentEntity outTreatment = OutTreatmentEntity.builder()
-                        .id(treatment.getTreatmentId())
-                        .treatmentId(treatment)
-                        .checkInEntity(checkIn)
-                        .treatmentStatus(TreatmentStatus.PENDING)
-                        .build();
+                OutTreatmentEntity outTreatment = new OutTreatmentEntity();
+                outTreatment.setTreatmentId(persisted);
+                outTreatment.setCheckInEntity(checkIn);
+                outTreatment.setTreatmentStatus(TreatmentStatus.PENDING);
                 outTreatmentRepository.save(outTreatment);
                 break;
             case INPATIENT:
-                InTreatmentEntity inTreatment = InTreatmentEntity.builder()
-                        .id(treatment.getTreatmentId())
-                        .treatmentId(treatment)
-                        .checkInEntity(checkIn)
-                        .treatmentStatus(TreatmentStatus.PENDING)
-                        .build();
+                InTreatmentEntity inTreatment = new InTreatmentEntity();
+                inTreatment.setTreatmentId(persisted);
+                inTreatment.setCheckInEntity(checkIn);
+                inTreatment.setTreatmentStatus(TreatmentStatus.PENDING);
                 inTreatmentRepository.save(inTreatment);
                 break;
             case EMERGENCY:
-                EmergencyTreatmentEntity emergencyTreatment = EmergencyTreatmentEntity.builder()
-                        .id(treatment.getTreatmentId())
-                        .treatmentId(treatment)
-                        .checkInEntity(checkIn)
-                        .treatmentStatus(TreatmentStatus.PENDING)
-                        .build();
+                EmergencyTreatmentEntity emergencyTreatment = new EmergencyTreatmentEntity();
+                emergencyTreatment.setTreatmentId(persisted);
+                emergencyTreatment.setCheckInEntity(checkIn);
+                emergencyTreatment.setTreatmentStatus(TreatmentStatus.PENDING);
                 emergencyTreatmentRepository.save(emergencyTreatment);
                 break;
         }
     }
 
     public TreatmentEntity getTreatmentById(Long treatmentId) {
-        return validateExists(treatmentRepository, treatmentId, "진료를 찾을 수 없습니다. ID: " + treatmentId);
+        return treatmentRepository.findDetailById(treatmentId)
+                .orElseGet(() -> validateExists(treatmentRepository, treatmentId, "진료를 찾을 수 없습니다. ID: " + treatmentId));
     }
 
     public Page<TreatmentEntity> getTreatmentsByPatientNo(Long patientNo, Pageable pageable) {
@@ -258,8 +260,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
 
         eventPublisher.publish(new TreatmentCompletedEvent(
                 treatment.getTreatmentId(),
-                treatment.getCheckInEntity() != null ?
-                        treatment.getCheckInEntity().getPatientEntity().getPatientNoValue() : null,
+                resolvePatientNo(treatment),
                 treatment.getTreatmentType().name()
         ));
 
@@ -281,8 +282,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
 
         eventPublisher.publish(new TreatmentCancelledEvent(
                 treatment.getTreatmentId(),
-                treatment.getCheckInEntity() != null ?
-                        treatment.getCheckInEntity().getPatientEntity().getPatientNoValue() : null,
+                resolvePatientNo(treatment),
                 cancelReason
         ));
     }
@@ -298,8 +298,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         List<TreatmentEntity> existingTreatments = treatmentRepository.findByCheckInEntity_CheckInId(
                 checkIn.getCheckInId());
         if (!existingTreatments.isEmpty()) {
-
-            return existingTreatments.get(0);
+            throw new BusinessException("이미 해당 접수로 생성된 진료가 있습니다.");
         }
 
         DepartmentEntity defaultDepartment = departmentService.getAllDepartments().stream()
@@ -327,7 +326,7 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
                 .treatmentDoc(defaultDoctor)
                 .build();
 
-        TreatmentEntity saved = treatmentRepository.save(treatment);
+        TreatmentEntity saved = treatmentRepository.saveAndFlush(treatment);
 
         createTreatmentTypeEntity(saved, TreatmentType.OUTPATIENT, checkIn);
 
@@ -340,5 +339,16 @@ public class TreatmentService implements BaseService<TreatmentEntity, Long> {
         ));
 
         return saved;
+    }
+
+    public Long findStoredPatientNo(Long treatmentId) {
+        return treatmentRepository.findStoredPatientNo(treatmentId);
+    }
+
+    private Long resolvePatientNo(TreatmentEntity treatment) {
+        if (treatment.getTreatmentId() != null) {
+            return treatmentRepository.findStoredPatientNo(treatment.getTreatmentId());
+        }
+        return null;
     }
 }

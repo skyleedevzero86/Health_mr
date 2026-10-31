@@ -55,7 +55,7 @@ public class PaymentController {
     private final PaymentRepository paymentRepository;
 
     @PostMapping("/register")
-    @AuthRole({ "STAFF", "ADMIN" })
+    @AuthRole({ "STAFF", "ADMIN", "DOCTOR" })
     public ResponseEntity<Map<String, Object>> registerPayment(
             @Valid @RequestBody PaymentRegisterRequest request,
             @AuthUser Long userId) {

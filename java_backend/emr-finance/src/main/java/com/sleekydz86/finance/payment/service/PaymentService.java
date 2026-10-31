@@ -77,14 +77,11 @@ public class PaymentService implements BaseService<PaymentEntity, Long> {
             throw new DuplicateException("이미 결제 정보가 등록된 진료입니다.");
         }
 
-        PatientEntity patient = null;
-        if (treatment.getCheckInEntity() != null && treatment.getCheckInEntity().getPatientEntity() != null) {
-            patient = treatment.getCheckInEntity().getPatientEntity();
-        }
-
-        if (patient == null) {
+        Long patientNo = treatmentService.findStoredPatientNo(treatment.getTreatmentId());
+        if (patientNo == null) {
             throw new NotFoundException("환자 정보를 찾을 수 없습니다.");
         }
+        PatientEntity patient = patientService.getPatientByNo(patientNo);
 
         PaymentCalculationResult calculationResult = paymentCalculationService
                 .calculatePaymentAmount(treatment, patient);

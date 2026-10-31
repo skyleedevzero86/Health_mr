@@ -19,7 +19,8 @@ public interface PaymentRepository extends BaseRepository<PaymentEntity, Long> {
 
     Optional<PaymentEntity> findByTreatmentEntity_TreatmentId(Long treatmentId);
 
-    List<PaymentEntity> findByPatientEntity_PatientNo(Long patientNo);
+    @Query("SELECT p FROM Payment p WHERE p.patientEntity.patientNo.value = :patientNo")
+    List<PaymentEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);
 
     List<PaymentEntity> findByPaymentStatus(PaymentStatus status);
 
@@ -34,7 +35,8 @@ public interface PaymentRepository extends BaseRepository<PaymentEntity, Long> {
 
     Page<PaymentEntity> findAll(Pageable pageable);
 
-    Page<PaymentEntity> findByPatientEntity_PatientNo(Long patientNo, Pageable pageable);
+    @Query("SELECT p FROM Payment p WHERE p.patientEntity.patientNo.value = :patientNo")
+    Page<PaymentEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo, Pageable pageable);
 
     Page<PaymentEntity> findByPaymentStatus(PaymentStatus status, Pageable pageable);
 

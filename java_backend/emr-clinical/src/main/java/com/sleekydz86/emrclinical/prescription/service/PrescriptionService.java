@@ -98,7 +98,14 @@ public class PrescriptionService implements BaseService<PrescriptionEntity, Long
     @Transactional
     public PrescriptionEntity registerPrescription(PrescriptionCreateRequest request) {
         TreatmentEntity treatment = treatmentService.getTreatmentById(request.getTreatmentId());
+        Long treatmentPatientNo = treatmentService.findStoredPatientNo(treatment.getTreatmentId());
+        if (treatmentPatientNo == null) {
+            throw new BusinessException("진료에 환자 정보가 없습니다.");
+        }
         PatientEntity patient = patientService.getPatientByNo(request.getPatientNo());
+        if (!treatmentPatientNo.equals(patient.getPatientNoValue())) {
+            throw new BusinessException("처방 환자는 진료 환자와 같아야 합니다.");
+        }
         UserEntity doctor = userService.getUserById(request.getPrescriptionDocId());
 
         PrescriptionEntity prescription = PrescriptionEntity.builder()

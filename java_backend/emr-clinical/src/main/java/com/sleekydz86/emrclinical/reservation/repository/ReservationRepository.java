@@ -15,9 +15,11 @@ import java.util.List;
 @Repository
 public interface ReservationRepository extends BaseRepository<ReservationEntity, Long>, ReservationRepositoryCustom {
 
-    List<ReservationEntity> findByPatientEntity_PatientNo(Long patientNo);
+    @Query("SELECT r FROM Reservation r WHERE r.patientEntity.patientNo.value = :patientNo")
+    List<ReservationEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);
 
-    Page<ReservationEntity> findByPatientEntity_PatientNo(Long patientNo, Pageable pageable);
+    @Query("SELECT r FROM Reservation r WHERE r.patientEntity.patientNo.value = :patientNo")
+    Page<ReservationEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo, Pageable pageable);
 
     List<ReservationEntity> findByReservationDateBetween(LocalDateTime start, LocalDateTime end);
 

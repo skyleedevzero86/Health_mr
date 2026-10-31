@@ -71,11 +71,11 @@ public class UserEntity extends BaseEntity {
     private String address;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "email", length = 100))
+    @AttributeOverride(name = "value", column = @Column(name = "email", length = 500))
     private Email email;
 
     @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "tel_num", length = 20))
+    @AttributeOverride(name = "value", column = @Column(name = "tel_num", length = 500))
     private PhoneNumber telNum;
 
     private LocalDateTime birth;

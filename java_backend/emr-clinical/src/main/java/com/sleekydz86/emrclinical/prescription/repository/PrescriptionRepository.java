@@ -19,9 +19,11 @@ public interface PrescriptionRepository extends BaseRepository<PrescriptionEntit
 
     Optional<PrescriptionEntity> findByTreatmentEntity_TreatmentId(Long treatmentId);
 
-    List<PrescriptionEntity> findByPatientEntity_PatientNo(Long patientNo);
+    @Query("SELECT p FROM Prescription p WHERE p.patientEntity.patientNo.value = :patientNo")
+    List<PrescriptionEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);
 
-    Page<PrescriptionEntity> findByPatientEntity_PatientNo(Long patientNo, Pageable pageable);
+    @Query("SELECT p FROM Prescription p WHERE p.patientEntity.patientNo.value = :patientNo")
+    Page<PrescriptionEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo, Pageable pageable);
 
     List<PrescriptionEntity> findByPrescriptionDoc_Id(Long doctorId);
 

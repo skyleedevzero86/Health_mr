@@ -13,10 +13,14 @@ import java.util.Optional;
 @Repository
 public interface CheckInRepository extends BaseRepository<CheckInEntity, Long>, CheckInRepositoryCustom {
 
-    List<CheckInEntity> findByPatientEntity_PatientNo(Long patientNo);
+    @Query("SELECT c FROM CheckIn c WHERE c.patientEntity.patientNo.value = :patientNo")
+    List<CheckInEntity> findByPatientEntity_PatientNo(@Param("patientNo") Long patientNo);
     List<CheckInEntity> findByCheckInDateBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
     List<CheckInEntity> findByCheckInStatus(CheckInStatus status);
 
     Optional<CheckInEntity> findByCheckInId(Long checkInId);
+
+    @Query("SELECT c FROM CheckIn c LEFT JOIN FETCH c.patientEntity LEFT JOIN FETCH c.userEntity WHERE c.checkInId = :checkInId")
+    Optional<CheckInEntity> findDetailById(@Param("checkInId") Long checkInId);
 }
 
