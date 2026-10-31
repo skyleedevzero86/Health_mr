@@ -25,3 +25,4 @@ lerna-debug.log*
 **/src/test/resources/*.yml
 *.pyc
 *.json
+docker-compose.yml.bak-20261031
